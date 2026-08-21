@@ -65,7 +65,7 @@ const Projects = () => {
   );
 
   return (
-    <div className="relative min-h-screen bg-aws-navy pt-28 pb-20 px-6 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
       {/* Background radial spotlight */}
       <div
         aria-hidden="true"
@@ -95,7 +95,7 @@ const Projects = () => {
           {REAL_PROJECTS.map((project) => (
             <article
               key={project.id}
-              className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl group flex flex-col justify-between relative overflow-hidden"
+              className="p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl group flex flex-col justify-between relative overflow-hidden"
             >
               {/* Gradient overlay */}
               <div

@@ -37,7 +37,7 @@ const About = () => {
   usePageTitle('About Us', 'Community built around practice. AWS Student Builder Group at RIT.');
 
   return (
-    <div className="relative min-h-screen bg-aws-navy px-6 pb-20 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent px-6 pb-20 overflow-hidden">
       {/* Soft Background Violet Radial Blur */}
       <div
         aria-hidden="true"
@@ -70,7 +70,7 @@ const About = () => {
         {/* 2. Vision & Mission Cards (Glassmorphism Grid) */}
         <section className="grid md:grid-cols-2 gap-8">
           {/* Card 1: Vision */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-2xl space-y-4 hover:border-purple-glow/40 transition-all shadow-xl">
+          <div className="bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl space-y-4 hover:border-purple-glow/40 transition-all shadow-xl">
             <div className="w-12 h-12 rounded-xl bg-purple-glow/15 border border-purple-glow/30 flex items-center justify-center text-purple-glow">
               <Target className="w-6 h-6" />
             </div>
@@ -81,7 +81,7 @@ const About = () => {
           </div>
 
           {/* Card 2: Mission */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-2xl space-y-4 hover:border-sbg-green/40 transition-all shadow-xl">
+          <div className="bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl space-y-4 hover:border-sbg-green/40 transition-all shadow-xl">
             <div className="w-12 h-12 rounded-xl bg-sbg-green/15 border border-sbg-green/30 flex items-center justify-center text-sbg-green">
               <Rocket className="w-6 h-6" />
             </div>
@@ -104,7 +104,7 @@ const About = () => {
             {WHY_JOIN_CARDS.map((card) => (
               <div
                 key={card.num}
-                className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3 hover:border-sbg-green transition-all shadow-lg flex flex-col justify-between group"
+                className="bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 p-6 rounded-2xl space-y-3 hover:border-sbg-green transition-all shadow-lg flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <span className="text-xl font-mono font-bold text-purple-glow block">

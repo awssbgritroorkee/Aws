@@ -80,7 +80,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-aws-navy pt-28 pb-20 px-6 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
       {/* Background Glow */}
       <div
         aria-hidden="true"
@@ -114,7 +114,7 @@ const Contact = () => {
           {/* Form Side */}
           <div className="lg:col-span-2">
             {status === 'success' ? (
-              <div className="p-10 rounded-2xl bg-white/5 border border-sbg-green/40 text-center shadow-glow-green space-y-4">
+              <div className="p-10 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-sbg-green/40 text-center shadow-glow-green space-y-4">
                 <CheckCircle2 className="w-12 h-12 text-sbg-green mx-auto" />
                 <h2 className="text-2xl font-bold text-white">Application Received!</h2>
                 <p className="text-sm text-gray-400">
@@ -128,7 +128,7 @@ const Contact = () => {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-white/5 border border-white/10 space-y-6 shadow-2xl">
+              <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 space-y-6 shadow-2xl">
                 <div>
                   <label htmlFor="name" className="flex items-center gap-1.5 text-xs font-mono font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     <User className="w-3.5 h-3.5 text-sbg-green" />
@@ -237,7 +237,7 @@ const Contact = () => {
 
           {/* Sidebar Info Side */}
           <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 space-y-4">
               <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">
                 Alternate Contact Info
               </h3>

@@ -65,7 +65,7 @@ const Events = () => {
     : ALL_EVENTS.filter((e) => e.category === activeCategory);
 
   return (
-    <div className="relative min-h-screen bg-aws-navy pt-28 pb-20 px-6 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
       {/* Background Glow */}
       <div
         aria-hidden="true"
@@ -114,7 +114,7 @@ const Events = () => {
           {filteredEvents.map((event) => (
             <div
               key={event.id}
-              className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-sbg-green/40 transition-all duration-300 flex flex-col justify-between group"
+              className="p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 flex flex-col justify-between group"
             >
               <div className="space-y-4">
                 {/* Event Card Header */}

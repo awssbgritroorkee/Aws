@@ -47,7 +47,7 @@ const Home = () => {
   );
 
   return (
-    <div className="relative bg-aws-navy text-white overflow-hidden">
+    <div className="relative bg-transparent text-white overflow-hidden">
       {/* Soft Background Low-Opacity Green Glow */}
       <div
         aria-hidden="true"
@@ -116,7 +116,7 @@ const Home = () => {
           {FEATURES.map((f) => (
             <div
               key={f.id}
-              className="relative flex flex-col items-start p-7 rounded-2xl bg-white/5 border border-white/10 hover:border-sbg-green/40 hover:bg-white/[0.07] transition-all duration-300 shadow-xl hover:-translate-y-1 group"
+              className="relative flex flex-col items-start p-7 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl hover:-translate-y-1 group"
             >
               <div
                 className="w-13 h-13 rounded-2xl flex items-center justify-center mb-5 flex-shrink-0"
@@ -139,7 +139,7 @@ const Home = () => {
       <section className="relative z-10 max-w-4xl mx-auto px-6 pb-16">
         <Link
           to="/events"
-          className="group block p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl"
+          className="group block p-6 md:p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl"
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">

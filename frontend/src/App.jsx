@@ -1,17 +1,19 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar   from './components/Navbar';
-import Footer   from './components/Footer';
-import Home     from './pages/Home';
-import About    from './pages/About';
-import Events   from './pages/Events';
-import Projects from './pages/Projects';
-import Team     from './pages/Team';
-import Gallery  from './pages/Gallery';
-import Contact  from './pages/Contact';
+import Navbar             from './components/Navbar';
+import Footer             from './components/Footer';
+import AwsGridBackground  from './components/AwsGridBackground';
+import Home               from './pages/Home';
+import About              from './pages/About';
+import Events             from './pages/Events';
+import Projects           from './pages/Projects';
+import Team               from './pages/Team';
+import Gallery            from './pages/Gallery';
+import Contact            from './pages/Contact';
 
 const App = () => (
   <BrowserRouter>
-    <div className="flex flex-col min-h-screen bg-aws-navy font-sans text-white">
+    <div className="flex flex-col min-h-screen font-sans text-white bg-transparent relative">
+      <AwsGridBackground />
       <Navbar />
       <main id="main-content" tabIndex="-1" className="flex-grow flex flex-col">
         <Routes>

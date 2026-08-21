@@ -28,7 +28,7 @@ const Team = () => {
   usePageTitle('Leadership Team', 'Faculty guidance and leadership driving the AWS Student Builder Group at RIT.');
 
   return (
-    <div className="relative min-h-screen bg-aws-navy pt-28 pb-20 px-6 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
       {/* Glow backdrop */}
       <div
         aria-hidden="true"
@@ -65,7 +65,7 @@ const Team = () => {
         {/* Centered Faculty Coordinator Card */}
         <div className="flex justify-center max-w-md mx-auto mt-12">
           <div
-            className="w-full border border-white/10 bg-[#10151c] rounded-3xl p-8 flex flex-col items-center text-center hover:border-sbg-green/30 transition-all shadow-xl group relative"
+            className="w-full border border-white/10 bg-[#10151c]/90 backdrop-blur-2xl rounded-3xl p-8 flex flex-col items-center text-center hover:border-sbg-green/30 transition-all shadow-xl group relative"
           >
             {/* Avatar Wrapper */}
             <div className="relative">

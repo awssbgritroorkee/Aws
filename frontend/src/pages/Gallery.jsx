@@ -66,7 +66,7 @@ const Gallery = () => {
     : GALLERY_ITEMS.filter((item) => item.category === activeCategory);
 
   return (
-    <div className="relative min-h-screen bg-aws-navy pt-28 pb-20 px-6 overflow-hidden">
+    <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
       {/* Background Glow */}
       <div
         aria-hidden="true"
