@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import usePageTitle from '../hooks/usePageTitle';
 
 const Linkedin = (props) => (
@@ -14,20 +15,43 @@ const Instagram = (props) => (
   </svg>
 );
 
-const MEMBER = {
-  id: 'aditya-raj',
-  initials: 'AS',
-  badge: '⭐ Advisor',
-  name: 'Aditya Raj',
-  role: 'Group Lead & Faculty Advisor',
-  bio: "Guiding the chapter's vision and ensuring institutional support for cloud innovation at RIT.",
-  skills: ['Mentorship', 'Cloud Strategy'],
-  linkedin: 'https://linkedin.com',
-  instagram: 'https://instagram.com',
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+const getInitials = (name) => {
+  if (!name) return 'SB';
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 };
 
 const Team = () => {
   usePageTitle('Leadership Team', 'Faculty guidance and leadership driving the AWS Student Builder Group at RIT.');
+
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/members/`);
+        if (response.ok) {
+          const data = await response.json();
+          setMembers(Array.isArray(data) ? data : (data.results || []));
+        } else {
+          console.error('Failed to fetch members:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching members:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
@@ -54,7 +78,7 @@ const Team = () => {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6">
             Faculty &amp;{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sbg-green to-teal-400">
-              Advisor
+              Leadership
             </span>
           </h1>
 
@@ -64,61 +88,79 @@ const Team = () => {
           </p>
         </div>
 
-        {/* Centered Profile Card */}
-        <div className="flex justify-center max-w-md mx-auto mt-12">
-          <div className="relative flex flex-col items-center text-center bg-gradient-to-b from-[#10151c] to-aws-navy border border-white/10 rounded-3xl p-10 hover:border-sbg-green/50 hover:shadow-[0_0_30px_rgba(0,229,130,0.15)] transition-all duration-300">
-            {/* Avatar Upgrade */}
-            <div className="relative">
-              <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-extrabold text-white bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-sbg-green/50 p-1 mb-6">
-                {MEMBER.initials}
-              </div>
-              <span className="absolute -top-2 -right-4 bg-sbg-green text-black font-bold shadow-lg px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
-                {MEMBER.badge}
-              </span>
-            </div>
-
-            {/* Name & Role */}
-            <h2 className="text-2xl font-bold text-white mt-2">{MEMBER.name}</h2>
-            <p className="text-sm font-mono text-sbg-green mt-1">{MEMBER.role}</p>
-
-            {/* Description */}
-            <p className="text-gray-400 text-xs md:text-sm mt-4 max-w-xs leading-relaxed">
-              {MEMBER.bio}
-            </p>
-
-            {/* Skill Pills */}
-            <div className="flex flex-wrap justify-center gap-2 mt-5">
-              {MEMBER.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="px-3 py-1 border border-white/15 bg-white/5 rounded-full text-xs text-gray-300 font-mono"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-
-            {/* Social Icons */}
-            <div className="flex items-center gap-4 mt-6 text-gray-400">
-              <a
-                href={MEMBER.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${MEMBER.name} LinkedIn`}
-              >
-                <Linkedin className="w-5 h-5 hover:text-blue-500 cursor-pointer transition-colors" />
-              </a>
-              <a
-                href={MEMBER.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${MEMBER.name} Instagram`}
-              >
-                <Instagram className="w-5 h-5 hover:text-pink-500 cursor-pointer transition-colors" />
-              </a>
-            </div>
+        {/* Dynamic Content Section */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-10 h-10 border-4 border-sbg-green/30 border-t-sbg-green rounded-full animate-spin" />
           </div>
-        </div>
+        ) : members.length === 0 ? (
+          <div className="text-center py-16 px-6 bg-[#10151c]/60 border border-white/10 rounded-3xl max-w-md mx-auto">
+            <p className="text-gray-300 font-medium text-lg">
+              Check back soon for team updates!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mt-12">
+            {members.map((member) => (
+              <div
+                key={member.id}
+                className="relative flex flex-col items-center text-center bg-gradient-to-b from-[#10151c] to-aws-navy border border-white/10 rounded-3xl p-8 hover:border-sbg-green/50 hover:shadow-[0_0_30px_rgba(0,229,130,0.15)] transition-all duration-300"
+              >
+                {/* Avatar */}
+                <div className="relative mb-4">
+                  {member.image ? (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-28 h-28 rounded-full object-cover ring-2 ring-sbg-green/50 p-1"
+                    />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-extrabold text-white bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-sbg-green/50 p-1">
+                      {getInitials(member.name)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Name & Role */}
+                <h2 className="text-2xl font-bold text-white mt-2">{member.name}</h2>
+                <p className="text-sm font-mono text-sbg-green mt-1">{member.role}</p>
+
+                {/* Description / Bio */}
+                {(member.bio || member.tagline) && (
+                  <p className="text-gray-400 text-xs md:text-sm mt-4 max-w-xs leading-relaxed">
+                    {member.bio || member.tagline}
+                  </p>
+                )}
+
+                {/* Social Icons */}
+                {(member.linkedin || member.instagram) && (
+                  <div className="flex items-center gap-4 mt-6 text-gray-400">
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${member.name} LinkedIn`}
+                      >
+                        <Linkedin className="w-5 h-5 hover:text-blue-500 cursor-pointer transition-colors" />
+                      </a>
+                    )}
+                    {member.instagram && (
+                      <a
+                        href={member.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${member.name} Instagram`}
+                      >
+                        <Instagram className="w-5 h-5 hover:text-pink-500 cursor-pointer transition-colors" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

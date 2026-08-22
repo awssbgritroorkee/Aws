@@ -1,15 +1,13 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
 
 
 class GalleryPhoto(models.Model):
     """
     A single event photo shown in the public Gallery section.
-    Images are mandatory and hosted on Cloudinary.
     title is an optional caption for the photo.
     """
     title       = models.CharField(max_length=200, blank=True)
-    image       = CloudinaryField('image')
+    image       = models.ImageField(upload_to='gallery/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

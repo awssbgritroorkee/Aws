@@ -5,7 +5,7 @@ from .models import Member
 class MemberSerializer(serializers.ModelSerializer):
     """
     Serialises all Member fields for the public /api/members/ endpoint.
-    The `image` CloudinaryField auto-resolves to a full HTTPS URL.
+    Builds full image URL for both local media and Cloudinary uploads.
     """
     image = serializers.SerializerMethodField()
 
@@ -18,7 +18,16 @@ class MemberSerializer(serializers.ModelSerializer):
         ]
 
     def get_image(self, obj):
-        """Return the Cloudinary secure URL, or None if no image uploaded."""
+        """Return the absolute URL for the image or None."""
         if obj.image:
-            return obj.image.url
+            try:
+                url = obj.image.url
+                if url.startswith('http://') or url.startswith('https://'):
+                    return url
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(url)
+                return f"http://127.0.0.1:8000{url}"
+            except Exception:
+                return str(obj.image)
         return None

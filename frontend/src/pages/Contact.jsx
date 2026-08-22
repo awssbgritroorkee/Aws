@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, CheckCircle2, User, Mail, BookOpen, MessageSquare, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, CheckCircle2, User, Mail, BookOpen, MessageSquare, HelpCircle, ChevronDown, ChevronUp, Calendar, ArrowRight } from 'lucide-react';
 import { createIdea } from '../services/api';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -235,59 +235,67 @@ const Contact = () => {
             )}
           </div>
 
-          {/* Sidebar Info Side */}
+          {/* Sidebar Social & Community Cards Side */}
           <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 space-y-4">
-              <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">
-                Alternate Contact Info
-              </h3>
-              <div className="space-y-4 text-xs">
-                <div className="flex items-start gap-3">
-                  <Mail className="w-4 h-4 text-sbg-green flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-gray-400 block font-mono">Official Email</span>
-                    <a href="mailto:awssbg@ritroorkee.com" className="text-white font-medium hover:text-sbg-green break-all">awssbg@ritroorkee.com</a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <LinkedinIcon className="w-4 h-4 text-sbg-green flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-gray-400 block font-mono">LinkedIn</span>
-                    <a
-                      href="https://www.linkedin.com/in/aws-sbg-on-campus-rit-roorkee?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-white font-medium hover:text-sbg-green break-all"
-                    >
-                      LinkedIn Profile
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <InstagramIcon className="w-4 h-4 text-sbg-green flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-gray-400 block font-mono">Instagram</span>
-                    <a
-                      href="https://www.instagram.com/aws.sbg.ritroorkee?igsi=MTV6eGUzeHM5OHBpbw=="
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-white font-medium hover:text-sbg-green break-all"
-                    >
-                      Instagram Profile
-                    </a>
-                  </div>
-                </div>
+            {/* Card 1: Meetup */}
+            <a
+              href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col p-6 rounded-2xl bg-[#10151c]/80 backdrop-blur-md border border-white/10 hover:border-sbg-green/50 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Calendar className="w-6 h-6 text-red-500 flex-shrink-0" />
+                <h3 className="text-base font-bold text-white">Meetup Page</h3>
               </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-purple-dim/20 border border-purple-glow/30 space-y-2">
-              <h4 className="text-xs font-mono font-bold text-sbg-green uppercase tracking-wider">
-                Direct Mentorship
-              </h4>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Have questions about the AWS Cloud Practitioner certification path or chapter initiatives? Reach out to our Group Lead, Aditya Raj.
+              <p className="text-white/60 text-sm leading-relaxed">
+                Join our community events and gatherings. RSVP for our next session at RIT.
               </p>
-            </div>
+              <div className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg flex items-center justify-between mt-4 text-xs font-bold transition-colors">
+                <span>Go to Meetup</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </a>
+
+            {/* Card 2: LinkedIn */}
+            <a
+              href="https://www.linkedin.com/in/aws-sbg-on-campus-rit-roorkee?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col p-6 rounded-2xl bg-[#10151c]/80 backdrop-blur-md border border-white/10 hover:border-sbg-green/50 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <LinkedinIcon className="w-6 h-6 text-blue-400 flex-shrink-0" />
+                <h3 className="text-base font-bold text-white">LinkedIn Page</h3>
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Connect professionally and see our chapter updates and announcements.
+              </p>
+              <div className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-between mt-4 text-xs font-bold transition-colors">
+                <span>Connect on LinkedIn</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </a>
+
+            {/* Card 3: Instagram */}
+            <a
+              href="https://www.instagram.com/aws.sbg.ritroorkee?igsi=MTV6eGUzeHM5OHBpbw=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col p-6 rounded-2xl bg-[#10151c]/80 backdrop-blur-md border border-white/10 hover:border-sbg-green/50 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <InstagramIcon className="w-6 h-6 text-pink-400 flex-shrink-0" />
+                <h3 className="text-base font-bold text-white">Instagram Page</h3>
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Follow our visual journey, behind-the-scenes content, and latest highlights.
+              </p>
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white py-2 px-4 rounded-lg flex items-center justify-between mt-4 text-xs font-bold transition-all">
+                <span>Follow on Instagram</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </a>
           </div>
         </div>
 

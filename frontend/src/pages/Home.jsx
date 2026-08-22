@@ -86,7 +86,7 @@ const Home = () => {
             WHY BUILD WITH US
           </span>
           <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
-            Learn, Practice &amp; Ship Together
+            Learn, Build &amp; Deploy Together
           </h2>
         </div>
 

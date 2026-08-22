@@ -1,7 +1,6 @@
 import TopNav           from '../components/layout/TopNav';
 import Hero             from '../components/sections/Hero';
 import AboutSection     from '../components/sections/AboutSection';
-import ProjectsSection  from '../components/sections/ProjectsSection';
 import TeamSection      from '../components/sections/TeamSection';
 import ContactSection   from '../components/sections/ContactSection';
 import Footer           from '../components/sections/Footer';
@@ -16,7 +15,6 @@ const LandingPage = () => (
     <main id="main-content" tabIndex="-1">
       <Hero />
       <AboutSection />
-      <ProjectsSection />
       <TeamSection />
       <ContactSection />
     </main>

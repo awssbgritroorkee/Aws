@@ -1,11 +1,9 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
 
 
 class Member(models.Model):
     """
     Represents a team member shown on the /team page.
-    Images are hosted on Cloudinary — no local media storage needed.
     priority_order controls display order: lower numbers appear first,
     ensuring leadership (e.g. Aditya Raj) is always pinned at the top.
     """
@@ -16,7 +14,7 @@ class Member(models.Model):
                         help_text='e.g. "⭐ Advisor" or "Group Lead"')
     tagline        = models.CharField(max_length=200, blank=True)
     bio            = models.TextField(blank=True)
-    image          = CloudinaryField('image', blank=True, null=True)
+    image          = models.ImageField(upload_to='members/', blank=True, null=True)
     skills         = models.JSONField(default=list, blank=True)
     linkedin       = models.URLField(blank=True)
     instagram      = models.URLField(blank=True)

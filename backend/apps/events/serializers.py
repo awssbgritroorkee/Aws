@@ -13,7 +13,16 @@ class EventSerializer(serializers.ModelSerializer):
         ]
 
     def get_poster(self, obj):
-        """Return the Cloudinary secure URL for the event poster, or None."""
+        """Return absolute URL for event poster or None."""
         if obj.poster:
-            return obj.poster.url
+            try:
+                url = obj.poster.url
+                if url.startswith('http://') or url.startswith('https://'):
+                    return url
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(url)
+                return f"http://127.0.0.1:8000{url}"
+            except Exception:
+                return str(obj.poster)
         return None

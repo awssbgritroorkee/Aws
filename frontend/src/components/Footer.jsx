@@ -23,20 +23,20 @@ const InstagramIcon = (props) => (
 );
 
 const Footer = () => (
-  <footer className="bg-[#10151c] border-t border-white/5 mt-8 pt-6 pb-6">
+  <footer className="bg-[#10151c] border-t border-white/5 py-4 mt-6">
     <div className="max-w-7xl mx-auto px-6">
       {/* Tagline Banner */}
-      <div className="pb-6 mb-6 border-b border-white/10 w-full flex justify-center items-center overflow-hidden">
-        <span className="text-[clamp(1.5rem,5vw,4rem)] font-black tracking-widest text-white/80 whitespace-nowrap text-center w-full font-mono uppercase block">
+      <div className="pb-3 mb-4 border-b border-white/5 w-full flex justify-center items-center overflow-hidden">
+        <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-widest text-white/80 whitespace-nowrap text-center w-full font-mono uppercase block">
           BUILD. DEPLOY. GROW.
         </span>
       </div>
 
-      <div className="pt-4 w-full grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-6">
       {/* Top/Left: Logo + Tagline */}
-      <div className="md:col-span-1 space-y-4">
+      <div className="md:col-span-1 space-y-2">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <OriginalLogoMark className="w-8 h-8 flex-shrink-0 transition-transform group-hover:scale-105" />
+          <OriginalLogoMark className="w-7 h-7 flex-shrink-0 transition-transform group-hover:scale-105" />
           <div className="leading-tight">
             <span className="text-white font-black text-[11px] md:text-[12px] block uppercase tracking-tight">
               AWS STUDENT BUILDER GROUP
@@ -52,9 +52,9 @@ const Footer = () => (
       </div>
 
       {/* Middle: Quick Links Grid */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white">Navigation</h4>
-        <ul className="space-y-2 text-xs font-sans">
+        <ul className="space-y-1 text-xs font-sans">
           <li>
             <Link to="/" className="hover:text-sbg-green transition-colors">Home</Link>
           </li>
@@ -77,66 +77,66 @@ const Footer = () => (
       </div>
 
       {/* Middle-Right: Community & Social Icons */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white">Connect</h4>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <a
             href="https://linkedin.com"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn"
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
           >
-            <LinkedinIcon className="w-4 h-4" />
+            <LinkedinIcon className="w-3.5 h-3.5" />
           </a>
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
           >
-            <GithubIcon className="w-4 h-4" />
+            <GithubIcon className="w-3.5 h-3.5" />
           </a>
           <a
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
           >
-            <InstagramIcon className="w-4 h-4" />
+            <InstagramIcon className="w-3.5 h-3.5" />
           </a>
           <a
             href="https://whatsapp.com"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp Community"
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
+            className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-sbg-green hover:border-sbg-green/40 transition-all"
           >
-            <MessageCircle className="w-4 h-4" />
+            <MessageCircle className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
 
       {/* Bottom-Right: Resources Link */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white">Resources</h4>
         <a
           href="https://builder.aws.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-sbg-green hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-sbg-green hover:underline"
         >
           AWS Builder Center
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3 h-3" />
         </a>
       </div>
     </div>
   </div>
 
   {/* Bottom Copyright Bar */}
-    <div className="mt-6 pt-4 border-t border-white/10 text-center text-sm text-gray-500">
+    <div className="mt-4 pt-3 border-t border-white/10 text-center text-xs text-gray-500">
       © 2026 AWS SBG RIT
     </div>
   </footer>

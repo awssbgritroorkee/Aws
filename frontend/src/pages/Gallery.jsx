@@ -1,69 +1,51 @@
-import { useState } from 'react';
-import { Camera, X, Maximize2, Calendar, Tag } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Camera, X, Maximize2, Calendar } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
-const GALLERY_ITEMS = [
-  {
-    id: 1,
-    title: 'AWS Cloud Bootcamp 2026',
-    category: 'Workshops',
-    tag: 'WORKSHOP',
-    date: 'Aug 30, 2026',
-    caption: 'Students learning EC2 provisioning, security groups, and S3 bucket policies in hands-on lab.',
-  },
-  {
-    id: 2,
-    title: 'Smart India Hackathon Sprint',
-    category: 'Hackathons',
-    tag: 'HACKATHON',
-    date: 'Jul 15, 2026',
-    caption: 'Overnight coding session deploying serverless microservices APIs on AWS Lambda.',
-  },
-  {
-    id: 3,
-    title: 'AUTONIX Test Drive & Demo',
-    category: 'Robotics',
-    tag: 'ROBOTICS',
-    date: 'Jun 22, 2026',
-    caption: 'Field testing autonomous vehicle telemetry stream to AWS IoT Core MQTT broker.',
-  },
-  {
-    id: 4,
-    title: 'AWS Community Tech Summit',
-    category: 'Workshops',
-    tag: 'CONFERENCE',
-    date: 'May 10, 2026',
-    caption: 'Keynote presentation on cloud architecture patterns and DevOps career roadmaps.',
-  },
-  {
-    id: 5,
-    title: 'IoT Sensor Lab Demonstration',
-    category: 'Robotics',
-    tag: 'HARDWARE',
-    date: 'Apr 18, 2026',
-    caption: 'Interfacing ESP32 microcontrollers with real-time cloud data visualization dashboards.',
-  },
-  {
-    id: 6,
-    title: 'Core Team Orientation & Meetup',
-    category: 'Meetups',
-    tag: 'MEETUP',
-    date: 'Mar 05, 2026',
-    caption: 'Founding cohort meetup aligning annual goals and hackathon participation schedule.',
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-const CATEGORIES = ['All', 'Workshops', 'Hackathons', 'Robotics', 'Meetups'];
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (e) {
+    return dateString;
+  }
+};
 
 const Gallery = () => {
   usePageTitle('Photo Gallery', 'Community moments, hackathons, and bootcamp photos of AWS SBG RIT.');
 
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [selectedPhoto, setSelectedPhoto]   = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
-  const filteredItems = activeCategory === 'All'
-    ? GALLERY_ITEMS
-    : GALLERY_ITEMS.filter((item) => item.category === activeCategory);
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/gallery/`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch photos: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setPhotos(Array.isArray(data) ? data : (data.results || []));
+      } catch (err) {
+        console.error('Error fetching gallery photos:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhotos();
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
@@ -89,63 +71,73 @@ const Gallery = () => {
         </h1>
 
         {/* Upscaled Subheading */}
-        <p className="text-gray-400 text-lg md:text-xl lg:text-2xl font-medium max-w-4xl mx-auto mb-10 leading-relaxed">
+        <p className="text-gray-400 text-lg md:text-xl lg:text-2xl font-medium max-w-4xl mx-auto mb-12 leading-relaxed">
           Highlights from hackathons, cloud bootcamps, project showcases, and team meetups at RIT.
         </p>
 
-        {/* Filter Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2 rounded-full text-xs font-mono font-semibold transition-all duration-200 ${
-                activeCategory === cat
-                  ? 'bg-sbg-green text-aws-navy shadow-lg shadow-sbg-green/20'
-                  : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Gallery Grid / State Handlers */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-10 h-10 border-4 border-sbg-green/30 border-t-sbg-green rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-16 px-6 bg-[#10151c]/60 border border-red-500/20 rounded-3xl max-w-md mx-auto text-red-400">
+            <p className="font-medium text-lg">Unable to load gallery photos.</p>
+            <p className="text-xs text-gray-400 mt-2">{error}</p>
+          </div>
+        ) : photos.length === 0 ? (
+          <div className="text-center py-16 px-6 bg-[#10151c]/60 border border-white/10 rounded-3xl max-w-md mx-auto">
+            <p className="text-gray-300 font-medium text-lg">
+              Gallery is empty right now. Check back after our next event!
+            </p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 text-left">
+            {photos.map((photo) => (
+              <div
+                key={photo.id}
+                onClick={() => setSelectedPhoto(photo)}
+                className="flex flex-col gap-3 group cursor-pointer"
+              >
+                {/* Photo Container */}
+                <div className="aspect-video rounded-xl bg-[#10151c] border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-sbg-green/50 transition-all duration-300 shadow-lg">
+                  {photo.image ? (
+                    <img
+                      src={photo.image}
+                      alt={photo.title || 'AWS SBG Gallery Photo'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-900/40 to-aws-navy flex flex-col items-center justify-center p-4">
+                      <Camera className="w-8 h-8 text-sbg-green/70 mb-2" />
+                      <span className="text-gray-400 font-mono text-xs">AWS SBG Photo</span>
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </div>
+                </div>
 
-        {/* Gallery Grid */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 text-left">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedPhoto(item)}
-              className="flex flex-col gap-3 group cursor-pointer"
-            >
-              {/* Premium Photo Container Placeholder */}
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-purple-900/40 via-purple-dim/20 to-aws-navy border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-sbg-green/50 transition-all duration-300 shadow-lg">
-                <Camera className="w-8 h-8 text-sbg-green/70 mb-2 group-hover:scale-110 transition-transform" />
-                <span className="text-gray-400 font-mono text-xs font-medium">
-                  Photo Coming Soon
-                </span>
-                <div className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/40 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Maximize2 className="w-3.5 h-3.5" />
+                {/* Photo Metadata */}
+                <div className="px-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sbg-green">
+                      AWS SBG RIT
+                    </span>
+                    <span className="text-[10px] font-mono text-gray-500">
+                      {formatDate(photo.uploaded_at)}
+                    </span>
+                  </div>
+                  {photo.title && (
+                    <h3 className="text-base font-bold text-white group-hover:text-sbg-green transition-colors line-clamp-1">
+                      {photo.title}
+                    </h3>
+                  )}
                 </div>
               </div>
-
-              {/* Photo Metadata */}
-              <div className="px-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sbg-green">
-                    {item.tag}
-                  </span>
-                  <span className="text-[10px] font-mono text-gray-500">
-                    {item.date}
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-white group-hover:text-sbg-green transition-colors">
-                  {item.title}
-                </h3>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Lightbox Modal */}
@@ -155,39 +147,38 @@ const Gallery = () => {
           onClick={() => setSelectedPhoto(null)}
         >
           <div
-            className="relative max-w-2xl w-full p-6 md:p-8 rounded-2xl bg-[#0d1625] border border-white/15 space-y-4 shadow-2xl text-left"
+            className="relative max-w-3xl w-full p-6 md:p-8 rounded-2xl bg-[#0d1625] border border-white/15 space-y-4 shadow-2xl text-left overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedPhoto(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 text-gray-300 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="aspect-video rounded-xl bg-gradient-to-br from-purple-900/60 to-aws-navy border border-white/10 flex flex-col items-center justify-center text-center p-6">
-              <Camera className="w-12 h-12 text-sbg-green mb-3" />
-              <span className="text-white font-mono text-sm font-bold">
-                {selectedPhoto.title}
-              </span>
-              <span className="text-gray-400 text-xs mt-1">
-                Photo Asset Placeholder
-              </span>
-            </div>
+            {selectedPhoto.image && (
+              <div className="max-h-[60vh] rounded-xl overflow-hidden border border-white/10 bg-black flex items-center justify-center">
+                <img
+                  src={selectedPhoto.image}
+                  alt={selectedPhoto.title || 'AWS SBG Photo'}
+                  className="w-full h-full object-contain max-h-[60vh]"
+                />
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1 text-xs font-mono font-bold text-sbg-green px-2.5 py-0.5 rounded-full bg-sbg-green/10 border border-sbg-green/30">
-                  <Tag className="w-3 h-3" /> {selectedPhoto.tag}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-sbg-green font-semibold">
+                  AWS Student Builder Group
                 </span>
                 <span className="text-xs font-mono text-gray-400 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" /> {selectedPhoto.date}
+                  <Calendar className="w-3.5 h-3.5" /> {formatDate(selectedPhoto.uploaded_at)}
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-white">{selectedPhoto.title}</h2>
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {selectedPhoto.caption}
-              </p>
+              {selectedPhoto.title && (
+                <h2 className="text-xl font-bold text-white">{selectedPhoto.title}</h2>
+              )}
             </div>
           </div>
         </div>
