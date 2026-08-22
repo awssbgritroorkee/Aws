@@ -89,6 +89,8 @@ STATIC_URL = '/static/'
 
 # ── Cloudinary (media storage for all environments) ──────────────────────────
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 's7hoxer7'),
@@ -104,7 +106,9 @@ cloudinary.config(
 )
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = 'https://res.cloudinary.com/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
