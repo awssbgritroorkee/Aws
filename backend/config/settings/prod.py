@@ -35,9 +35,10 @@ CSRF_COOKIE_SECURE = True
 # ── Cloudinary Media Storage (Production) ────────────────────────────────────
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 's7hoxer7'),
-    'API_KEY':    os.environ.get('CLOUDINARY_API_KEY', '395953442862514'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'qIgbhaVyCUCvwssifEps0wHnLP4'),
+    'API_KEY':    os.environ.get('CLOUDINARY_API_KEY', '123296571387666'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'Ubzge5R1WtMNjCVsDpmxzosaNqE'),
 }
+
 
 cloudinary.config(
     cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
