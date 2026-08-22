@@ -20,11 +20,11 @@ const AwsGridBackground = () => {
     >
       {/* ── 1. Grid Lines (80 × 80 px cells) ── */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), ' +
-            'linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)',
+            'linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), ' +
+            'linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)',
           backgroundSize: '80px 80px',
         }}
       />

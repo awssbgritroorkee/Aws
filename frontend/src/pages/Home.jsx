@@ -1,49 +1,35 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Code2, Cloud, Cpu, Trophy, Calendar } from 'lucide-react';
+import { ArrowRight, Sparkles, Calendar, Wrench, Rocket, Trophy } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
-const FEATURES = [
+const WHY_BUILD_CARDS = [
   {
-    id: 'fullstack',
-    icon: <Code2 className="w-7 h-7 text-sbg-green" />,
-    title: 'Full-Stack Web Dev',
-    description: 'Build production-ready applications with modern frameworks like React, Vite, and Django REST Framework.',
-    accent: 'rgba(0,229,130,0.12)',
+    id: 'workshops',
+    icon: <Wrench className="w-7 h-7 text-sbg-green" />,
+    title: 'HANDS-ON WORKSHOPS',
+    text: 'Learn AWS and cloud concepts through practical sessions, guided demonstrations, and hands-on activities. Get familiar with the tools and services used to build and work with cloud technologies.',
+    tags: ['AWS', 'CLOUD', 'HANDS-ON'],
   },
   {
-    id: 'cloud',
-    icon: <Cloud className="w-7 h-7 text-sky-400" />,
-    title: 'Cloud & DevOps',
-    description: 'Master EC2, S3, Docker containers, CI/CD pipelines, and Infrastructure as Code on AWS cloud.',
-    accent: 'rgba(56,189,248,0.15)',
-  },
-  {
-    id: 'iot',
-    icon: <Cpu className="w-7 h-7 text-amber-400" />,
-    title: 'IoT & Hardware',
-    description: 'Bridge physical hardware with cloud telemetry pipelines using ESP32 microcontrollers and AWS IoT Core.',
-    accent: 'rgba(255,153,0,0.12)',
+    id: 'projects',
+    icon: <Rocket className="w-7 h-7 text-sky-400" />,
+    title: 'BUILD & DEPLOY PROJECTS',
+    text: 'Take what you learn and put it into practice by building small, practical projects with AWS. Work with other members, experiment with cloud services, and learn how applications can be deployed on the cloud.',
+    tags: ['AWS', 'PROJECTS', 'DEPLOYMENT'],
   },
   {
     id: 'hackathons',
-    icon: <Trophy className="w-7 h-7 text-sbg-green" />,
-    title: 'Competitive Hackathons',
-    description: 'Participate and lead in national hackathons like Smart India Hackathon, Technomax, and HackSprit.',
-    accent: 'rgba(0,229,130,0.12)',
+    icon: <Trophy className="w-7 h-7 text-amber-400" />,
+    title: 'HACKATHONS',
+    text: 'Work with a team to solve problems, develop ideas, and build working solutions within a limited time. Put your technical skills into practice while learning from the people you build with.',
+    tags: ['TEAMWORK', 'PROBLEM SOLVING', 'BUILD'],
   },
-];
-
-const STATS = [
-  '04 Focus Domains',
-  '2026 Chapter Founded',
-  'Global AWS SBG Network',
-  'Open Enrollment',
 ];
 
 const Home = () => {
   usePageTitle(
     'Home',
-    "Official website of AWS Student Builder Group at Roorkee Institute of Technology. Full-Stack, Cloud & DevOps, IoT, and Hackathons."
+    'AWS Student Builder Group at RIT. Explore Cloud Computing, AWS and DevOps through hands-on sessions and collaborative projects.'
   );
 
   return (
@@ -59,103 +45,106 @@ const Home = () => {
         {/* Eyebrow badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-semibold text-gray-300 uppercase tracking-widest mb-8 border border-sbg-green/30 bg-white/5 shadow-md">
           <Sparkles className="w-3.5 h-3.5 text-sbg-green" />
-          <span>Recruiting the founding cohort — 2026–27</span>
+          <span>AWS STUDENT BUILDER GROUP · RIT ROORKEE</span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
-          Welcome to RIT's <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sbg-green to-teal-400">
-            AWS Student Builder Group
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.1] text-center uppercase">
+          WHERE CLOUD LEARNERS <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sbg-green via-teal-300 to-emerald-400">
+            BECOME CLOUD BUILDERS
           </span>
         </h1>
 
-        <p className="mt-6 text-gray-400 text-base md:text-lg font-medium max-w-2xl text-center leading-relaxed">
-          We're RIT's official AWS Student Builder Group — architecting the future through full-stack development, IoT, and cloud innovation. Hands-on workshops, real projects, and a straight path to your first AWS certification. No prior experience required.
+        {/* Subtext */}
+        <p className="mt-6 text-gray-400 text-base md:text-lg lg:text-xl font-medium max-w-3xl text-center leading-relaxed">
+          RIT's student-led cloud community powered by AWS. Explore Cloud Computing, AWS and DevOps through hands-on sessions, technical workshops and collaborative projects.
         </p>
 
         {/* Action Buttons */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
             to="/contact"
-            className="bg-sbg-green text-black font-bold px-6 py-2.5 rounded-full hover:bg-[#00c972] transition-all shadow-lg shadow-sbg-green/20 active:scale-95"
+            className="bg-sbg-green text-black font-bold px-7 py-3 rounded-full hover:bg-[#00c972] transition-all shadow-lg shadow-sbg-green/20 active:scale-95 text-sm"
           >
             Join Now
           </Link>
           <Link
             to="/events"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold text-gray-300 border border-gray-500 hover:border-sbg-green hover:text-sbg-green transition-all duration-200 active:scale-95 bg-white/5"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-semibold text-gray-300 border border-gray-500 hover:border-sbg-green hover:text-sbg-green transition-all duration-200 active:scale-95 bg-white/5"
           >
             Explore Events
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-
-        {/* Honest Stats Strip */}
-        <div className="mt-12 inline-flex flex-wrap items-center justify-center gap-3 md:gap-6 px-6 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-400">
-          {STATS.map((stat, i) => (
-            <div key={stat} className="flex items-center gap-3">
-              {i > 0 && <span className="text-gray-600 hidden sm:inline">•</span>}
-              <span className="text-gray-300 font-semibold">{stat}</span>
-            </div>
-          ))}
-        </div>
       </section>
 
-      {/* Floating Feature Highlights — 4 Columns */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+      {/* "Why Build With Us" Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <span className="text-xs font-mono font-bold uppercase tracking-[0.25em] text-sbg-green mb-2 block">
-            CORE FOCUS AREAS
+            WHY BUILD WITH US
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-white">
-            What We Build
+          <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
+            Learn, Practice &amp; Ship Together
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURES.map((f) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {WHY_BUILD_CARDS.map((card) => (
             <div
-              key={f.id}
-              className="relative flex flex-col items-start p-7 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl hover:-translate-y-1 group"
+              key={card.id}
+              className="bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:p-8 hover:border-sbg-green/50 transition-all duration-300 flex flex-col justify-between group shadow-xl"
             >
-              <div
-                className="w-13 h-13 rounded-2xl flex items-center justify-center mb-5 flex-shrink-0"
-                style={{ background: f.accent }}
-              >
-                {f.icon}
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  {card.icon}
+                </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-sbg-green transition-colors">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-gray-400 leading-relaxed font-sans">
+                  {card.text}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sbg-green transition-colors">
-                {f.title}
-              </h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                {f.description}
-              </p>
+
+              {/* Tag Pills */}
+              <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-white/5">
+                {card.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] font-mono text-sbg-green tracking-wide"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Next Event Teaser Card */}
+      {/* Events Spotlight */}
       <section className="relative z-10 max-w-4xl mx-auto px-6 pb-16">
         <Link
           to="/events"
-          className="group block p-6 md:p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 shadow-xl"
+          className="group block bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:p-8 hover:border-sbg-green/50 transition-all duration-300 shadow-xl"
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-sbg-green uppercase tracking-wider">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Next Upcoming Workshop</span>
+                <span>EVENTS SPOTLIGHT</span>
               </div>
               <h3 className="text-xl font-bold text-white group-hover:text-sbg-green transition-colors">
-                AWS Cloud Practitioner Essentials Bootcamp
+                Upcoming AWS Workshops &amp; Hackathons
               </h3>
               <p className="text-xs text-gray-400">
-                August 30, 2026 · Hands-on EC2 &amp; S3 lab session at RIT Tech Lab.
+                Join our hands-on sessions, certification bootcamps, and technical sprints at RIT.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 text-xs font-mono font-bold text-sbg-green group-hover:translate-x-1 transition-transform flex-shrink-0">
-              View Events &amp; Register <ArrowRight className="w-4 h-4" />
+              Explore All Events <ArrowRight className="w-4 h-4" />
             </span>
           </div>
         </Link>

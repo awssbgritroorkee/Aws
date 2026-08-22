@@ -23,8 +23,16 @@ const InstagramIcon = (props) => (
 );
 
 const Footer = () => (
-  <footer className="bg-[#10151c] border-t border-white/5 pt-16 pb-6">
-    <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
+  <footer className="bg-[#10151c] border-t border-white/5 mt-8 pt-6 pb-6">
+    <div className="max-w-7xl mx-auto px-6">
+      {/* Tagline Banner */}
+      <div className="pb-6 mb-6 border-b border-white/10 w-full flex justify-center items-center overflow-hidden">
+        <span className="text-[clamp(1.5rem,5vw,4rem)] font-black tracking-widest text-white/80 whitespace-nowrap text-center w-full font-mono uppercase block">
+          BUILD. DEPLOY. GROW.
+        </span>
+      </div>
+
+      <div className="pt-4 w-full grid grid-cols-1 md:grid-cols-4 gap-8">
       {/* Top/Left: Logo + Tagline */}
       <div className="md:col-span-1 space-y-4">
         <Link to="/" className="flex items-center gap-2.5 group">
@@ -125,9 +133,10 @@ const Footer = () => (
         </a>
       </div>
     </div>
+  </div>
 
-    {/* Bottom Copyright Bar */}
-    <div className="mt-16 pt-6 border-t border-white/10 text-center text-sm text-gray-500">
+  {/* Bottom Copyright Bar */}
+    <div className="mt-6 pt-4 border-t border-white/10 text-center text-sm text-gray-500">
       © 2026 AWS SBG RIT
     </div>
   </footer>
