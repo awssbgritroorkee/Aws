@@ -46,17 +46,18 @@ cloudinary.config(
     secure=True
 )
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'config.storage.SafeCloudinaryStorage'
 MEDIA_URL = '/media/'
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "config.storage.SafeCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
 
 # ── Static files (WhiteNoise) ─────────────────────────────────────────────────
 STATIC_URL = '/static/'
