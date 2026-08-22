@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Camera, X, Maximize2, Calendar } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://aws-swae.onrender.com';
 
 const formatDate = (dateString) => {
   if (!dateString) return '';

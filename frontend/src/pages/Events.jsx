@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle2, ExternalLink, ArrowRight } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://aws-swae.onrender.com';
 
 const STATUS_TABS = ['All', 'Upcoming', 'Past'];
 

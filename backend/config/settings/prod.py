@@ -14,7 +14,12 @@ DATABASES = {
     )
 }
 
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if cors_env:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_env.split(',') if origin.strip()]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Render terminates SSL at the load balancer — Django must NOT redirect again
 # SECURE_SSL_REDIRECT would cause an infinite redirect loop on Render
