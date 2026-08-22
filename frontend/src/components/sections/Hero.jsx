@@ -107,7 +107,13 @@ const Hero = () => (
 
       {/* CTA buttons */}
       <div className="flex flex-wrap items-center justify-center gap-4 animate-fade-up anim-delay-300">
-        <a href="#contact" className="btn btn-solid" id="hero-join-btn">
+        <a
+          href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-solid"
+          id="hero-join-btn"
+        >
           Join Now
         </a>
         <a href="#projects" className="btn btn-ghost group" id="hero-explore-btn">

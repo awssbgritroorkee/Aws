@@ -63,12 +63,14 @@ const Home = () => {
 
         {/* Action Buttons */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            to="/contact"
+          <a
+            href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-sbg-green text-black font-bold px-7 py-3 rounded-full hover:bg-[#00c972] transition-all shadow-lg shadow-sbg-green/20 active:scale-95 text-sm"
           >
             Join Now
-          </Link>
+          </a>
           <Link
             to="/events"
             className="inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-semibold text-gray-300 border border-gray-500 hover:border-sbg-green hover:text-sbg-green transition-all duration-200 active:scale-95 bg-white/5"

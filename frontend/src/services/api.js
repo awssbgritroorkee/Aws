@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://aws-swae.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://aws-swae.onrender.com';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -21,5 +21,8 @@ export const createTeam = (data) => api.post('/api/teams/', data);
 
 // ── Members ──────────────────────────────────────────────────
 export const getMembers = () => api.get('/api/members/');
+
+// ── Contact ──────────────────────────────────────────────────
+export const createContactMessage = (data) => api.post('/api/contact/', data);
 
 export default api;

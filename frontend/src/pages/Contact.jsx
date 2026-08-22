@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Send, CheckCircle2, User, Mail, BookOpen, MessageSquare, HelpCircle, ChevronDown, ChevronUp, Calendar, ArrowRight } from 'lucide-react';
-import { createIdea } from '../services/api';
+import { Send, CheckCircle2, User, Mail, BookOpen, MessageSquare, HelpCircle, ChevronDown, ChevronUp, Calendar, ArrowRight, Phone } from 'lucide-react';
+import { createIdea, createContactMessage } from '../services/api';
 import usePageTitle from '../hooks/usePageTitle';
 
 const LinkedinIcon = (props) => (
@@ -16,8 +16,6 @@ const InstagramIcon = (props) => (
     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
   </svg>
 );
-
-const DOMAINS = ['Cloud & DevOps', 'Full-Stack Web', 'IoT & Hardware', 'AI & Machine Learning'];
 
 const FAQS = [
   {
@@ -45,37 +43,43 @@ const Contact = () => {
     name: '',
     year: '1st Year',
     email: '',
-    domains: [],
+    mobile: '',
     message: '',
   });
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [errorMessage, setErrorMessage] = useState('');
   const [openFaq, setOpenFaq] = useState(null);
-
-  const toggleDomain = (domain) => {
-    setForm((prev) => ({
-      ...prev,
-      domains: prev.domains.includes(domain)
-        ? prev.domains.filter((d) => d !== domain)
-        : [...prev.domains, domain],
-    }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
+    setErrorMessage('');
+
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      mobile: form.mobile.trim(),
+      year: form.year,
+      message: form.message.trim(),
+    };
+
     try {
-      await createIdea({
-        title: `[Application] ${form.name} (${form.year})`,
-        description: `Domains: ${form.domains.join(', ')}\n\nMessage: ${form.message}\n\nEmail: ${form.email}`,
-        author: form.name,
-        tags: ['application', form.year, ...form.domains],
-      });
+      console.log('Sending contact payload to /api/contact/:', payload);
+      await createContactMessage(payload);
       setStatus('success');
-      setForm({ name: '', year: '1st Year', email: '', domains: [], message: '' });
-    } catch {
-      // Fallback for demonstration when local DRF server is offline
-      setStatus('success');
-      setForm({ name: '', year: '1st Year', email: '', domains: [], message: '' });
+      setForm({ name: '', year: '1st Year', email: '', mobile: '', message: '' });
+    } catch (err) {
+      console.error('Contact Form API Error:', err);
+      if (err.response) {
+        console.error('Response Status:', err.response.status);
+        console.error('Response Data:', err.response.data);
+      }
+      setErrorMessage(
+        err.response?.data?.detail ||
+          (typeof err.response?.data === 'object' ? JSON.stringify(err.response.data) : null) ||
+          'Failed to send application. Please try again.'
+      );
+      setStatus('error');
     }
   };
 
@@ -129,6 +133,12 @@ const Contact = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 space-y-6 shadow-2xl">
+                {status === 'error' && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono">
+                    ⚠️ {errorMessage}
+                  </div>
+                )}
+
                 <div>
                   <label htmlFor="name" className="flex items-center gap-1.5 text-xs font-mono font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     <User className="w-3.5 h-3.5 text-sbg-green" />
@@ -181,30 +191,27 @@ const Contact = () => {
                   </div>
                 </div>
 
-                {/* Domain Interest Checkboxes */}
+                {/* Mobile Number Field */}
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                    Domains of Interest (Select All That Apply)
+                  <label htmlFor="mobile" className="flex items-center gap-1.5 text-xs font-mono font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                    <Phone className="w-3.5 h-3.5 text-sbg-green" />
+                    <span>Mobile Number *</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {DOMAINS.map((domain) => {
-                      const selected = form.domains.includes(domain);
-                      return (
-                        <button
-                          key={domain}
-                          type="button"
-                          onClick={() => toggleDomain(domain)}
-                          className={`p-3 rounded-xl text-xs font-mono text-left transition-all border ${
-                            selected
-                              ? 'bg-sbg-green/10 border-sbg-green text-sbg-green font-bold'
-                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                          }`}
-                        >
-                          {selected ? '✓ ' : '+ '} {domain}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <input
+                    id="mobile"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
+                    required
+                    placeholder="9876543210"
+                    value={form.mobile}
+                    onChange={(e) => {
+                      const numericOnly = e.target.value.replace(/[^0-9]/g, '');
+                      setForm((p) => ({ ...p, mobile: numericOnly }));
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-600 outline-none focus:border-sbg-green focus:ring-1 focus:ring-sbg-green/30 transition-all font-sans"
+                  />
                 </div>
 
                 <div>

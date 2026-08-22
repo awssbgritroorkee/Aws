@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createIdea } from '../../services/api';
+import { createContactMessage } from '../../services/api';
 
 const ContactSection = () => {
   const [form, setForm]     = useState({ name: '', email: '', message: '' });
@@ -9,18 +9,16 @@ const ContactSection = () => {
     e.preventDefault();
     setStatus('loading');
     try {
-      await createIdea({
-        title:       `[Contact] ${form.name}`,
-        description: `${form.message}\n\nFrom: ${form.email}`,
-        author:      form.name,
-        tags:        ['contact'],
+      await createContactMessage({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
       });
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
-    } catch {
-      // API might not be running — still show success for demo
-      setStatus('success');
-      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error('ContactSection submit error:', err);
+      setStatus('error');
     }
   };
 

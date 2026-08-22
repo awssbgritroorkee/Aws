@@ -10,18 +10,18 @@ class ContactMessageAdmin(ModelAdmin):
     warn_unsaved_form = False
 
     # ── List view ───────────────────────────────────────────────────────────
-    list_display        = ['name', 'email', 'year', 'domains_preview', 'created_at']
+    list_display        = ['name', 'email', 'mobile', 'year', 'created_at']
     list_filter         = ['year']
-    search_fields       = ['name', 'email']
+    search_fields       = ['name', 'email', 'mobile']
     ordering            = ['-created_at']
     date_hierarchy      = 'created_at'
 
     # All fields are read-only — messages come from the public form only
-    readonly_fields = ['name', 'email', 'message', 'year', 'domains', 'created_at']
+    readonly_fields = ['name', 'email', 'mobile', 'message', 'year', 'domains', 'created_at']
 
     fieldsets = (
         ('👤 Applicant', {
-            'fields': ('name', 'email', 'year'),
+            'fields': ('name', 'email', 'mobile', 'year'),
         }),
         ('📝 Message', {
             'fields': ('message', 'domains'),
@@ -30,12 +30,6 @@ class ContactMessageAdmin(ModelAdmin):
             'fields': ('created_at',),
         }),
     )
-
-    @admin.display(description='Domains')
-    def domains_preview(self, obj):
-        if obj.domains:
-            return ', '.join(obj.domains[:3]) + ('…' if len(obj.domains) > 3 else '')
-        return '—'
 
     def has_add_permission(self, request):
         """Messages come only from the public form — prevent manual creation."""

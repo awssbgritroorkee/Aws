@@ -66,13 +66,15 @@ const Navbar = () => {
 
       {/* ── Right — CTA ── */}
       <div className="flex items-center gap-3">
-        <Link
-          to="/contact"
+        <a
+          href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+          target="_blank"
+          rel="noopener noreferrer"
           id="nav-cta-btn"
           className="hidden sm:inline-flex items-center gap-2 bg-sbg-green text-black font-bold px-6 py-2.5 rounded-full hover:bg-[#00c972] transition-all"
         >
           Join Now
-        </Link>
+        </a>
 
         {/* Hamburger — mobile */}
         <button
@@ -116,13 +118,15 @@ const Navbar = () => {
               {label}
             </NavLink>
           ))}
-          <Link
-            to="/contact"
+          <a
+            href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center mt-3 bg-sbg-green text-black font-bold px-6 py-2.5 rounded-full hover:bg-[#00c972] transition-all"
           >
             Join Now
-          </Link>
+          </a>
         </div>
       )}
     </header>

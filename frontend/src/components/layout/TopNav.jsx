@@ -129,8 +129,9 @@ const TopNav = () => {
       {/* Right — CTA + hamburger */}
       <div className="flex items-center gap-3">
         <a
-          href="#contact"
-          onClick={(e) => { e.preventDefault(); handleNavClick('#contact'); }}
+          href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="hidden sm:inline-flex btn btn-purple text-xs px-4 py-2"
           id="nav-join-btn"
         >
@@ -166,8 +167,10 @@ const TopNav = () => {
             </a>
           ))}
           <a
-            href="#contact"
-            onClick={(e) => { e.preventDefault(); handleNavClick('#contact'); }}
+            href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuOpen(false)}
             className="btn btn-purple w-full justify-center mt-2 text-sm"
           >
             Join Now
