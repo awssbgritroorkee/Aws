@@ -15,7 +15,10 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-SECURE_SSL_REDIRECT = True
+
+# Render terminates SSL at the load balancer — Django must NOT redirect again
+# SECURE_SSL_REDIRECT would cause an infinite redirect loop on Render
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
@@ -24,3 +27,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True          # serve un-collected files as fallback
+WHITENOISE_AUTOREFRESH = True
