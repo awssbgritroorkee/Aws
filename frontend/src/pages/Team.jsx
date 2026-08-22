@@ -1,27 +1,29 @@
 import usePageTitle from '../hooks/usePageTitle';
 
-const LinkedinIcon = (props) => (
+const Linkedin = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-1.22.99-2.22 2.22-2.22s2.22 1 2.22 2.22v4.93h2.8M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
   </svg>
 );
 
-const GithubIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+const Instagram = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
   </svg>
 );
 
-const FACULTY_MEMBER = {
-  id: 'faculty',
-  initials: 'FA',
+const MEMBER = {
+  id: 'aditya-raj',
+  initials: 'AS',
   badge: '⭐ Advisor',
-  name: 'Faculty Coordinator',
-  role: 'Faculty Advisor',
+  name: 'Aditya Raj',
+  role: 'Group Lead & Faculty Advisor',
   bio: "Guiding the chapter's vision and ensuring institutional support for cloud innovation at RIT.",
   skills: ['Mentorship', 'Cloud Strategy'],
-  github: 'https://github.com',
   linkedin: 'https://linkedin.com',
+  instagram: 'https://instagram.com',
 };
 
 const Team = () => {
@@ -62,33 +64,31 @@ const Team = () => {
           </p>
         </div>
 
-        {/* Centered Faculty Coordinator Card */}
+        {/* Centered Profile Card */}
         <div className="flex justify-center max-w-md mx-auto mt-12">
-          <div
-            className="w-full border border-white/10 bg-[#10151c]/90 backdrop-blur-2xl rounded-3xl p-8 flex flex-col items-center text-center hover:border-sbg-green/30 transition-all shadow-xl group relative"
-          >
-            {/* Avatar Wrapper */}
+          <div className="relative flex flex-col items-center text-center bg-gradient-to-b from-[#10151c] to-aws-navy border border-white/10 rounded-3xl p-10 hover:border-sbg-green/50 hover:shadow-[0_0_30px_rgba(0,229,130,0.15)] transition-all duration-300">
+            {/* Avatar Upgrade */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-extrabold text-white bg-purple-600 shadow-lg group-hover:scale-105 transition-transform">
-                {FACULTY_MEMBER.initials}
+              <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-extrabold text-white bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-sbg-green/50 p-1 mb-6">
+                {MEMBER.initials}
               </div>
-              <span className="absolute -top-2 -right-4 bg-sbg-green text-black px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
-                {FACULTY_MEMBER.badge}
+              <span className="absolute -top-2 -right-4 bg-sbg-green text-black font-bold shadow-lg px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
+                {MEMBER.badge}
               </span>
             </div>
 
             {/* Name & Role */}
-            <h2 className="text-2xl font-bold text-white mt-6">{FACULTY_MEMBER.name}</h2>
-            <p className="text-sm font-mono text-sbg-green mt-1">{FACULTY_MEMBER.role}</p>
+            <h2 className="text-2xl font-bold text-white mt-2">{MEMBER.name}</h2>
+            <p className="text-sm font-mono text-sbg-green mt-1">{MEMBER.role}</p>
 
             {/* Description */}
             <p className="text-gray-400 text-xs md:text-sm mt-4 max-w-xs leading-relaxed">
-              {FACULTY_MEMBER.bio}
+              {MEMBER.bio}
             </p>
 
             {/* Skill Pills */}
             <div className="flex flex-wrap justify-center gap-2 mt-5">
-              {FACULTY_MEMBER.skills.map((skill) => (
+              {MEMBER.skills.map((skill) => (
                 <span
                   key={skill}
                   className="px-3 py-1 border border-white/15 bg-white/5 rounded-full text-xs text-gray-300 font-mono"
@@ -101,22 +101,20 @@ const Team = () => {
             {/* Social Icons */}
             <div className="flex items-center gap-4 mt-6 text-gray-400">
               <a
-                href={FACULTY_MEMBER.github}
+                href={MEMBER.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${FACULTY_MEMBER.name} GitHub`}
-                className="hover:text-white transition-colors"
+                aria-label={`${MEMBER.name} LinkedIn`}
               >
-                <GithubIcon className="w-5 h-5" />
+                <Linkedin className="w-5 h-5 hover:text-blue-500 cursor-pointer transition-colors" />
               </a>
               <a
-                href={FACULTY_MEMBER.linkedin}
+                href={MEMBER.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${FACULTY_MEMBER.name} LinkedIn`}
-                className="hover:text-white transition-colors"
+                aria-label={`${MEMBER.name} Instagram`}
               >
-                <LinkedinIcon className="w-5 h-5" />
+                <Instagram className="w-5 h-5 hover:text-pink-500 cursor-pointer transition-colors" />
               </a>
             </div>
           </div>

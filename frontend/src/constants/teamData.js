@@ -1,10 +1,10 @@
 export const CORE_TEAM = [
   {
     id: 1,
-    name: 'Rahul Kumar',
+    name: 'Aditya Raj',
     role: 'Group Lead',
     tagline: 'Cloud Architecture & DevOps',
-    initials: 'RK',
+    initials: 'AR',
     color: 'from-sbg-purple to-sbg-purple-dark',
     skills: ['AWS', 'Cloud Infra', 'DevOps', 'Python'],
     linkedin: '#',

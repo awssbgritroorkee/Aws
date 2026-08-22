@@ -4,12 +4,10 @@ from .serializers import MemberSerializer
 
 
 class MemberListView(generics.ListAPIView):
-    """GET /api/members/ — read-only public listing"""
-    queryset         = Member.objects.all()
-    serializer_class = MemberSerializer
-
-
-class MemberDetailView(generics.RetrieveAPIView):
-    """GET /api/members/<pk>/"""
+    """
+    GET /api/members/
+    Returns all team members ordered by priority_order then name.
+    Read-only — team management is done exclusively through Django Admin.
+    """
     queryset         = Member.objects.all()
     serializer_class = MemberSerializer

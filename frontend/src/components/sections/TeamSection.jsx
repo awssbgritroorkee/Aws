@@ -1,10 +1,10 @@
 const TEAM = [
   {
-    id: 'rahul',
-    name: 'Rahul Kumar',
+    id: 'aditya',
+    name: 'Aditya Raj',
     role: 'Group Lead',
     skills: ['AWS', 'DevOps', 'Cloud Infra'],
-    initials: 'RK',
+    initials: 'AR',
     gradient: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
     glowColor: 'rgba(124,58,237,0.5)',
     isLead: true,

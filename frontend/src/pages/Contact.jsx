@@ -285,7 +285,7 @@ const Contact = () => {
                 Direct Mentorship
               </h4>
               <p className="text-xs text-gray-300 leading-relaxed">
-                Have questions about AWS Cloud Practitioner certification path? Reach out to our Group Lead Rahul Kumar at the Friday meetup sessions.
+                Have questions about the AWS Cloud Practitioner certification path or chapter initiatives? Reach out to our Group Lead, Aditya Raj.
               </p>
             </div>
           </div>

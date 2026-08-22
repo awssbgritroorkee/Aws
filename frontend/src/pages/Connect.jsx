@@ -9,7 +9,7 @@ import IdeaCard from '../components/shared/IdeaCard';
 // ── Placeholder ideas shown when API is unavailable ──────────────────────
 const PLACEHOLDER_IDEAS = [
   { id: 1, title: 'AWS IoT Campus Monitor', description: 'Deploy IoT sensors across campus to monitor energy usage and map it to an AWS dashboard in real-time.', author: 'Ranvijay', tags: ['IoT', 'AWS IoT Core', 'Lambda'], votes: 14, created_at: '2026-08-10' },
-  { id: 2, title: 'Serverless Exam Portal', description: 'Build a zero-ops exam portal using AWS Lambda, DynamoDB, and S3 for question paper storage.', author: 'Rahul Kumar', tags: ['Serverless', 'DynamoDB', 'S3'], votes: 11, created_at: '2026-08-12' },
+  { id: 2, title: 'Serverless Exam Portal', description: 'Build a zero-ops exam portal using AWS Lambda, DynamoDB, and S3 for question paper storage.', author: 'Aditya Raj', tags: ['Serverless', 'DynamoDB', 'S3'], votes: 11, created_at: '2026-08-12' },
   { id: 3, title: 'ML Placement Predictor', description: 'Train an ML model on historical placement data to predict student placement probability.', author: 'Aashish', tags: ['ML', 'SageMaker', 'Python'], votes: 9, created_at: '2026-08-14' },
 ];
 

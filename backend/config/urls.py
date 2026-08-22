@@ -1,11 +1,18 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # ── Existing endpoints ────────────────────────────────────────────────────
     path('api/ideas/',   include('apps.ideas.urls')),
     path('api/teams/',   include('apps.teams.urls')),
+
+    # ── Team & People ─────────────────────────────────────────────────────────
     path('api/members/', include('apps.members.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # ── New dynamic content endpoints ─────────────────────────────────────────
+    path('api/events/',  include('apps.events.urls')),
+    path('api/gallery/', include('apps.gallery.urls')),
+    path('api/contact/', include('apps.contact.urls')),
+]
