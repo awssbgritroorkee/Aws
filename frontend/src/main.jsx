@@ -1,9 +1,11 @@
-// Developer Signature
-const signatureStyle = "color: #00ff00; font-size: 16px; font-weight: bold; background: #111; padding: 12px; border-radius: 6px; border: 1px solid #00ff00; font-family: monospace;";
+// Minimalist Developer Signature Badge
+const nameStyle = "color: #ffffff; font-size: 12px; font-weight: bold; background: #1a1a1a; padding: 4px 8px; border-radius: 4px 0 0 4px; font-family: sans-serif;";
+const roleStyle = "color: #ffffff; font-size: 12px; font-weight: bold; background: #007bff; padding: 4px 8px; border-radius: 0 4px 4px 0; font-family: sans-serif;";
 
 console.log(
-  "%c🚀 Built & Engineered by Rahul Kumar 🚀",
-  signatureStyle
+  "%cBuilt & Engineered by Rahul Kumar%cTech Lead",
+  nameStyle,
+  roleStyle
 );
 
 import { StrictMode } from 'react'
