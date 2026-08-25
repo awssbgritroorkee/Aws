@@ -1,4 +1,6 @@
+import os
 import logging
+import threading
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -8,10 +10,36 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+class EmailThread(threading.Thread):
+    """
+    Background Thread to execute send_mail asynchronously.
+    Prevents blocking the main Gunicorn worker thread during user registration / social login.
+    """
+    def __init__(self, subject, message, from_email, recipient_list):
+        self.subject = subject
+        self.message = message
+        self.from_email = from_email
+        self.recipient_list = recipient_list
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            send_mail(
+                subject=self.subject,
+                message=self.message,
+                from_email=self.from_email,
+                recipient_list=self.recipient_list,
+                fail_silently=True,
+            )
+            logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
+        except Exception as exc:
+            logger.error(f"Background email sending failed for {self.recipient_list}: {exc}")
+
+
 @receiver(post_save, sender=User)
 def send_welcome_email(sender, instance, created, **kwargs):
     """
-    Automated signal: Sends a welcome email when a new user registers or signs in via Google OAuth.
+    Automated signal: Instantiates EmailThread to send welcome email in background when created=True.
     """
     if created and instance.email:
         subject = "Welcome to AWS Student Builder Group - RIT Roorkee!"
@@ -30,16 +58,16 @@ def send_welcome_email(sender, instance, created, **kwargs):
             "RIT Roorkee"
         )
         
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'AWS SBG <noreply@awssbg.com>')
+        from_email = getattr(
+            settings,
+            'DEFAULT_FROM_EMAIL',
+            getattr(settings, 'EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>')
+        )
         
-        try:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=from_email,
-                recipient_list=[instance.email],
-                fail_silently=True,
-            )
-            logger.info(f"Welcome email successfully dispatched to {instance.email}")
-        except Exception as exc:
-            logger.error(f"Failed to send welcome email to {instance.email}: {exc}")
+        # Offload email sending to background thread
+        EmailThread(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=[instance.email],
+        ).start()

@@ -32,25 +32,25 @@ def send_bulk_notification(modeladmin, request, queryset):
         "RIT Roorkee"
     )
     
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'AWS SBG <noreply@awssbg.com>')
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>'))
 
     try:
-        sent_count = send_mail(
+        from .signals import EmailThread
+        EmailThread(
             subject=subject,
             message=message,
             from_email=from_email,
             recipient_list=recipients,
-            fail_silently=False,
-        )
+        ).start()
         modeladmin.message_user(
             request,
-            f"Successfully sent bulk email notification to {sent_count} user(s).",
+            f"Bulk notification thread started for {len(recipients)} user(s).",
             level=messages.SUCCESS
         )
     except Exception as exc:
         modeladmin.message_user(
             request,
-            f"Failed to send bulk email: {str(exc)}",
+            f"Failed to initiate bulk email thread: {str(exc)}",
             level=messages.ERROR
         )
 
