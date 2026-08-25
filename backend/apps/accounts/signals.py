@@ -24,16 +24,19 @@ class EmailThread(threading.Thread):
 
     def run(self):
         try:
+            print(f"Attempting to send email to {self.recipient_list}...")
             send_mail(
-                subject=self.subject,
-                message=self.message,
-                from_email=self.from_email,
-                recipient_list=self.recipient_list,
-                fail_silently=True,
+                self.subject,
+                self.message,
+                getattr(settings, 'EMAIL_HOST_USER', self.from_email),
+                self.recipient_list,
+                fail_silently=False,
             )
+            print(f"Email sent successfully to {self.recipient_list}!")
             logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
-        except Exception as exc:
-            logger.error(f"Background email sending failed for {self.recipient_list}: {exc}")
+        except Exception as e:
+            print(f"EMAIL FAILED for {self.recipient_list}: {e}")
+            logger.error(f"Background email sending failed for {self.recipient_list}: {e}")
 
 
 @receiver(post_save, sender=User)
