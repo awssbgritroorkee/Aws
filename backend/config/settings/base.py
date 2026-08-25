@@ -153,6 +153,17 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_STORE_TOKENS = True
 SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomSocialAccountAdapter'
 
+# ── CORS & CSRF Configuration ────────────────────────────────────────────────
+CORS_ALLOWED_ORIGINS = [
+    "https://aws-red.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://aws-red.vercel.app",
+]
+
 # ── SMTP Email Backend ───────────────────────────────────────────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

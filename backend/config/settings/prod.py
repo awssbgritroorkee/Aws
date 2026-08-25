@@ -5,7 +5,7 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'aws-swae.onrender.com').split(',')
+ALLOWED_HOSTS = ['*']
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -29,8 +29,27 @@ else:
 cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
 if cors_env:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_env.split(',') if origin.strip()]
+    for origin in ["https://aws-red.vercel.app", "http://localhost:5173", "http://127.0.0.1:5173"]:
+        if origin not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(origin)
 else:
-    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOWED_ORIGINS = [
+        "https://aws-red.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_env.split(',') if origin.strip()]
+    if "https://aws-red.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append("https://aws-red.vercel.app")
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://aws-red.vercel.app",
+    ]
 
 
 import os
