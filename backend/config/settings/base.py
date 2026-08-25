@@ -151,6 +151,7 @@ ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_STORE_TOKENS = True
+SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomSocialAccountAdapter'
 
 # ── SMTP Email Backend ───────────────────────────────────────────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
