@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import OriginalLogoMark from './OriginalLogoMark';
+import GoogleLoginButton from './GoogleLoginButton';
 
 const NAV_LINKS = [
   { label: 'Home',     to: '/' },
@@ -64,14 +65,15 @@ const Navbar = () => {
         ))}
       </nav>
 
-      {/* ── Right — CTA ── */}
+      {/* ── Right — Auth & CTA ── */}
       <div className="flex items-center gap-3">
+        <GoogleLoginButton />
         <a
           href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
           target="_blank"
           rel="noopener noreferrer"
           id="nav-cta-btn"
-          className="hidden sm:inline-flex items-center gap-2 bg-sbg-green text-black font-bold px-6 py-2.5 rounded-full hover:bg-[#00c972] transition-all"
+          className="hidden sm:inline-flex items-center gap-2 bg-sbg-green text-black font-bold px-5 py-2 rounded-full hover:bg-[#00c972] transition-all text-xs md:text-sm"
         >
           Join Now
         </a>
@@ -94,7 +96,7 @@ const Navbar = () => {
       {/* ── Mobile drawer ── */}
       {menuOpen && (
         <div
-          className="absolute top-full inset-x-0 md:hidden py-3 px-4"
+          className="absolute top-full inset-x-0 md:hidden py-3 px-4 flex flex-col gap-2"
           style={{
             background: 'rgba(22, 29, 38, 0.97)',
             border: '1px solid rgba(255,255,255,0.07)',
@@ -118,15 +120,18 @@ const Navbar = () => {
               {label}
             </NavLink>
           ))}
-          <a
-            href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center mt-3 bg-sbg-green text-black font-bold px-6 py-2.5 rounded-full hover:bg-[#00c972] transition-all"
-          >
-            Join Now
-          </a>
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-3">
+            <GoogleLoginButton />
+            <a
+              href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="flex-1 flex items-center justify-center bg-sbg-green text-black font-bold px-5 py-2.5 rounded-full hover:bg-[#00c972] transition-all text-xs"
+            >
+              Join Now
+            </a>
+          </div>
         </div>
       )}
     </header>

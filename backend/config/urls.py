@@ -10,6 +10,9 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
+    # ── Authentication & Social Login ─────────────────────────────────────────
+    path('api/auth/',    include('apps.accounts.urls')),
+
     # ── Existing endpoints ────────────────────────────────────────────────────
     path('api/ideas/',   include('apps.ideas.urls')),
     path('api/teams/',   include('apps.teams.urls')),
