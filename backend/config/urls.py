@@ -12,6 +12,7 @@ urlpatterns = [
 
     # ── Authentication & Social Login ─────────────────────────────────────────
     path('api/auth/',    include('apps.accounts.urls')),
+    path('accounts/',    include('allauth.urls')),
 
     # ── Existing endpoints ────────────────────────────────────────────────────
     path('api/ideas/',   include('apps.ideas.urls')),
