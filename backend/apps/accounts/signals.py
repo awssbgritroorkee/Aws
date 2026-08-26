@@ -67,31 +67,50 @@ class EmailThread(threading.Thread):
 
         socket.getaddrinfo = ipv4_getaddrinfo
         try:
-            print(f"[EmailThread] Attempting to send email to {self.recipient_list}...", flush=True)
-            host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+            print(f"[EmailThread] Attempting welcome email dispatch to {self.recipient_list}...", flush=True)
 
-            # Dev fallback: If host_user is not configured and DEBUG is True, print email to console directly
-            if getattr(settings, 'DEBUG', False) and not host_user:
-                print("[EmailThread] EMAIL_HOST_USER not set in dev mode. Outputting email to console.", flush=True)
-                console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
-                self._dispatch(connection=console_conn)
-                print(f"[EmailThread] SUCCESS: Email printed to console for {self.recipient_list}!", flush=True)
-                return
+            host_user = getattr(settings, 'EMAIL_HOST_USER', '').strip()
+            host_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', '').strip()
+            is_dev    = getattr(settings, 'DEBUG', True)
+
+            # Check if full SMTP credentials (email + password) are available
+            if not (host_user and host_pass):
+                if is_dev:
+                    print(
+                        "[EmailThread] Notice: SMTP credentials (EMAIL_HOST_USER / EMAIL_HOST_PASSWORD) "
+                        "not configured in .env. Outputting email to console mode.",
+                        flush=True
+                    )
+                    console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
+                    self._dispatch(connection=console_conn)
+                    print(f"[EmailThread] SUCCESS: Welcome email rendered to console for {self.recipient_list}!", flush=True)
+                    return
+                else:
+                    print(
+                        f"[EmailThread] ERROR: Cannot send SMTP email to {self.recipient_list} — "
+                        "EMAIL_HOST_USER or EMAIL_HOST_PASSWORD is missing in production environment settings.",
+                        flush=True
+                    )
+                    return
 
             # Attempt primary SMTP dispatch
             try:
                 self._dispatch()
-                print(f"[EmailThread] SUCCESS: Email sent to {self.recipient_list}!", flush=True)
+                print(f"[EmailThread] SUCCESS: Email sent via SMTP to {self.recipient_list}!", flush=True)
                 logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
             except Exception as smtp_err:
-                # If in dev mode and SMTP fails (e.g. timeout, firewall block, unauth), fallback to console
-                if getattr(settings, 'DEBUG', False):
-                    print(f"[EmailThread] SMTP attempt failed ({smtp_err}). Falling back to console output in dev mode.", flush=True)
+                print(f"[EmailThread] SMTP dispatch issue ({smtp_err}).", flush=True)
+                if is_dev:
+                    print(
+                        "[EmailThread] Local network/firewall blocked SMTP port 587 (timed out). "
+                        "Falling back to console output for dev testing.",
+                        flush=True
+                    )
                     console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
                     self._dispatch(connection=console_conn)
-                    print(f"[EmailThread] SUCCESS (console fallback): Email printed for {self.recipient_list}!", flush=True)
+                    print(f"[EmailThread] SUCCESS (console fallback): Welcome email printed for {self.recipient_list}!", flush=True)
                 else:
-                    raise smtp_err
+                    logger.error(f"Background SMTP email sending failed for {self.recipient_list}: {smtp_err}")
 
         except Exception as e:
             print(f"[EmailThread] EMAIL FAILED for {self.recipient_list}: {e}", flush=True)
