@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, Mail, Briefcase, Tag, AlignLeft, Link2, Instagram, Star, Save, Camera, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { User, Mail, Briefcase, Tag, AlignLeft, Link2, Star, Save, Camera, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { getMyProfile, updateMyProfile } from '../services/api';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -340,7 +340,7 @@ const ProfileUpdate = () => {
               />
             </Field>
 
-            <Field label="Instagram URL" icon={Instagram}>
+            <Field label="Instagram URL" icon={Link2}>
               <input
                 id="profile-instagram"
                 type="url"
