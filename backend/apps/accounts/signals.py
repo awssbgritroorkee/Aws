@@ -1,10 +1,12 @@
 import os
+import sys
 import logging
+import socket
 import threading
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
 from django.utils.html import strip_tags
 from django.conf import settings
 
@@ -16,6 +18,7 @@ class EmailThread(threading.Thread):
     Background Thread to execute email sending asynchronously.
     Supports both plain text and HTML emails via EmailMultiAlternatives.
     Prevents blocking the main Gunicorn worker thread during user registration / social login.
+    Forces IPv4 address resolution to prevent dual-stack [Errno 101] Network is unreachable errors.
     """
     def __init__(self, subject, message, from_email, recipient_list, html_content=None):
         self.subject = subject
@@ -26,15 +29,38 @@ class EmailThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        if hasattr(sys.stdout, 'reconfigure'):
+            try:
+                sys.stdout.reconfigure(encoding='utf-8')
+            except Exception:
+                pass
+
+        # Force IPv4 socket resolution during SMTP dispatch to avoid dual-stack socket errors
+        orig_getaddrinfo = socket.getaddrinfo
+
+        def ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+            return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
         try:
-            print(f"Attempting to send email to {self.recipient_list}...", flush=True)
-            sender = getattr(settings, 'EMAIL_HOST_USER', self.from_email)
+            print(f"[EmailThread] Attempting to send email to {self.recipient_list}...", flush=True)
+            socket.getaddrinfo = ipv4_getaddrinfo
+
+            host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+            sender = host_user if host_user else self.from_email
+
+            # Dev fallback: If host_user is not configured and DEBUG is True, print email to console
+            connection = None
+            if getattr(settings, 'DEBUG', False) and not host_user:
+                print("[EmailThread] EMAIL_HOST_USER not set in dev mode. Outputting to console.", flush=True)
+                connection = get_connection('django.core.mail.backends.console.EmailBackend')
+
             if self.html_content:
                 msg = EmailMultiAlternatives(
                     self.subject,
                     self.message,
                     sender,
                     self.recipient_list,
+                    connection=connection,
                 )
                 msg.attach_alternative(self.html_content, "text/html")
                 msg.send(fail_silently=False)
@@ -44,13 +70,16 @@ class EmailThread(threading.Thread):
                     self.message,
                     sender,
                     self.recipient_list,
+                    connection=connection,
                     fail_silently=False,
                 )
-            print(f"Email sent successfully to {self.recipient_list}!", flush=True)
+            print(f"[EmailThread] SUCCESS: Email sent to {self.recipient_list}!", flush=True)
             logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
         except Exception as e:
-            print(f"EMAIL FAILED for {self.recipient_list}: {e}", flush=True)
+            print(f"[EmailThread] EMAIL FAILED for {self.recipient_list}: {e}", flush=True)
             logger.error(f"Background email sending failed for {self.recipient_list}: {e}")
+        finally:
+            socket.getaddrinfo = orig_getaddrinfo
 
 
 @receiver(post_save, sender=User)
