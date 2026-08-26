@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Event(models.Model):
@@ -21,6 +22,13 @@ class Event(models.Model):
                             default='upcoming',
                             db_index=True)
     registration_link = models.URLField(blank=True)
+    created_by        = models.ForeignKey(
+                            User,
+                            on_delete=models.SET_NULL,
+                            null=True,
+                            blank=True,
+                            related_name='events',
+                            help_text='User who created this event. Preserved if user is deleted.')
     created_at        = models.DateTimeField(auto_now_add=True)
 
     class Meta:

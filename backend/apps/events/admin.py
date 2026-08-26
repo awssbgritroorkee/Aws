@@ -19,15 +19,22 @@ class EventAdmin(ModelAdmin):
     search_fields       = ['title', 'description']
     ordering            = ['-date']
 
+    readonly_fields     = ['created_by']
+
     # ── Detail form ─────────────────────────────────────────────────────────
     fieldsets = (
         ('📅 Event Details', {
-            'fields': ('title', 'date', 'status', 'description', 'poster'),
+            'fields': ('title', 'date', 'status', 'description', 'poster', 'created_by'),
         }),
         ('🔗 Registration', {
             'fields': ('registration_link',),
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        if not change and not obj.created_by:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
     @display(description='Status', label={
         'upcoming': 'info',

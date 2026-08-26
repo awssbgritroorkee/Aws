@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class GalleryPhoto(models.Model):
@@ -8,6 +9,13 @@ class GalleryPhoto(models.Model):
     """
     title       = models.CharField(max_length=200, blank=True)
     image       = models.ImageField(upload_to='gallery/')
+    created_by  = models.ForeignKey(
+                    User,
+                    on_delete=models.SET_NULL,
+                    null=True,
+                    blank=True,
+                    related_name='gallery_photos',
+                    help_text='User who uploaded this photo. Preserved if user is deleted.')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

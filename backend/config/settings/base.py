@@ -242,7 +242,12 @@ UNFOLD = {
                 "title": "Dashboard",
                 "separator": False,
                 "items": [
-                    {"title": "Dashboard", "icon": "dashboard", "link": "/admin/"},
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": "/admin/",
+                        "permission": lambda request: request.user.is_staff or request.user.is_superuser,
+                    },
                 ],
             },
             # Platform Management: Users, Groups, Email Broadcasts
@@ -250,9 +255,24 @@ UNFOLD = {
                 "title": "Platform Management",
                 "separator": True,
                 "items": [
-                    {"title": "Users",            "icon": "manage_accounts", "link": "/admin/auth/user/"},
-                    {"title": "Groups",           "icon": "shield_person",   "link": "/admin/auth/group/"},
-                    {"title": "Email Broadcasts", "icon": "campaign",        "link": "/admin/accounts/emailbroadcast/"},
+                    {
+                        "title": "Users",
+                        "icon": "manage_accounts",
+                        "link": "/admin/auth/user/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Groups",
+                        "icon": "shield_person",
+                        "link": "/admin/auth/group/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Email Broadcasts",
+                        "icon": "campaign",
+                        "link": "/admin/accounts/emailbroadcast/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
                 ],
             },
             # Website Content: Events, Gallery Photos, Team Members
@@ -260,9 +280,24 @@ UNFOLD = {
                 "title": "Website Content",
                 "separator": True,
                 "items": [
-                    {"title": "Events",        "icon": "event",         "link": "/admin/events/event/"},
-                    {"title": "Gallery Photos","icon": "photo_library", "link": "/admin/gallery/galleryphoto/"},
-                    {"title": "Team Members",  "icon": "group",         "link": "/admin/members/member/"},
+                    {
+                        "title": "Events",
+                        "icon": "event",
+                        "link": "/admin/events/event/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
+                    },
+                    {
+                        "title": "Gallery Photos",
+                        "icon": "photo_library",
+                        "link": "/admin/gallery/galleryphoto/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryphoto'),
+                    },
+                    {
+                        "title": "Team Members",
+                        "icon": "group",
+                        "link": "/admin/members/member/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('members.view_member'),
+                    },
                 ],
             },
             # Communications & Socials: Contact Messages, Social Accounts, Social Applications
@@ -270,9 +305,24 @@ UNFOLD = {
                 "title": "Communications & Socials",
                 "separator": True,
                 "items": [
-                    {"title": "Contact Messages",   "icon": "mail",       "link": "/admin/contact/contactmessage/"},
-                    {"title": "Social Accounts",    "icon": "person_pin", "link": "/admin/socialaccount/socialaccount/"},
-                    {"title": "Social Applications","icon": "apps",       "link": "/admin/socialaccount/socialapp/"},
+                    {
+                        "title": "Contact Messages",
+                        "icon": "mail",
+                        "link": "/admin/contact/contactmessage/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('contact.view_contactmessage'),
+                    },
+                    {
+                        "title": "Social Accounts",
+                        "icon": "person_pin",
+                        "link": "/admin/socialaccount/socialaccount/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Social Applications",
+                        "icon": "apps",
+                        "link": "/admin/socialaccount/socialapp/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
                 ],
             },
             # System Architecture: Sites, Auth Tokens, Activity Logs
@@ -280,9 +330,24 @@ UNFOLD = {
                 "title": "System Architecture",
                 "separator": True,
                 "items": [
-                    {"title": "Sites",         "icon": "language", "link": "/admin/sites/site/"},
-                    {"title": "Auth Tokens",   "icon": "key",      "link": "/admin/authtoken/tokenproxy/"},
-                    {"title": "Activity Logs", "icon": "history",  "link": "/admin/admin/logentry/"},
+                    {
+                        "title": "Sites",
+                        "icon": "language",
+                        "link": "/admin/sites/site/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Auth Tokens",
+                        "icon": "key",
+                        "link": "/admin/authtoken/tokenproxy/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Activity Logs",
+                        "icon": "history",
+                        "link": "/admin/admin/logentry/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
                 ],
             },
         ],
@@ -294,18 +359,48 @@ UNFOLD = {
         {
             "models": ["auth.user", "auth.group", "accounts.emailbroadcast"],
             "items": [
-                {"title": "Users",            "link": "/admin/auth/user/",                "icon": "person"},
-                {"title": "Groups",           "link": "/admin/auth/group/",               "icon": "group"},
-                {"title": "Email Broadcasts", "link": "/admin/accounts/emailbroadcast/",  "icon": "campaign"},
+                {
+                    "title": "Users",
+                    "link": "/admin/auth/user/",
+                    "icon": "person",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Groups",
+                    "link": "/admin/auth/group/",
+                    "icon": "group",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Email Broadcasts",
+                    "link": "/admin/accounts/emailbroadcast/",
+                    "icon": "campaign",
+                    "permission": lambda request: request.user.is_superuser,
+                },
             ],
         },
         # Website Content tab group
         {
             "models": ["events.event", "gallery.galleryphoto", "members.member"],
             "items": [
-                {"title": "Events",         "link": "/admin/events/event/",         "icon": "event"},
-                {"title": "Gallery Photos", "link": "/admin/gallery/galleryphoto/", "icon": "photo_library"},
-                {"title": "Team Members",   "link": "/admin/members/member/",       "icon": "group"},
+                {
+                    "title": "Events",
+                    "link": "/admin/events/event/",
+                    "icon": "event",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
+                },
+                {
+                    "title": "Gallery Photos",
+                    "link": "/admin/gallery/galleryphoto/",
+                    "icon": "photo_library",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryphoto'),
+                },
+                {
+                    "title": "Team Members",
+                    "link": "/admin/members/member/",
+                    "icon": "group",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('members.view_member'),
+                },
             ],
         },
         # Communications & Socials tab group
@@ -316,18 +411,48 @@ UNFOLD = {
                 "socialaccount.socialapp",
             ],
             "items": [
-                {"title": "Contact Messages",   "link": "/admin/contact/contactmessage/",      "icon": "mail"},
-                {"title": "Social Accounts",    "link": "/admin/socialaccount/socialaccount/", "icon": "person_pin"},
-                {"title": "Social Applications","link": "/admin/socialaccount/socialapp/",     "icon": "apps"},
+                {
+                    "title": "Contact Messages",
+                    "link": "/admin/contact/contactmessage/",
+                    "icon": "mail",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('contact.view_contactmessage'),
+                },
+                {
+                    "title": "Social Accounts",
+                    "link": "/admin/socialaccount/socialaccount/",
+                    "icon": "person_pin",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Social Applications",
+                    "link": "/admin/socialaccount/socialapp/",
+                    "icon": "apps",
+                    "permission": lambda request: request.user.is_superuser,
+                },
             ],
         },
         # System Architecture tab group
         {
             "models": ["sites.site", "authtoken.tokenproxy", "admin.logentry"],
             "items": [
-                {"title": "Sites",         "link": "/admin/sites/site/",           "icon": "language"},
-                {"title": "Auth Tokens",   "link": "/admin/authtoken/tokenproxy/", "icon": "key"},
-                {"title": "Activity Logs", "link": "/admin/admin/logentry/",       "icon": "history"},
+                {
+                    "title": "Sites",
+                    "link": "/admin/sites/site/",
+                    "icon": "language",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Auth Tokens",
+                    "link": "/admin/authtoken/tokenproxy/",
+                    "icon": "key",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Activity Logs",
+                    "link": "/admin/admin/logentry/",
+                    "icon": "history",
+                    "permission": lambda request: request.user.is_superuser,
+                },
             ],
         },
     ],
