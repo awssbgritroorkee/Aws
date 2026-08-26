@@ -28,6 +28,30 @@ class EmailThread(threading.Thread):
         self.html_content = html_content
         threading.Thread.__init__(self)
 
+    def _dispatch(self, connection=None):
+        host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+        sender = host_user if host_user else self.from_email
+
+        if self.html_content:
+            msg = EmailMultiAlternatives(
+                self.subject,
+                self.message,
+                sender,
+                self.recipient_list,
+                connection=connection,
+            )
+            msg.attach_alternative(self.html_content, "text/html")
+            msg.send(fail_silently=False)
+        else:
+            send_mail(
+                self.subject,
+                self.message,
+                sender,
+                self.recipient_list,
+                connection=connection,
+                fail_silently=False,
+            )
+
     def run(self):
         if hasattr(sys.stdout, 'reconfigure'):
             try:
@@ -41,40 +65,34 @@ class EmailThread(threading.Thread):
         def ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
             return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
 
+        socket.getaddrinfo = ipv4_getaddrinfo
         try:
             print(f"[EmailThread] Attempting to send email to {self.recipient_list}...", flush=True)
-            socket.getaddrinfo = ipv4_getaddrinfo
-
             host_user = getattr(settings, 'EMAIL_HOST_USER', '')
-            sender = host_user if host_user else self.from_email
 
-            # Dev fallback: If host_user is not configured and DEBUG is True, print email to console
-            connection = None
+            # Dev fallback: If host_user is not configured and DEBUG is True, print email to console directly
             if getattr(settings, 'DEBUG', False) and not host_user:
-                print("[EmailThread] EMAIL_HOST_USER not set in dev mode. Outputting to console.", flush=True)
-                connection = get_connection('django.core.mail.backends.console.EmailBackend')
+                print("[EmailThread] EMAIL_HOST_USER not set in dev mode. Outputting email to console.", flush=True)
+                console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
+                self._dispatch(connection=console_conn)
+                print(f"[EmailThread] SUCCESS: Email printed to console for {self.recipient_list}!", flush=True)
+                return
 
-            if self.html_content:
-                msg = EmailMultiAlternatives(
-                    self.subject,
-                    self.message,
-                    sender,
-                    self.recipient_list,
-                    connection=connection,
-                )
-                msg.attach_alternative(self.html_content, "text/html")
-                msg.send(fail_silently=False)
-            else:
-                send_mail(
-                    self.subject,
-                    self.message,
-                    sender,
-                    self.recipient_list,
-                    connection=connection,
-                    fail_silently=False,
-                )
-            print(f"[EmailThread] SUCCESS: Email sent to {self.recipient_list}!", flush=True)
-            logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
+            # Attempt primary SMTP dispatch
+            try:
+                self._dispatch()
+                print(f"[EmailThread] SUCCESS: Email sent to {self.recipient_list}!", flush=True)
+                logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
+            except Exception as smtp_err:
+                # If in dev mode and SMTP fails (e.g. timeout, firewall block, unauth), fallback to console
+                if getattr(settings, 'DEBUG', False):
+                    print(f"[EmailThread] SMTP attempt failed ({smtp_err}). Falling back to console output in dev mode.", flush=True)
+                    console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
+                    self._dispatch(connection=console_conn)
+                    print(f"[EmailThread] SUCCESS (console fallback): Email printed for {self.recipient_list}!", flush=True)
+                else:
+                    raise smtp_err
+
         except Exception as e:
             print(f"[EmailThread] EMAIL FAILED for {self.recipient_list}: {e}", flush=True)
             logger.error(f"Background email sending failed for {self.recipient_list}: {e}")
