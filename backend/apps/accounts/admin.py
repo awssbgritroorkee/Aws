@@ -171,7 +171,7 @@ class BroadcastEmailThread(EmailThread):
             send_mail(
                 self.subject,
                 self.message,
-                getattr(settings, 'DEFAULT_FROM_EMAIL', 'awssbg@ritroorkee.com'),
+                getattr(settings, 'EMAIL_HOST_USER', self.from_email),
                 self.recipient_list,
                 fail_silently=True,   # never block the admin panel
             )
