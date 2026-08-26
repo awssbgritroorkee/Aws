@@ -176,12 +176,12 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>')
 
-# ── Django Unfold Admin Theme ─────────────────────────────────────────────────
+# Django Unfold Admin Theme
 UNFOLD = {
-    # ── Branding ──────────────────────────────────────────────────────────────
+    # Branding
     "SITE_TITLE": "AWS SBG",
     "SITE_HEADER": "AWS Student Builder Group",
-    "SITE_SUBHEADER": "RIT Roorkee · Admin Dashboard",
+    "SITE_SUBHEADER": "RIT Roorkee \u00b7 Admin Dashboard",
     "SITE_ICON": {
         "light": lambda request: "/static/logo.svg",
         "dark": lambda request: "/static/logo.svg",
@@ -194,16 +194,15 @@ UNFOLD = {
         },
     ],
 
-    # ── UX ────────────────────────────────────────────────────────────────────
-    "THEME": "dark",          # sets initial HTML class="dark" before Alpine loads
+    # UX
+    "THEME": "dark",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "SHOW_BACK_BUTTON": True,
 
-    # Force dark mode via localStorage before Alpine.js initialises
     "SCRIPTS": ["/static/admin/js/force-dark.js"],
 
-    # ── AWS Amber/Orange — oklch() format required by Unfold v0.91 ─────────────
+    # AWS Amber/Orange colors (oklch format required by Unfold v0.91)
     "COLORS": {
         "base": {
             "50":  "oklch(98.5% .002 247.839)",
@@ -219,7 +218,6 @@ UNFOLD = {
             "950": "oklch(13.0% .028 261.692)",
         },
         "primary": {
-            # Amber/Orange — AWS brand identity
             "50":  "oklch(98.7% .026 95.277)",
             "100": "oklch(97.3% .071 95.765)",
             "200": "oklch(94.5% .129 96.688)",
@@ -234,92 +232,102 @@ UNFOLD = {
         },
     },
 
-    # ── Structured Sidebar Navigation with Icons ───────────────────────────────
+    # Structured Sidebar Navigation
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": False,
         "navigation": [
+            # Overview
             {
-                "title": "📊 Overview",
+                "title": "Dashboard",
                 "separator": False,
                 "items": [
-                    {
-                        "title": "Dashboard",
-                        "icon": "dashboard",
-                        "link": "/admin/",
-                    },
-                    {
-                        "title": "Activity Logs",
-                        "icon": "history",
-                        "link": "/admin/admin/logentry/",
-                    },
+                    {"title": "Dashboard", "icon": "dashboard", "link": "/admin/"},
                 ],
             },
+            # Platform Management: Users, Groups, Email Broadcasts
             {
-                "title": "🎓 People",
+                "title": "Platform Management",
                 "separator": True,
                 "items": [
-                    {
-                        "title": "Team Members",
-                        "icon": "group",
-                        "link": "/admin/members/member/",
-                    },
-                    {
-                        "title": "Users",
-                        "icon": "manage_accounts",
-                        "link": "/admin/auth/user/",
-                    },
-                    {
-                        "title": "Groups",
-                        "icon": "shield_person",
-                        "link": "/admin/auth/group/",
-                    },
+                    {"title": "Users",            "icon": "manage_accounts", "link": "/admin/auth/user/"},
+                    {"title": "Groups",           "icon": "shield_person",   "link": "/admin/auth/group/"},
+                    {"title": "Email Broadcasts", "icon": "campaign",        "link": "/admin/accounts/emailbroadcast/"},
                 ],
             },
+            # Website Content: Events, Gallery Photos, Team Members
             {
-                "title": "📅 Events & Gallery",
+                "title": "Website Content",
                 "separator": True,
                 "items": [
-                    {
-                        "title": "Events",
-                        "icon": "event",
-                        "link": "/admin/events/event/",
-                    },
-                    {
-                        "title": "Gallery Photos",
-                        "icon": "photo_library",
-                        "link": "/admin/gallery/galleryphoto/",
-                    },
+                    {"title": "Events",        "icon": "event",         "link": "/admin/events/event/"},
+                    {"title": "Gallery Photos","icon": "photo_library", "link": "/admin/gallery/galleryphoto/"},
+                    {"title": "Team Members",  "icon": "group",         "link": "/admin/members/member/"},
                 ],
             },
+            # Communications & Socials: Contact Messages, Social Accounts, Social Applications
             {
-                "title": "📬 Inbox",
+                "title": "Communications & Socials",
                 "separator": True,
                 "items": [
-                    {
-                        "title": "Contact Messages",
-                        "icon": "mail",
-                        "link": "/admin/contact/contactmessage/",
-                    },
+                    {"title": "Contact Messages",   "icon": "mail",       "link": "/admin/contact/contactmessage/"},
+                    {"title": "Social Accounts",    "icon": "person_pin", "link": "/admin/socialaccount/socialaccount/"},
+                    {"title": "Social Applications","icon": "apps",       "link": "/admin/socialaccount/socialapp/"},
+                ],
+            },
+            # System Architecture: Sites, Auth Tokens, Activity Logs
+            {
+                "title": "System Architecture",
+                "separator": True,
+                "items": [
+                    {"title": "Sites",         "icon": "language", "link": "/admin/sites/site/"},
+                    {"title": "Auth Tokens",   "icon": "key",      "link": "/admin/authtoken/tokenproxy/"},
+                    {"title": "Activity Logs", "icon": "history",  "link": "/admin/admin/logentry/"},
                 ],
             },
         ],
     },
 
-    # ── Tabs (shown on model list pages) ──────────────────────────────────────
+    # Tabs shown on model list/detail pages
     "TABS": [
+        # Platform Management tab group
         {
-            "models": ["auth.user", "auth.group"],
+            "models": ["auth.user", "auth.group", "accounts.emailbroadcast"],
             "items": [
-                {"title": "Users",  "link": "/admin/auth/user/",  "icon": "person"},
-                {"title": "Groups", "link": "/admin/auth/group/", "icon": "group"},
+                {"title": "Users",            "link": "/admin/auth/user/",                "icon": "person"},
+                {"title": "Groups",           "link": "/admin/auth/group/",               "icon": "group"},
+                {"title": "Email Broadcasts", "link": "/admin/accounts/emailbroadcast/",  "icon": "campaign"},
             ],
         },
+        # Website Content tab group
         {
-            "models": ["events.event"],
+            "models": ["events.event", "gallery.galleryphoto", "members.member"],
             "items": [
-                {"title": "All Events",      "link": "/admin/events/event/",                  "icon": "event"},
-                {"title": "Gallery Photos",  "link": "/admin/gallery/galleryphoto/",           "icon": "photo_library"},
+                {"title": "Events",         "link": "/admin/events/event/",         "icon": "event"},
+                {"title": "Gallery Photos", "link": "/admin/gallery/galleryphoto/", "icon": "photo_library"},
+                {"title": "Team Members",   "link": "/admin/members/member/",       "icon": "group"},
+            ],
+        },
+        # Communications & Socials tab group
+        {
+            "models": [
+                "contact.contactmessage",
+                "socialaccount.socialaccount",
+                "socialaccount.socialapp",
+            ],
+            "items": [
+                {"title": "Contact Messages",   "link": "/admin/contact/contactmessage/",      "icon": "mail"},
+                {"title": "Social Accounts",    "link": "/admin/socialaccount/socialaccount/", "icon": "person_pin"},
+                {"title": "Social Applications","link": "/admin/socialaccount/socialapp/",     "icon": "apps"},
+            ],
+        },
+        # System Architecture tab group
+        {
+            "models": ["sites.site", "authtoken.tokenproxy", "admin.logentry"],
+            "items": [
+                {"title": "Sites",         "link": "/admin/sites/site/",           "icon": "language"},
+                {"title": "Auth Tokens",   "link": "/admin/authtoken/tokenproxy/", "icon": "key"},
+                {"title": "Activity Logs", "link": "/admin/admin/logentry/",       "icon": "history"},
             ],
         },
     ],

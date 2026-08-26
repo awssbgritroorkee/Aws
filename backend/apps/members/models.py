@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Member(models.Model):
@@ -6,7 +7,25 @@ class Member(models.Model):
     Represents a team member shown on the /team page.
     priority_order controls display order: lower numbers appear first,
     ensuring leadership (e.g. Aditya Raj) is always pinned at the top.
+
+    The `user` OneToOneField is the cornerstone of the Permission Gateway:
+    only users linked to a Member profile can be granted is_staff,
+    is_superuser, or group/permission assignments via the admin panel.
     """
+    # ── Permission Gateway Link ────────────────────────────────────────────────
+    user = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='team_profile',
+        help_text=(
+            'Link this team member to a Django user account. '
+            'Only linked users can be granted admin permissions (is_staff / is_superuser).'
+        ),
+    )
+
+    # ── Public Profile Fields ──────────────────────────────────────────────────
     name           = models.CharField(max_length=100)
     role           = models.CharField(max_length=100)
     badge          = models.CharField(
@@ -29,4 +48,5 @@ class Member(models.Model):
         verbose_name_plural = 'Team Members'
 
     def __str__(self):
-        return f'{self.name} ({self.role})'
+        linked = f' → @{self.user.username}' if self.user_id else ''
+        return f'{self.name} ({self.role}){linked}'

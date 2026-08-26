@@ -21,6 +21,14 @@ class MemberAdmin(ModelAdmin):
 
     # ── Detail form ─────────────────────────────────────────────────────────
     fieldsets = (
+        ('🔐 Permission Gateway', {
+            'fields': ('user',),
+            'description': (
+                'Link a Django user account to this team member. '
+                'Once linked, that user can be granted is_staff / is_superuser '
+                'from the Users admin panel.'
+            ),
+        }),
         ('👤 Identity', {
             'fields': ('name', 'role', 'badge', 'tagline', 'bio', 'image'),
         }),
