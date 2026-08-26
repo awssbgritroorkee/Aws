@@ -69,6 +69,19 @@ export const createTeam = (data) => api.post('/api/teams/', data);
 // ── Members ──────────────────────────────────────────────────────────────────
 export const getMembers = () => api.get('/api/members/');
 
+// ── My Profile (authenticated Team Member) ────────────────────────────────────
+/** GET  /api/members/my-profile/ — fetch own TeamMember profile */
+export const getMyProfile = () => api.get('/api/members/my-profile/');
+
+/** PATCH /api/members/my-profile/ — update editable profile fields.
+ *  Pass a plain object for JSON fields, or a FormData for image uploads. */
+export const updateMyProfile = (data) => {
+  const isFormData = data instanceof FormData;
+  return api.patch('/api/members/my-profile/', data, {
+    headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
+  });
+};
+
 // ── Contact ──────────────────────────────────────────────────────────────────
 export const createContactMessage = (data) => api.post('/api/contact/', data);
 

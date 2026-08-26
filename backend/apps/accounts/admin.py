@@ -8,59 +8,6 @@ from .models import EmailBroadcast
 from .signals import EmailThread
 
 
-# ── Bulk Notification Action ──────────────────────────────────────────────────
-
-@admin.action(description="📧 Send Bulk Notification Email")
-def send_bulk_notification(modeladmin, request, queryset):
-    """
-    Custom Django Admin Action: Bulk send notification emails to selected users.
-    """
-    recipients = [user.email for user in queryset if user.email]
-
-    if not recipients:
-        modeladmin.message_user(
-            request,
-            "None of the selected users have a valid email address.",
-            level=messages.WARNING
-        )
-        return
-
-    subject = "Important Update from AWS Student Builder Group - RIT Roorkee"
-    message = (
-        "Hello Builders,\n\n"
-        "This is an official announcement from the AWS Student Builder Group at RIT Roorkee.\n\n"
-        "We have exciting upcoming workshops, cloud computing sessions, and project opportunities planned for our community. "
-        "Stay active and check our platform regularly for updates!\n\n"
-        "Happy Learning & Building,\n"
-        "AWS Student Builder Group Team\n"
-        "RIT Roorkee"
-    )
-
-    from_email = getattr(
-        settings, 'DEFAULT_FROM_EMAIL',
-        getattr(settings, 'EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>')
-    )
-
-    try:
-        EmailThread(
-            subject=subject,
-            message=message,
-            from_email=from_email,
-            recipient_list=recipients,
-        ).start()
-        modeladmin.message_user(
-            request,
-            f"Bulk notification thread started for {len(recipients)} user(s).",
-            level=messages.SUCCESS
-        )
-    except Exception as exc:
-        modeladmin.message_user(
-            request,
-            f"Failed to initiate bulk email thread: {str(exc)}",
-            level=messages.ERROR
-        )
-
-
 # ── User Admin ────────────────────────────────────────────────────────────────
 
 # Unregister default Django User admin
@@ -79,7 +26,7 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
       are READ-ONLY unless the user has a verified TeamMember (team_profile) link.
     - Existing superusers always bypass the gateway so they can't self-lockout.
     """
-    actions = [send_bulk_notification]
+    actions = []
     compressed_fields = True
 
     # ── List view ─────────────────────────────────────────────────────────────

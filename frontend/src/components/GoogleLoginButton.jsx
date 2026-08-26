@@ -6,11 +6,24 @@ import { getUserContext } from '../services/api';
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-// ── Group → admin dashboard URL mapping ──────────────────────────────────────
+// ── SSO bridge URL builder ────────────────────────────────────────────────────
+// Builds a URL to the Admin SSO endpoint, passing the current auth token so
+// the backend can establish a session cookie and redirect into the admin panel.
+const ssoUrl = (nextAdminPath = '/admin/') => {
+  const token = localStorage.getItem('auth_token') || '';
+  const base  = import.meta.env.VITE_API_URL ||
+                import.meta.env.VITE_API_BASE_URL ||
+                'https://aws-swae.onrender.com';
+  const next  = encodeURIComponent(nextAdminPath);
+  return `${base}/api/auth/admin-sso/?token=${token}&next=${next}`;
+};
+
+// ── Group → admin dashboard path mapping ─────────────────────────────────────
+// `path` is the Django admin sub-path that the SSO bridge will redirect to.
 const GROUP_DASHBOARDS = {
   'Event Managers': {
     label: 'Event Manager Dashboard',
-    url: 'https://aws-swae.onrender.com/admin/events/event/',
+    path: '/admin/events/event/',
     icon: (
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -22,7 +35,7 @@ const GROUP_DASHBOARDS = {
   },
   'Gallery Managers': {
     label: 'Gallery Dashboard',
-    url: 'https://aws-swae.onrender.com/admin/gallery/galleryphoto/',
+    path: '/admin/gallery/galleryphoto/',
     icon: (
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -33,7 +46,7 @@ const GROUP_DASHBOARDS = {
   },
   'Content Managers': {
     label: 'Content Dashboard',
-    url: 'https://aws-swae.onrender.com/admin/',
+    path: '/admin/',
     icon: (
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -361,7 +374,7 @@ const GoogleLoginButton = () => {
               {/* Superuser Dashboard */}
               {isSuper && (
                 <DropdownLink
-                  href="https://aws-swae.onrender.com/admin/"
+                  href={ssoUrl('/admin/')}
                   icon={<IconShield />}
                   label="Superuser Dashboard"
                   highlight
@@ -372,7 +385,7 @@ const GoogleLoginButton = () => {
               {groupDashboards.map((dash) => (
                 <DropdownLink
                   key={dash.label}
-                  href={dash.url}
+                  href={ssoUrl(dash.path)}
                   icon={dash.icon}
                   label={dash.label}
                 />

@@ -8,6 +8,7 @@ import Events             from './pages/Events';
 import Team               from './pages/Team';
 import Gallery            from './pages/Gallery';
 import Contact            from './pages/Contact';
+import ProfileUpdate      from './pages/ProfileUpdate';
 
 const App = () => (
   <BrowserRouter>
@@ -16,14 +17,15 @@ const App = () => (
       <Navbar />
       <main id="main-content" tabIndex="-1" className="flex-grow flex flex-col">
         <Routes>
-          <Route path="/"         element={<Home />}     />
-          <Route path="/about"    element={<About />}    />
-          <Route path="/events"   element={<Events />}   />
-          <Route path="/team"     element={<Team />}     />
-          <Route path="/gallery"  element={<Gallery />}  />
-          <Route path="/contact"  element={<Contact />}  />
+          <Route path="/"         element={<Home />}          />
+          <Route path="/about"    element={<About />}         />
+          <Route path="/events"   element={<Events />}        />
+          <Route path="/team"     element={<Team />}          />
+          <Route path="/gallery"  element={<Gallery />}       />
+          <Route path="/contact"  element={<Contact />}       />
+          <Route path="/profile"  element={<ProfileUpdate />} />
           {/* Catch-all → Home */}
-          <Route path="*"         element={<Home />}     />
+          <Route path="*"         element={<Home />}          />
         </Routes>
       </main>
       <Footer />
