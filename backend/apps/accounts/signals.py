@@ -29,8 +29,7 @@ class EmailThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def _dispatch(self, connection=None):
-        host_user = getattr(settings, 'EMAIL_HOST_USER', '')
-        sender = host_user if host_user else self.from_email
+        sender = getattr(settings, 'DEFAULT_FROM_EMAIL', 'awssbg@ritroorkee.com')
 
         if self.html_content:
             msg = EmailMultiAlternatives(
@@ -68,11 +67,11 @@ class EmailThread(threading.Thread):
         socket.getaddrinfo = ipv4_getaddrinfo
         try:
             print(f"[EmailThread] Attempting to send email to {self.recipient_list}...", flush=True)
-            host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+            resend_key = getattr(settings, 'ANYMAIL', {}).get('RESEND_API_KEY', '')
 
-            # Dev fallback: If host_user is not configured and DEBUG is True, print email to console directly
-            if getattr(settings, 'DEBUG', False) and not host_user:
-                print("[EmailThread] EMAIL_HOST_USER not set in dev mode. Outputting email to console.", flush=True)
+            # Dev fallback: If RESEND_API_KEY is not set and DEBUG is True, print email to console directly
+            if getattr(settings, 'DEBUG', False) and not resend_key:
+                print("[EmailThread] RESEND_API_KEY not set in dev mode. Outputting email to console.", flush=True)
                 console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
                 self._dispatch(connection=console_conn)
                 print(f"[EmailThread] SUCCESS: Email printed to console for {self.recipient_list}!", flush=True)
