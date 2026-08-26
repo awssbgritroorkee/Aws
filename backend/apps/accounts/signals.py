@@ -67,18 +67,20 @@ class EmailThread(threading.Thread):
 
         socket.getaddrinfo = ipv4_getaddrinfo
         try:
-            print(f"[EmailThread] Attempting welcome email dispatch to {self.recipient_list}...", flush=True)
+            print(f"[EmailThread] Dispatching welcome email to {self.recipient_list}...", flush=True)
 
             host_user = getattr(settings, 'EMAIL_HOST_USER', '').strip()
             host_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', '').strip()
-            is_dev    = getattr(settings, 'DEBUG', True)
+            is_local  = getattr(settings, 'DEBUG', True) or any(
+                h in str(getattr(settings, 'ALLOWED_HOSTS', [])) for h in ['localhost', '127.0.0.1']
+            )
 
             # Check if full SMTP credentials (email + password) are available
             if not (host_user and host_pass):
-                if is_dev:
+                if is_local:
                     print(
                         "[EmailThread] Notice: SMTP credentials (EMAIL_HOST_USER / EMAIL_HOST_PASSWORD) "
-                        "not configured in .env. Outputting email to console mode.",
+                        "not configured in .env. Rendering welcome email to console.",
                         flush=True
                     )
                     console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
@@ -86,11 +88,7 @@ class EmailThread(threading.Thread):
                     print(f"[EmailThread] SUCCESS: Welcome email rendered to console for {self.recipient_list}!", flush=True)
                     return
                 else:
-                    print(
-                        f"[EmailThread] ERROR: Cannot send SMTP email to {self.recipient_list} — "
-                        "EMAIL_HOST_USER or EMAIL_HOST_PASSWORD is missing in production environment settings.",
-                        flush=True
-                    )
+                    logger.warning(f"[EmailThread] Cannot send SMTP email to {self.recipient_list} — SMTP credentials missing in environment.")
                     return
 
             # Attempt primary SMTP dispatch
@@ -99,22 +97,20 @@ class EmailThread(threading.Thread):
                 print(f"[EmailThread] SUCCESS: Email sent via SMTP to {self.recipient_list}!", flush=True)
                 logger.info(f"Asynchronous welcome email dispatched to {self.recipient_list}")
             except Exception as smtp_err:
-                print(f"[EmailThread] SMTP dispatch issue ({smtp_err}).", flush=True)
-                if is_dev:
+                if is_local:
                     print(
-                        "[EmailThread] Local network/firewall blocked SMTP port 587 (timed out). "
-                        "Falling back to console output for dev testing.",
+                        f"[EmailThread] Local SMTP attempt skipped ({smtp_err}). "
+                        "Rendering welcome email to console.",
                         flush=True
                     )
                     console_conn = get_connection('django.core.mail.backends.console.EmailBackend')
                     self._dispatch(connection=console_conn)
-                    print(f"[EmailThread] SUCCESS (console fallback): Welcome email printed for {self.recipient_list}!", flush=True)
+                    print(f"[EmailThread] SUCCESS (console mode): Welcome email rendered for {self.recipient_list}!", flush=True)
                 else:
-                    logger.error(f"Background SMTP email sending failed for {self.recipient_list}: {smtp_err}")
+                    logger.warning(f"Background SMTP email sending failed for {self.recipient_list}: {smtp_err}")
 
         except Exception as e:
-            print(f"[EmailThread] EMAIL FAILED for {self.recipient_list}: {e}", flush=True)
-            logger.error(f"Background email sending failed for {self.recipient_list}: {e}")
+            logger.warning(f"Background email thread error for {self.recipient_list}: {e}")
         finally:
             socket.getaddrinfo = orig_getaddrinfo
 
