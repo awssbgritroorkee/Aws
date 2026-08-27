@@ -101,4 +101,11 @@ WHITENOISE_USE_FINDERS = True          # serve un-collected files as fallback
 WHITENOISE_AUTOREFRESH = True
 
 
-
+# ── Email — Temporarily disabled until custom domain is acquired ──────────────
+# Real SMTP sending (Gmail port 465) is paused to avoid connection timeouts on
+# Render's free tier and reduce server load.
+# To re-enable: comment out the console line, uncomment the SMTP line, and
+# ensure EMAIL_HOST_USER / EMAIL_HOST_PASSWORD are set in Render env vars.
+#
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # re-enable later
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # prints to stdout, no network call
