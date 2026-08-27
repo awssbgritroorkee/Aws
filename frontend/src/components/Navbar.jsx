@@ -65,33 +65,33 @@ const Navbar = () => {
         ))}
       </nav>
 
-      {/* ── Right — Auth & CTA ── */}
-      <div className="flex items-center gap-3">
+      {/* ── Right — Auth & CTA (desktop only) ── */}
+      <div className="hidden md:flex items-center gap-3">
         <GoogleLoginButton />
         <a
           href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/"
           target="_blank"
           rel="noopener noreferrer"
           id="nav-cta-btn"
-          className="hidden sm:inline-flex items-center gap-2 bg-sbg-green text-black font-bold px-5 py-2 rounded-full hover:bg-[#00c972] transition-all text-xs md:text-sm"
+          className="inline-flex items-center gap-2 bg-sbg-green text-black font-bold px-5 py-2 rounded-full hover:bg-[#00c972] transition-all text-xs md:text-sm"
         >
           Join Now
         </a>
-
-        {/* Hamburger — mobile */}
-        <button
-          id="nav-hamburger"
-          className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white transition-colors"
-          onClick={() => setMenuOpen(v => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={menuOpen}
-        >
-          {menuOpen
-            ? <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-          }
-        </button>
       </div>
+
+      {/* ── Hamburger — mobile only ── */}
+      <button
+        id="nav-hamburger"
+        className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white transition-colors"
+        onClick={() => setMenuOpen(v => !v)}
+        aria-label="Toggle menu"
+        aria-expanded={menuOpen}
+      >
+        {menuOpen
+          ? <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        }
+      </button>
 
       {/* ── Mobile drawer ── */}
       {menuOpen && (

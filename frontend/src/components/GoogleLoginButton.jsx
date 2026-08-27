@@ -391,8 +391,10 @@ const GoogleLoginButton = () => {
                 />
               ))}
 
-              {/* Divider before logout */}
-              <div className="my-1 border-t border-white/8" />
+              {/* Divider — only render when there is admin/profile content above */}
+              {(isTeamMember || isSuper || groupDashboards.length > 0) && (
+                <div className="my-1 border-t border-white/8" />
+              )}
 
               {/* Logout */}
               <DropdownButton
