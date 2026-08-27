@@ -274,12 +274,16 @@ const Team = () => {
     .filter((m) => m.category === 'LEADERSHIP')
     .sort((a, b) => a.priority_order - b.priority_order);
 
+  const founding = members
+    .filter((m) => m.category === 'FOUNDING')
+    .sort((a, b) => a.priority_order - b.priority_order);
+
   const coreTeam = members
     .filter((m) => m.category === 'CORE')
     .sort((a, b) => a.priority_order - b.priority_order);
 
   // Fallback: if no category data yet (old data), show everyone in leadership
-  const showFallback = !loading && members.length > 0 && leadership.length === 0 && coreTeam.length === 0;
+  const showFallback = !loading && members.length > 0 && leadership.length === 0 && founding.length === 0 && coreTeam.length === 0;
 
   return (
     <div className="relative min-h-screen bg-transparent pt-28 pb-24 px-6 overflow-hidden">
@@ -297,9 +301,9 @@ const Team = () => {
             <span>MEET THE TEAM</span>
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6">
-            Faculty &amp;{' '}
+            The Visionaries &amp;{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sbg-green to-teal-400">
-              Core Team
+              Builders
             </span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl font-medium max-w-3xl mx-auto leading-relaxed">
@@ -335,8 +339,8 @@ const Team = () => {
           <section aria-label="Leadership section">
             <SectionHeading
               eyebrow="Chapter Leadership"
-              title="Faculty & Leaders"
-              subtitle="Faculty guidance and group leadership ensuring vision, direction, and institutional alignment."
+              title="Faculty & Group Leaders"
+              subtitle="Guiding the vision, direction, and institutional alignment of AWS SBG."
             />
             {/* Centered flex — 1 col mobile, up to 3 on large screens */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -345,22 +349,27 @@ const Team = () => {
           </section>
         )}
 
-        {/* ── Divider between tiers ────────────────────────────────────────── */}
-        {!loading && leadership.length > 0 && coreTeam.length > 0 && (
-          <div className="flex items-center gap-4 max-w-4xl mx-auto -mt-8">
-            <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08))' }} />
-            <span className="text-gray-600 text-xs font-mono tracking-widest uppercase px-2">Core Team</span>
-            <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.08))' }} />
-          </div>
+        {/* ── Tier 2: Founding Members ─────────────────────────────────────── */}
+        {!loading && founding.length > 0 && (
+          <section aria-label="Founding members section">
+            <SectionHeading
+              eyebrow="Founding Team"
+              title="Founding Members"
+              subtitle="The original builders who laid the foundation and architected the community from ground zero."
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {founding.map((m) => <LeadershipCard key={m.id} member={m} />)}
+            </div>
+          </section>
         )}
 
-        {/* ── Tier 2: Core Team ────────────────────────────────────────────── */}
+        {/* ── Tier 3: Core Team (Conditional Rendering) ────────────────────── */}
         {!loading && coreTeam.length > 0 && (
           <section aria-label="Core team section">
             <SectionHeading
               eyebrow="Core Team"
-              title="The Builders"
-              subtitle="The dedicated members running events, content, gallery, and the cloud initiatives day-to-day."
+              title="Core Team"
+              subtitle="The dedicated forces executing events, technical projects, and driving community growth."
             />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 max-w-7xl mx-auto">
               {coreTeam.map((m) => <CoreCard key={m.id} member={m} />)}

@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 
 class Member(models.Model):
     CATEGORY_CHOICES = (
-        ('LEADERSHIP', 'Leadership (Faculty & Leaders)'),
-        ('CORE', 'Core Team Member'),
+        ('LEADERSHIP', 'Group Leader & Faculty'),
+        ('FOUNDING', 'Founding Member'),
+        ('CORE', 'Core Member'),
     )
     """
     Represents a team member shown on the /team page.
