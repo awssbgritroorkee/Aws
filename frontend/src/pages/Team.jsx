@@ -22,12 +22,11 @@ const getInitials = (name) => {
   return name.split(' ').map((p) => p[0]).join('').substring(0, 2).toUpperCase();
 };
 
-// ── Leadership Card — full-image, large, prominent ──────────────────────────
+// ── Leadership Card — full-image, large, prominent (Tier 1) ──────────────────
 const LeadershipCard = ({ member }) => (
   <div
-    className="relative overflow-hidden rounded-3xl transition-all duration-300 group hover:scale-[1.02] cursor-default"
+    className="relative overflow-hidden rounded-3xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-96 md:h-[400px] w-full max-w-sm mx-auto"
     style={{
-      aspectRatio: '3 / 4',
       border: '1px solid rgba(0,229,130,0.2)',
       boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
     }}
@@ -48,7 +47,7 @@ const LeadershipCard = ({ member }) => (
       </div>
     )}
 
-    {/* ── Gradient overlay — strong at bottom, transparent at top ── */}
+    {/* ── Gradient overlay ── */}
     <div
       className="absolute inset-0 z-10 pointer-events-none"
       style={{
@@ -62,10 +61,8 @@ const LeadershipCard = ({ member }) => (
       style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.45) inset' }}
     />
 
-    {/* ── Text content — pinned to bottom ── */}
+    {/* ── Text content ── */}
     <div className="absolute inset-0 z-30 flex flex-col justify-end p-6 text-left">
-
-      {/* Badge */}
       {member.badge && (
         <span
           className="mb-2 self-start inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
@@ -75,24 +72,20 @@ const LeadershipCard = ({ member }) => (
         </span>
       )}
 
-      {/* Name */}
       <h2 className="text-2xl font-extrabold text-white tracking-tight leading-tight drop-shadow-lg">
         {member.name}
       </h2>
 
-      {/* Role */}
       <p className="text-sm font-mono mt-1" style={{ color: '#00e582' }}>
         {member.role}
       </p>
 
-      {/* Tagline / Bio */}
       {(member.tagline || member.bio) && (
         <p className="text-gray-300 text-xs mt-2 leading-relaxed line-clamp-2 opacity-90">
           {member.tagline || member.bio}
         </p>
       )}
 
-      {/* Skills */}
       {member.skills?.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-3">
           {member.skills.slice(0, 3).map((skill) => (
@@ -107,7 +100,6 @@ const LeadershipCard = ({ member }) => (
         </div>
       )}
 
-      {/* Social */}
       {(member.linkedin || member.instagram) && (
         <div className="flex items-center gap-3 mt-4 text-gray-300">
           {member.linkedin && (
@@ -130,12 +122,111 @@ const LeadershipCard = ({ member }) => (
   </div>
 );
 
-// ── Core Team Card — full-image, compact ─────────────────────────────────────
+// ── Founding Member Card — medium, balanced (Tier 2) ──────────────────────────
+const FoundingCard = ({ member }) => (
+  <div
+    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-80 md:h-[320px] w-full max-w-xs mx-auto"
+    style={{
+      border: '1px solid rgba(0,229,130,0.2)',
+      boxShadow: '0 6px 32px rgba(0,0,0,0.45)',
+    }}
+  >
+    {/* ── Full-bleed image ── */}
+    {member.image ? (
+      <img
+        src={member.image}
+        alt={member.name}
+        className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+      />
+    ) : (
+      <div
+        className="absolute inset-0 flex items-center justify-center text-6xl font-extrabold text-white/30"
+        style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)' }}
+      >
+        {getInitials(member.name)}
+      </div>
+    )}
+
+    {/* ── Gradient overlay ── */}
+    <div
+      className="absolute inset-0 z-10 pointer-events-none"
+      style={{
+        background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.50) 40%, rgba(0,0,0,0.08) 70%, transparent 100%)',
+      }}
+    />
+
+    {/* ── Hover glow border ── */}
+    <div
+      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 z-20 pointer-events-none"
+      style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.40) inset' }}
+    />
+
+    {/* ── Text content ── */}
+    <div className="absolute inset-0 z-30 flex flex-col justify-end p-5 text-left">
+      {member.badge && (
+        <span
+          className="mb-1.5 self-start inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+          style={{ background: 'rgba(0,229,130,0.16)', color: '#00e582', border: '1px solid rgba(0,229,130,0.30)', backdropFilter: 'blur(6px)' }}
+        >
+          {member.badge}
+        </span>
+      )}
+
+      <h3 className="text-xl font-bold text-white tracking-tight leading-tight drop-shadow-md">
+        {member.name}
+      </h3>
+
+      <p className="text-xs font-mono mt-0.5" style={{ color: '#00e582' }}>
+        {member.role}
+      </p>
+
+      {(member.tagline || member.bio) && (
+        <p className="text-gray-300 text-[11px] mt-1.5 leading-tight line-clamp-1 opacity-90">
+          {member.tagline || member.bio}
+        </p>
+      )}
+
+      {member.skills?.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {member.skills.slice(0, 2).map((skill) => (
+            <span
+              key={skill}
+              className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.12)', color: '#d1d5db', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {(member.linkedin || member.instagram) && (
+        <div className="flex items-center gap-2.5 mt-3 text-gray-300">
+          {member.linkedin && (
+            <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
+              className="hover:text-blue-400 transition-colors"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+          )}
+          {member.instagram && (
+            <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} Instagram`}
+              className="hover:text-pink-400 transition-colors"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ── Core Team Card — compact, small (Tier 3) ─────────────────────────────────
 const CoreCard = ({ member }) => (
   <div
-    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.03] cursor-default"
+    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.03] cursor-default h-72 md:h-[280px] w-full max-w-[18rem] mx-auto"
     style={{
-      aspectRatio: '3 / 4',
       border: '1px solid rgba(255,255,255,0.08)',
       boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
     }}
@@ -170,32 +261,27 @@ const CoreCard = ({ member }) => (
       style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.30) inset' }}
     />
 
-    {/* ── Text content — pinned to bottom ── */}
-    <div className="absolute inset-0 z-30 flex flex-col justify-end p-4 text-left">
-
-      {/* Badge */}
+    {/* ── Text content ── */}
+    <div className="absolute inset-0 z-30 flex flex-col justify-end p-3.5 text-left">
       {member.badge && (
         <span
-          className="mb-1.5 self-start inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+          className="mb-1 self-start inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase"
           style={{ background: 'rgba(255,255,255,0.10)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)' }}
         >
           {member.badge}
         </span>
       )}
 
-      {/* Name */}
       <h3 className="text-base font-bold text-white tracking-tight leading-tight drop-shadow">
         {member.name}
       </h3>
 
-      {/* Role */}
-      <p className="text-[11px] font-mono mt-0.5" style={{ color: '#00e582' }}>
+      <p className="text-[10px] font-mono mt-0.5" style={{ color: '#00e582' }}>
         {member.role}
       </p>
 
-      {/* Skills */}
       {member.skills?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
+        <div className="flex flex-wrap gap-1 mt-1.5">
           {member.skills.slice(0, 2).map((skill) => (
             <span
               key={skill}
@@ -208,21 +294,20 @@ const CoreCard = ({ member }) => (
         </div>
       )}
 
-      {/* Social */}
       {(member.linkedin || member.instagram) && (
-        <div className="flex items-center gap-2.5 mt-3 text-gray-400">
+        <div className="flex items-center gap-2 mt-2 text-gray-400">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
               className="hover:text-blue-400 transition-colors"
             >
-              <Linkedin className="w-4 h-4" />
+              <Linkedin className="w-3.5 h-3.5" />
             </a>
           )}
           {member.instagram && (
             <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} Instagram`}
               className="hover:text-pink-400 transition-colors"
             >
-              <Instagram className="w-4 h-4" />
+              <Instagram className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
@@ -357,8 +442,8 @@ const Team = () => {
               title="Founding Members"
               subtitle="The original builders who laid the foundation and architected the community from ground zero."
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {founding.map((m) => <LeadershipCard key={m.id} member={m} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {founding.map((m) => <FoundingCard key={m.id} member={m} />)}
             </div>
           </section>
         )}
