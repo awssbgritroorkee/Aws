@@ -11,12 +11,12 @@ class MemberAdmin(ModelAdmin):
     warn_unsaved_form   = True
 
     # ── List view ───────────────────────────────────────────────────────────
-    list_display        = ['priority_order', 'name', 'role', 'badge_label', 'is_lead_badge']
-    list_editable       = ['priority_order']
+    list_display        = ['priority_order', 'name', 'role', 'badge_label', 'category_badge', 'is_lead_badge']
+    list_editable       = ['priority_order', 'category']
     list_display_links  = ['name']
     ordering            = ['priority_order']
     search_fields       = ['name', 'role', 'badge']
-    list_filter         = ['is_lead']
+    list_filter         = ['category', 'is_lead']
 
     # ── Detail form ─────────────────────────────────────────────────────────
     fieldsets = (
@@ -35,14 +35,22 @@ class MemberAdmin(ModelAdmin):
             'fields': ('skills', 'linkedin', 'instagram'),
         }),
         ('⚙️ Display Settings', {
-            'fields': ('is_lead', 'priority_order'),
-            'description': 'Lower priority_order = appears first in the team list.',
+            'fields': ('category', 'is_lead', 'priority_order'),
+            'description': (
+                'category controls which section of the Team page this member appears in. '
+                'Lower priority_order = appears first within that section.'
+            ),
         }),
     )
 
     @display(description='Badge', label=True)
     def badge_label(self, obj):
         return obj.badge or '—'
+
+    @display(description='Category', label=True)
+    def category_badge(self, obj):
+        labels = {'LEADERSHIP': 'Leadership', 'CORE': 'Core Team'}
+        return labels.get(obj.category, obj.category)
 
     @display(description='Lead', boolean=True)
     def is_lead_badge(self, obj):

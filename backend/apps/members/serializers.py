@@ -14,7 +14,7 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'role', 'badge', 'tagline', 'bio',
             'image', 'skills', 'linkedin', 'instagram',
-            'is_lead', 'priority_order',
+            'is_lead', 'category', 'priority_order',
         ]
 
     def get_image(self, obj):
@@ -57,9 +57,9 @@ class MyProfileSerializer(serializers.ModelSerializer):
             # Image — upload via multipart, read as URL
             'image', 'image_url',
             # Read-only info
-            'is_lead', 'priority_order',
+            'is_lead', 'category', 'priority_order',
         ]
-        read_only_fields = ['id', 'is_lead', 'priority_order', 'image_url']
+        read_only_fields = ['id', 'is_lead', 'category', 'priority_order', 'image_url']
         extra_kwargs = {
             'image': {'required': False, 'allow_null': True},
         }

@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 
 
 class Member(models.Model):
+    CATEGORY_CHOICES = (
+        ('LEADERSHIP', 'Leadership (Faculty & Leaders)'),
+        ('CORE', 'Core Team Member'),
+    )
     """
     Represents a team member shown on the /team page.
     priority_order controls display order: lower numbers appear first,
@@ -38,9 +42,14 @@ class Member(models.Model):
     linkedin       = models.URLField(blank=True)
     instagram      = models.URLField(blank=True)
     is_lead        = models.BooleanField(default=False)
+    category       = models.CharField(
+                        max_length=20,
+                        choices=CATEGORY_CHOICES,
+                        default='CORE',
+                        help_text='Controls which section this member appears in on the Team page.')
     priority_order = models.PositiveSmallIntegerField(
                         default=10,
-                        help_text='Display order — lower number = closer to top.')
+                        help_text='Display order — lower number = closer to top (within each category).')
 
     class Meta:
         ordering = ['priority_order', 'name']
