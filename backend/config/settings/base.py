@@ -167,15 +167,17 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # ── SMTP Email Backend ───────────────────────────────────────────────────────
+# Using port 465 (SSL) instead of 587 (STARTTLS) because Render.com blocks
+# outbound SMTP on port 587, causing connection timeouts.
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 465))       # 465 = SSL (works on Render)
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'  # Must be False when using SSL
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'   # SSL required for port 465
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', os.environ.get('EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>'))
-EMAIL_TIMEOUT = 10
+EMAIL_TIMEOUT = 30  # Increased from 10s — gives Render more time to establish SSL connection
 
 # Django Unfold Admin Theme
 UNFOLD = {
