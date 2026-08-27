@@ -290,10 +290,10 @@ UNFOLD = {
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
                     },
                     {
-                        "title": "Gallery Photos",
+                        "title": "Gallery Albums",
                         "icon": "photo_library",
-                        "link": "/admin/gallery/galleryphoto/",
-                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryphoto'),
+                        "link": "/admin/gallery/galleryalbum/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryalbum'),
                     },
                     {
                         "title": "Team Members",
@@ -384,7 +384,7 @@ UNFOLD = {
         },
         # Website Content tab group
         {
-            "models": ["events.event", "gallery.galleryphoto", "members.member"],
+            "models": ["events.event", "gallery.galleryalbum", "members.member"],
             "items": [
                 {
                     "title": "Events",
@@ -393,10 +393,10 @@ UNFOLD = {
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
                 },
                 {
-                    "title": "Gallery Photos",
-                    "link": "/admin/gallery/galleryphoto/",
+                    "title": "Gallery Albums",
+                    "link": "/admin/gallery/galleryalbum/",
                     "icon": "photo_library",
-                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryphoto'),
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('gallery.view_galleryalbum'),
                 },
                 {
                     "title": "Team Members",
