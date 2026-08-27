@@ -47,13 +47,8 @@ const LeadershipCard = ({ member }) => (
       </div>
     )}
 
-    {/* ── Gradient overlay ── */}
-    <div
-      className="absolute inset-0 z-10 pointer-events-none"
-      style={{
-        background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.10) 70%, transparent 100%)',
-      }}
-    />
+    {/* ── Gradient overlay — dark bottom fade, clear top ── */}
+    <div className="absolute inset-0 bg-gradient-to-t from-[#0b1121] via-[#0b1121]/70 to-transparent z-0 pointer-events-none" />
 
     {/* ── Hover glow border ── */}
     <div
@@ -61,11 +56,11 @@ const LeadershipCard = ({ member }) => (
       style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.45) inset' }}
     />
 
-    {/* ── Text content ── */}
-    <div className="absolute inset-0 z-30 flex flex-col justify-end p-6 text-left">
+    {/* ── Text content — locked to absolute bottom ── */}
+    <div className="absolute inset-0 flex flex-col justify-end p-5 pb-6 z-10 text-left">
       {member.badge && (
         <span
-          className="mb-2 self-start inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+          className="mb-1.5 self-start inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
           style={{ background: 'rgba(0,229,130,0.18)', color: '#00e582', border: '1px solid rgba(0,229,130,0.35)', backdropFilter: 'blur(8px)' }}
         >
           {member.badge}
@@ -76,18 +71,18 @@ const LeadershipCard = ({ member }) => (
         {member.name}
       </h2>
 
-      <p className="text-sm font-mono mt-1" style={{ color: '#00e582' }}>
+      <p className="text-sm font-mono mt-0.5" style={{ color: '#00e582' }}>
         {member.role}
       </p>
 
       {(member.tagline || member.bio) && (
-        <p className="text-gray-300 text-xs mt-2 leading-relaxed line-clamp-2 opacity-90">
+        <p className="text-gray-300 text-xs mt-1.5 leading-relaxed line-clamp-2 opacity-90">
           {member.tagline || member.bio}
         </p>
       )}
 
       {member.skills?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-3">
+        <div className="flex flex-wrap gap-1 mt-2">
           {member.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
@@ -101,7 +96,7 @@ const LeadershipCard = ({ member }) => (
       )}
 
       {(member.linkedin || member.instagram) && (
-        <div className="flex items-center gap-3 mt-4 text-gray-300">
+        <div className="flex items-center gap-3 mt-3 text-gray-300">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
               className="hover:text-blue-400 transition-colors"
@@ -147,13 +142,8 @@ const FoundingCard = ({ member }) => (
       </div>
     )}
 
-    {/* ── Gradient overlay ── */}
-    <div
-      className="absolute inset-0 z-10 pointer-events-none"
-      style={{
-        background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.50) 40%, rgba(0,0,0,0.08) 70%, transparent 100%)',
-      }}
-    />
+    {/* ── Gradient overlay — dark bottom fade, clear top ── */}
+    <div className="absolute inset-0 bg-gradient-to-t from-[#0b1121] via-[#0b1121]/70 to-transparent z-0 pointer-events-none" />
 
     {/* ── Hover glow border ── */}
     <div
@@ -161,11 +151,11 @@ const FoundingCard = ({ member }) => (
       style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.40) inset' }}
     />
 
-    {/* ── Text content ── */}
-    <div className="absolute inset-0 z-30 flex flex-col justify-end p-5 text-left">
+    {/* ── Text content — locked to absolute bottom ── */}
+    <div className="absolute inset-0 flex flex-col justify-end p-5 pb-6 z-10 text-left">
       {member.badge && (
         <span
-          className="mb-1.5 self-start inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+          className="mb-1 self-start inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
           style={{ background: 'rgba(0,229,130,0.16)', color: '#00e582', border: '1px solid rgba(0,229,130,0.30)', backdropFilter: 'blur(6px)' }}
         >
           {member.badge}
@@ -181,13 +171,13 @@ const FoundingCard = ({ member }) => (
       </p>
 
       {(member.tagline || member.bio) && (
-        <p className="text-gray-300 text-[11px] mt-1.5 leading-tight line-clamp-1 opacity-90">
+        <p className="text-gray-300 text-[11px] mt-1 leading-tight line-clamp-1 opacity-90">
           {member.tagline || member.bio}
         </p>
       )}
 
       {member.skills?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
+        <div className="flex flex-wrap gap-1 mt-1.5">
           {member.skills.slice(0, 2).map((skill) => (
             <span
               key={skill}
@@ -201,7 +191,7 @@ const FoundingCard = ({ member }) => (
       )}
 
       {(member.linkedin || member.instagram) && (
-        <div className="flex items-center gap-2.5 mt-3 text-gray-300">
+        <div className="flex items-center gap-2.5 mt-2 text-gray-300">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
               className="hover:text-blue-400 transition-colors"
@@ -247,13 +237,8 @@ const CoreCard = ({ member }) => (
       </div>
     )}
 
-    {/* ── Gradient overlay ── */}
-    <div
-      className="absolute inset-0 z-10 pointer-events-none"
-      style={{
-        background: 'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.05) 75%, transparent 100%)',
-      }}
-    />
+    {/* ── Gradient overlay — dark bottom fade, clear top ── */}
+    <div className="absolute inset-0 bg-gradient-to-t from-[#0b1121] via-[#0b1121]/70 to-transparent z-0 pointer-events-none" />
 
     {/* ── Hover glow border ── */}
     <div
@@ -261,8 +246,8 @@ const CoreCard = ({ member }) => (
       style={{ boxShadow: '0 0 0 1px rgba(0,229,130,0.30) inset' }}
     />
 
-    {/* ── Text content ── */}
-    <div className="absolute inset-0 z-30 flex flex-col justify-end p-3.5 text-left">
+    {/* ── Text content — locked to absolute bottom ── */}
+    <div className="absolute inset-0 flex flex-col justify-end p-4 pb-5 z-10 text-left">
       {member.badge && (
         <span
           className="mb-1 self-start inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase"
@@ -295,7 +280,7 @@ const CoreCard = ({ member }) => (
       )}
 
       {(member.linkedin || member.instagram) && (
-        <div className="flex items-center gap-2 mt-2 text-gray-400">
+        <div className="flex items-center gap-2 mt-1.5 text-gray-400">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
               className="hover:text-blue-400 transition-colors"
