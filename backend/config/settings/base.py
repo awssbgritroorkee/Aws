@@ -253,28 +253,28 @@ UNFOLD = {
                     },
                 ],
             },
-            # Platform Management: Users, Groups, Email Broadcasts
+            # User Management: Users, Groups, Email Broadcasts
             {
-                "title": "Platform Management",
+                "title": "User Management",
                 "separator": True,
                 "items": [
                     {
                         "title": "Users",
                         "icon": "manage_accounts",
                         "link": "/admin/auth/user/",
-                        "permission": lambda request: request.user.is_superuser,
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('auth.view_user'),
                     },
                     {
                         "title": "Groups",
                         "icon": "shield_person",
                         "link": "/admin/auth/group/",
-                        "permission": lambda request: request.user.is_superuser,
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('auth.view_group'),
                     },
                     {
                         "title": "Email Broadcasts",
                         "icon": "campaign",
                         "link": "/admin/accounts/emailbroadcast/",
-                        "permission": lambda request: request.user.is_superuser,
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_emailbroadcast'),
                     },
                 ],
             },
@@ -358,7 +358,7 @@ UNFOLD = {
 
     # Tabs shown on model list/detail pages
     "TABS": [
-        # Platform Management tab group
+        # User Management tab group
         {
             "models": ["auth.user", "auth.group", "accounts.emailbroadcast"],
             "items": [
@@ -366,19 +366,19 @@ UNFOLD = {
                     "title": "Users",
                     "link": "/admin/auth/user/",
                     "icon": "person",
-                    "permission": lambda request: request.user.is_superuser,
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('auth.view_user'),
                 },
                 {
                     "title": "Groups",
                     "link": "/admin/auth/group/",
                     "icon": "group",
-                    "permission": lambda request: request.user.is_superuser,
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('auth.view_group'),
                 },
                 {
                     "title": "Email Broadcasts",
                     "link": "/admin/accounts/emailbroadcast/",
                     "icon": "campaign",
-                    "permission": lambda request: request.user.is_superuser,
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_emailbroadcast'),
                 },
             ],
         },
