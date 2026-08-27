@@ -18,43 +18,13 @@ const ssoUrl = (nextAdminPath = '/admin/') => {
   return `${base}/api/auth/admin-sso/?token=${token}&next=${next}`;
 };
 
-// ── Group → admin dashboard path mapping ─────────────────────────────────────
-// `path` is the Django admin sub-path that the SSO bridge will redirect to.
-const GROUP_DASHBOARDS = {
-  'Event Managers': {
-    label: 'Event Manager Dashboard',
-    path: '/admin/events/event/',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-    ),
-  },
-  'Gallery Managers': {
-    label: 'Gallery Dashboard',
-    path: '/admin/gallery/galleryphoto/',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <polyline points="21 15 16 10 5 21" />
-      </svg>
-    ),
-  },
-  'Content Managers': {
-    label: 'Content Dashboard',
-    path: '/admin/',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-      </svg>
-    ),
-  },
-};
+// ── Admin dashboard path helpers ─────────────────────────────────────────────
+// Access is now gated purely on is_staff / is_superuser (set in Django Admin)
+// so ANY group a superadmin creates will automatically grant dashboard access.
+// Group names are still displayed as info badges in the dropdown header.
+const ADMIN_DASHBOARD_PATH  = '/admin/';
+const EVENTS_DASHBOARD_PATH = '/admin/events/event/';
+const GALLERY_DASHBOARD_PATH = '/admin/gallery/galleryalbum/';
 
 // ── Small icon helpers ────────────────────────────────────────────────────────
 const IconUser = () => (
@@ -266,14 +236,14 @@ const GoogleLoginButton = () => {
   if (user) {
     const displayName  = user.name || user.email?.split('@')[0] || 'Builder';
     const avatarLetter = displayName[0].toUpperCase();
+    const isStaff      = context?.is_staff      ?? false;
     const isSuper      = context?.is_superuser  ?? false;
     const isTeamMember = context?.is_team_member ?? false;
     const groups       = context?.groups         ?? [];
 
-    // Determine which group dashboards to show
-    const groupDashboards = groups
-      .map((g) => GROUP_DASHBOARDS[g])
-      .filter(Boolean);
+    // Any staff or superuser gets admin dashboard access
+    // Group membership is shown as info badges only — no longer gates UI
+    const hasAdminAccess = isStaff || isSuper;
 
     return (
       <div className="relative" ref={dropdownRef}>
@@ -371,28 +341,47 @@ const GoogleLoginButton = () => {
                 />
               )}
 
-              {/* Superuser Dashboard */}
-              {isSuper && (
+              {/* Admin Dashboard — shown for is_staff OR is_superuser */}
+              {hasAdminAccess && (
                 <DropdownLink
-                  href={ssoUrl('/admin/')}
+                  href={ssoUrl(ADMIN_DASHBOARD_PATH)}
                   icon={<IconShield />}
-                  label="Superuser Dashboard"
-                  highlight
+                  label={isSuper ? 'Superuser Dashboard' : 'Admin Dashboard'}
+                  highlight={isSuper}
                 />
               )}
 
-              {/* Group-specific dashboards */}
-              {groupDashboards.map((dash) => (
-                <DropdownLink
-                  key={dash.label}
-                  href={ssoUrl(dash.path)}
-                  icon={dash.icon}
-                  label={dash.label}
-                />
-              ))}
+              {/* Quick-access shortcuts for staff (non-super) */}
+              {isStaff && !isSuper && (
+                <>
+                  <DropdownLink
+                    href={ssoUrl(EVENTS_DASHBOARD_PATH)}
+                    icon={
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                    }
+                    label="Events"
+                  />
+                  <DropdownLink
+                    href={ssoUrl(GALLERY_DASHBOARD_PATH)}
+                    icon={
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    }
+                    label="Gallery"
+                  />
+                </>
+              )}
 
               {/* Divider — only render when there is admin/profile content above */}
-              {(isTeamMember || isSuper || groupDashboards.length > 0) && (
+              {(isTeamMember || hasAdminAccess) && (
                 <div className="my-1 border-t border-white/8" />
               )}
 
