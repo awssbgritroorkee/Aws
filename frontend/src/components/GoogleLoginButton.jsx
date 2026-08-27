@@ -252,6 +252,27 @@ const GoogleLoginButton = () => {
     // Group membership is shown as info badges only — no longer gates UI
     const hasAdminAccess = isStaff || isSuper;
 
+    // ── Pre-compute per-group links (safe, outside JSX) ──────────────────────
+    // Builds the list of dropdown links for staff (non-super) users based on
+    // their actual assigned groups. Unknown groups get a generic /admin/ fallback
+    // (deduplicated so multiple unknown groups don't produce duplicate root links).
+    const groupLinks = (() => {
+      if (!isStaff || isSuper) return [];
+      const safeGroups = Array.isArray(groups) ? groups : [];
+      const links = [];
+      let shownGenericFallback = false;
+      for (const groupName of safeGroups) {
+        const known = KNOWN_GROUP_LINKS[groupName];
+        if (known) {
+          links.push({ key: groupName, label: known.label, path: known.path });
+        } else if (!shownGenericFallback) {
+          shownGenericFallback = true;
+          links.push({ key: groupName, label: `${groupName} Dashboard`, path: '/admin/' });
+        }
+      }
+      return links;
+    })();
+
     return (
       <div className="relative" ref={dropdownRef}>
         {/* ── Avatar pill button ── */}
@@ -351,47 +372,22 @@ const GoogleLoginButton = () => {
               {/* Admin Dashboard — shown for is_staff OR is_superuser */}
               {hasAdminAccess && (
                 <DropdownLink
-                  href={ssoUrl(ADMIN_DASHBOARD_PATH)}
+                  href={ssoUrl('/admin/')}
                   icon={<IconShield />}
                   label={isSuper ? 'Superuser Dashboard' : 'Admin Dashboard'}
                   highlight={isSuper}
                 />
               )}
 
-
               {/* Per-group dynamic dashboard links (staff, non-superuser only) */}
-              {isStaff && !isSuper && (() => {
-                // Track whether we have already rendered a generic /admin/ fallback
-                // so multiple unknown groups don't produce duplicate root links.
-                let shownGenericFallback = false;
-                return groups.map((groupName) => {
-                  const known = KNOWN_GROUP_LINKS[groupName];
-                  if (known) {
-                    // Known group — render its specific path
-                    return (
-                      <DropdownLink
-                        key={groupName}
-                        href={ssoUrl(known.path)}
-                        icon={<IconShield />}
-                        label={known.label}
-                      />
-                    );
-                  }
-                  // Unknown group — generic fallback, deduplicated
-                  if (!shownGenericFallback) {
-                    shownGenericFallback = true;
-                    return (
-                      <DropdownLink
-                        key={groupName}
-                        href={ssoUrl('/admin/')}
-                        icon={<IconShield />}
-                        label={`${groupName} Dashboard`}
-                      />
-                    );
-                  }
-                  return null;
-                });
-              })()}
+              {groupLinks.map(({ key, label, path }) => (
+                <DropdownLink
+                  key={key}
+                  href={ssoUrl(path)}
+                  icon={<IconShield />}
+                  label={label}
+                />
+              ))}
 
               {/* Divider — only render when there is admin/profile content above */}
               {(isTeamMember || hasAdminAccess) && (
