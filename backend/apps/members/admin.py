@@ -11,7 +11,7 @@ class MemberAdmin(ModelAdmin):
     warn_unsaved_form   = True
 
     # ── List view ───────────────────────────────────────────────────────────
-    list_display        = ['priority_order', 'name', 'role', 'badge_label', 'category_badge', 'is_lead_badge']
+    list_display        = ['priority_order', 'name', 'role', 'badge_label', 'category', 'is_lead_badge']
     list_editable       = ['priority_order', 'category']
     list_display_links  = ['name']
     ordering            = ['priority_order']
@@ -47,10 +47,6 @@ class MemberAdmin(ModelAdmin):
     def badge_label(self, obj):
         return obj.badge or '—'
 
-    @display(description='Category', label=True)
-    def category_badge(self, obj):
-        labels = {'LEADERSHIP': 'Leadership', 'CORE': 'Core Team'}
-        return labels.get(obj.category, obj.category)
 
     @display(description='Lead', boolean=True)
     def is_lead_badge(self, obj):
