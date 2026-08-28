@@ -25,7 +25,7 @@ const getInitials = (name) => {
 // ── Leadership Card — full-image, large, prominent (Tier 1) ──────────────────
 const LeadershipCard = ({ member }) => (
   <div
-    className="relative overflow-hidden rounded-3xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-96 md:h-[400px] w-full max-w-sm mx-auto"
+    className="relative overflow-hidden rounded-3xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-[380px] md:h-[400px] w-full max-w-[320px] sm:max-w-[340px]"
     style={{
       border: '1px solid rgba(0,229,130,0.2)',
       boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
@@ -120,7 +120,7 @@ const LeadershipCard = ({ member }) => (
 // ── Founding Member Card — medium, balanced (Tier 2) ──────────────────────────
 const FoundingCard = ({ member }) => (
   <div
-    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-80 md:h-[320px] w-full max-w-xs mx-auto"
+    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.02] cursor-default h-[340px] w-[260px] max-w-full"
     style={{
       border: '1px solid rgba(0,229,130,0.2)',
       boxShadow: '0 6px 32px rgba(0,0,0,0.45)',
@@ -215,7 +215,7 @@ const FoundingCard = ({ member }) => (
 // ── Core Team Card — compact, small (Tier 3) ─────────────────────────────────
 const CoreCard = ({ member }) => (
   <div
-    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.03] cursor-default h-72 md:h-[280px] w-full max-w-[18rem] mx-auto"
+    className="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:scale-[1.03] cursor-default h-[280px] w-[220px] max-w-full"
     style={{
       border: '1px solid rgba(255,255,255,0.08)',
       boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
@@ -412,8 +412,8 @@ const Team = () => {
               title="Faculty & Group Leaders"
               subtitle="Guiding the vision, direction, and institutional alignment of AWS SBG."
             />
-            {/* Centered flex — auto-centers 1, 2, 3 or more cards */}
-            <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+            {/* Centered flex — controlled moderate gap */}
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8 max-w-4xl mx-auto">
               {leadership.map((m) => <LeadershipCard key={m.id} member={m} />)}
             </div>
           </section>
@@ -427,7 +427,7 @@ const Team = () => {
               title="Founding Members"
               subtitle="The original builders who laid the foundation and architected the community from ground zero."
             />
-            <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
               {founding.map((m) => <FoundingCard key={m.id} member={m} />)}
             </div>
           </section>
@@ -441,7 +441,7 @@ const Team = () => {
               title="Core Team"
               subtitle="The dedicated forces executing events, technical projects, and driving community growth."
             />
-            <div className="flex flex-wrap justify-center gap-5 max-w-7xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
               {coreTeam.map((m) => <CoreCard key={m.id} member={m} />)}
             </div>
           </section>
