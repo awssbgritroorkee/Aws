@@ -399,7 +399,7 @@ const Team = () => {
 
         {/* ── Fallback: no category set (old data) — show flat list ────────── */}
         {showFallback && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
             {members.map((m) => <CoreCard key={m.id} member={m} />)}
           </div>
         )}
@@ -412,8 +412,8 @@ const Team = () => {
               title="Faculty & Group Leaders"
               subtitle="Guiding the vision, direction, and institutional alignment of AWS SBG."
             />
-            {/* Centered flex — 1 col mobile, up to 3 on large screens */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Centered flex — auto-centers 1, 2, 3 or more cards */}
+            <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
               {leadership.map((m) => <LeadershipCard key={m.id} member={m} />)}
             </div>
           </section>
@@ -427,7 +427,7 @@ const Team = () => {
               title="Founding Members"
               subtitle="The original builders who laid the foundation and architected the community from ground zero."
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
               {founding.map((m) => <FoundingCard key={m.id} member={m} />)}
             </div>
           </section>
@@ -441,7 +441,7 @@ const Team = () => {
               title="Core Team"
               subtitle="The dedicated forces executing events, technical projects, and driving community growth."
             />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 max-w-7xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-5 max-w-7xl mx-auto">
               {coreTeam.map((m) => <CoreCard key={m.id} member={m} />)}
             </div>
           </section>
