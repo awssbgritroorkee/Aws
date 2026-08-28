@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Globe } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
 const Linkedin = (props) => (
@@ -95,7 +96,7 @@ const LeadershipCard = ({ member }) => (
         </div>
       )}
 
-      {(member.linkedin || member.instagram) && (
+      {(member.linkedin || member.instagram || member.portfolio_url) && (
         <div className="flex items-center gap-3 mt-3 text-gray-300">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
@@ -109,6 +110,13 @@ const LeadershipCard = ({ member }) => (
               className="hover:text-pink-400 transition-colors"
             >
               <Instagram className="w-5 h-5" />
+            </a>
+          )}
+          {member.portfolio_url && (
+            <a href={member.portfolio_url} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} Portfolio`}
+              className="hover:text-sbg-green transition-colors"
+            >
+              <Globe className="w-5 h-5" />
             </a>
           )}
         </div>
@@ -190,7 +198,7 @@ const FoundingCard = ({ member }) => (
         </div>
       )}
 
-      {(member.linkedin || member.instagram) && (
+      {(member.linkedin || member.instagram || member.portfolio_url) && (
         <div className="flex items-center gap-2.5 mt-2 text-gray-300">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
@@ -204,6 +212,13 @@ const FoundingCard = ({ member }) => (
               className="hover:text-pink-400 transition-colors"
             >
               <Instagram className="w-4 h-4" />
+            </a>
+          )}
+          {member.portfolio_url && (
+            <a href={member.portfolio_url} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} Portfolio`}
+              className="hover:text-sbg-green transition-colors"
+            >
+              <Globe className="w-4 h-4" />
             </a>
           )}
         </div>
@@ -279,7 +294,7 @@ const CoreCard = ({ member }) => (
         </div>
       )}
 
-      {(member.linkedin || member.instagram) && (
+      {(member.linkedin || member.instagram || member.portfolio_url) && (
         <div className="flex items-center gap-2 mt-1.5 text-gray-400">
           {member.linkedin && (
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} LinkedIn`}
@@ -293,6 +308,13 @@ const CoreCard = ({ member }) => (
               className="hover:text-pink-400 transition-colors"
             >
               <Instagram className="w-3.5 h-3.5" />
+            </a>
+          )}
+          {member.portfolio_url && (
+            <a href={member.portfolio_url} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} Portfolio`}
+              className="hover:text-sbg-green transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
             </a>
           )}
         </div>

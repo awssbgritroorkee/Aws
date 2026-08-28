@@ -13,7 +13,7 @@ class MemberSerializer(serializers.ModelSerializer):
         model  = Member
         fields = [
             'id', 'name', 'role', 'badge', 'tagline', 'bio',
-            'image', 'skills', 'linkedin', 'instagram',
+            'image', 'skills', 'linkedin', 'instagram', 'portfolio_url',
             'is_lead', 'category', 'priority_order',
         ]
 
@@ -50,8 +50,8 @@ class MyProfileSerializer(serializers.ModelSerializer):
             'id',
             # Identity
             'name', 'role', 'badge', 'tagline', 'bio',
-            # Social
-            'linkedin', 'instagram',
+            # Social & Portfolio
+            'linkedin', 'instagram', 'portfolio_url',
             # Skills (JSON list)
             'skills',
             # Image — upload via multipart, read as URL

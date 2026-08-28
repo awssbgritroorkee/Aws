@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, Mail, Briefcase, Tag, AlignLeft, Link2, Star, Save, Camera, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { User, Mail, Briefcase, Tag, AlignLeft, Link2, Star, Save, Camera, AlertCircle, CheckCircle2, Lock, Globe } from 'lucide-react';
 import { getMyProfile, updateMyProfile } from '../services/api';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -53,9 +53,10 @@ const ProfileUpdate = () => {
           badge:     data.badge     || '',
           tagline:   data.tagline   || '',
           bio:       data.bio       || '',
-          linkedin:  data.linkedin  || '',
-          instagram: data.instagram || '',
-          skills:    Array.isArray(data.skills) ? data.skills.join(', ') : '',
+          linkedin:      data.linkedin      || '',
+          instagram:     data.instagram     || '',
+          portfolio_url: data.portfolio_url || '',
+          skills:        Array.isArray(data.skills) ? data.skills.join(', ') : '',
         });
         setStatus('idle');
       })
@@ -325,9 +326,9 @@ const ProfileUpdate = () => {
             </Field>
           </div>
 
-          {/* ── Social Links ── */}
+          {/* ── Social & Portfolio Links ── */}
           <div className="p-6 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 space-y-5">
-            <h2 className="text-sm font-mono font-bold text-gray-300 uppercase tracking-widest">Social Links</h2>
+            <h2 className="text-sm font-mono font-bold text-gray-300 uppercase tracking-widest">Social & Portfolio Links</h2>
 
             <Field label="LinkedIn URL" icon={Link2}>
               <input
@@ -347,6 +348,17 @@ const ProfileUpdate = () => {
                 value={form.instagram}
                 onChange={set('instagram')}
                 placeholder="https://instagram.com/yourhandle"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Portfolio Website" icon={Globe} hint="Your personal portfolio or website URL">
+              <input
+                id="profile-portfolio-url"
+                type="url"
+                value={form.portfolio_url}
+                onChange={set('portfolio_url')}
+                placeholder="https://yourportfolio.com"
                 className={inputClass}
               />
             </Field>

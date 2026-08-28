@@ -42,6 +42,7 @@ class Member(models.Model):
     skills         = models.JSONField(default=list, blank=True)
     linkedin       = models.URLField(blank=True)
     instagram      = models.URLField(blank=True)
+    portfolio_url  = models.URLField(max_length=255, blank=True, null=True)
     is_lead        = models.BooleanField(default=False)
     category       = models.CharField(
                         max_length=20,
