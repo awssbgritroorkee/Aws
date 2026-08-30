@@ -41,6 +41,16 @@ class CustomLogEntryAdmin(ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+    def get_queryset(self, request):
+        """
+        Superusers see every log entry in the system with no restrictions.
+        Non-superusers fall back to the default scoped queryset (their own actions).
+        """
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return LogEntry.objects.all()
+        return qs
+
 
 # ── User Admin ────────────────────────────────────────────────────────────────
 
