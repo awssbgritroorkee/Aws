@@ -3,15 +3,22 @@ from .models import Event
 
 
 class EventSerializer(serializers.ModelSerializer):
-    poster = serializers.SerializerMethodField()
+    poster        = serializers.SerializerMethodField()
+    is_registered = serializers.SerializerMethodField()
 
     class Meta:
         model  = Event
         fields = [
             'id', 'title', 'date', 'description',
             'poster', 'status', 'registration_link',
-            'is_registration_open', 'created_at',
+            'is_registration_open', 'is_registered', 'created_at',
         ]
+
+    def get_is_registered(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and hasattr(request.user, 'student_profile'):
+            return obj.registrations.filter(student=request.user.student_profile).exists()
+        return False
 
     def get_poster(self, obj):
         """Return absolute URL for event poster or None."""

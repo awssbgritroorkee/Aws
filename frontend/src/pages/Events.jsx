@@ -80,25 +80,28 @@ const Events = () => {
   });
 
   // ── Fetch events ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/api/events/`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch events: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setEvents(Array.isArray(data) ? data : (data.results || []));
-      } catch (err) {
-        console.error('Error fetching events:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchEvents = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const headers = token ? { Authorization: `Token ${token}` } : {};
+      const response = await fetch(`${API_URL}/api/events/`, { headers });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.statusText}`);
       }
-    };
-    fetchEvents();
+      const data = await response.json();
+      setEvents(Array.isArray(data) ? data : (data.results || []));
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents, user]);
 
   // Open modal after login — if user just logged in and selectedEvent is set
   useEffect(() => {
@@ -127,7 +130,12 @@ const Events = () => {
 
   const handleSuccess = useCallback((msg) => {
     showToast(msg || 'Registration Successful! 🎉', 'success');
-  }, [showToast]);
+    if (selectedEvent) {
+      setEvents((prev) =>
+        prev.map((e) => (e.id === selectedEvent.id ? { ...e, is_registered: true } : e))
+      );
+    }
+  }, [showToast, selectedEvent]);
 
   const handleError = useCallback((msg) => {
     showToast(msg, 'error');
@@ -257,7 +265,16 @@ const Events = () => {
                   <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
                     <span className="text-xs font-mono text-gray-500">AWS Student Builder Group</span>
 
-                    {isUpcoming ? (
+                    {event.is_registered ? (
+                      /* ── ALREADY REGISTERED ── */
+                      <button
+                        id={`registered-btn-${event.id}`}
+                        disabled
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                      >
+                        Registered ✅
+                      </button>
+                    ) : isUpcoming ? (
                       regOpen ? (
                         /* ── Registration OPEN ── */
                         <button

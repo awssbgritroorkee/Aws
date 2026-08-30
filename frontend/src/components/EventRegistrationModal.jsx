@@ -12,22 +12,15 @@ const COURSE_BRANCH_MAP = {
     'Electronics and Communication Engineering',
     'Mechanical Engineering',
   ],
-  'B.Tech (LE)': [
-    'Civil Engineering',
-    'Computer Science and Engineering',
-    'Computer Science and Engineering (AI and ML)',
-    'Electrical Engineering',
-    'Electronics and Communication Engineering',
-    'Mechanical Engineering',
-  ],
   'BCA': ['Bachelor of Computer Application'],
   'MCA': ['Master in Computer Application'],
 };
 
 const COURSES = Object.keys(COURSE_BRANCH_MAP);
-const SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
 const EMPTY_FORM = {
+  full_name:     '',
   father_name:   '',
   course:        '',
   branch:        '',
@@ -73,10 +66,12 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
     let cancelled = false;
 
     const fetchProfile = async () => {
+      const defaultName = (context?.first_name ? `${context.first_name} ${context.last_name || ''}`.trim() : user?.name) || '';
       try {
         const { data } = await getStudentProfile();
         if (!cancelled && data && Object.keys(data).length > 0) {
           setForm({
+            full_name:     data.full_name     || defaultName,
             father_name:   data.father_name   || '',
             course:        data.course        || '',
             branch:        data.branch        || '',
@@ -84,9 +79,11 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
             roll_number:   data.roll_number   || '',
             mobile_number: data.mobile_number || '',
           });
+        } else if (!cancelled) {
+          setForm((prev) => ({ ...prev, full_name: defaultName }));
         }
       } catch {
-        // Silently fail — modal still opens with empty fields
+        if (!cancelled) setForm((prev) => ({ ...prev, full_name: defaultName }));
       } finally {
         if (!cancelled) setAutofilling(false);
       }
@@ -94,7 +91,7 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
 
     fetchProfile();
     return () => { cancelled = true; };
-  }, []);
+  }, [user, context]);
 
   // ── Form handlers ───────────────────────────────────────────────────────────
   const handleChange = useCallback((e) => {
@@ -228,6 +225,20 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                   </div>
                 </InputField>
 
+                {/* Full Name — editable */}
+                <InputField id="reg-full-name" label="Full Name" required>
+                  <input
+                    id="reg-full-name"
+                    name="full_name"
+                    type="text"
+                    value={form.full_name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your full name"
+                    className={inputClass}
+                  />
+                </InputField>
+
                 {/* Father Name */}
                 <InputField id="reg-father-name" label="Father's Name" required>
                   <input
@@ -321,7 +332,7 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                       value={form.roll_number}
                       onChange={handleChange}
                       required
-                      placeholder="e.g. 22IT001"
+                      placeholder="Enter your roll number"
                       className={inputClass}
                     />
                   </InputField>

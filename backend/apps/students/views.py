@@ -77,6 +77,7 @@ class EventRegisterView(APIView):
         profile, _ = StudentProfile.objects.update_or_create(
             user=request.user,
             defaults={
+                'full_name':     vd.get('full_name', ''),
                 'father_name':   vd['father_name'],
                 'course':        vd['course'],
                 'branch':        vd['branch'],

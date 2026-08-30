@@ -4,10 +4,14 @@ Django settings — Base (shared between dev and prod).
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from import_export.formats.base_formats import CSV, XLSX
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# django-import-export formats — enable Excel (.xlsx) and CSV
+IMPORT_EXPORT_FORMATS = [XLSX, CSV]
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-only-change-me')
 
@@ -18,6 +22,7 @@ INSTALLED_APPS = [
     'unfold',                    # must be before django.contrib.admin
     'unfold.contrib.filters',   # optional: enhanced filter widgets
     'unfold.contrib.forms',     # optional: styled form widgets
+    'unfold.contrib.import_export', # Unfold dark templates for import/export
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -206,6 +211,7 @@ UNFOLD = {
     "SHOW_BACK_BUTTON": True,
 
     "SCRIPTS": ["/static/admin/js/force-dark.js"],
+    "STYLES": ["/static/admin/css/custom-unfold.css"],
 
     # AWS Amber/Orange colors (oklch format required by Unfold v0.91)
     "COLORS": {

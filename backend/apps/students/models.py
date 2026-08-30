@@ -13,6 +13,7 @@ class StudentProfile(models.Model):
                         on_delete=models.CASCADE,
                         related_name='student_profile',
                         help_text='The Django user (Google SSO account) this profile belongs to.')
+    full_name     = models.CharField(max_length=150, blank=True, null=True, help_text="Student's full name for certificates and official records.")
     father_name   = models.CharField(max_length=100)
     course        = models.CharField(
                         max_length=50,
