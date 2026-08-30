@@ -9,7 +9,8 @@ class EventSerializer(serializers.ModelSerializer):
         model  = Event
         fields = [
             'id', 'title', 'date', 'description',
-            'poster', 'status', 'registration_link', 'created_at',
+            'poster', 'status', 'registration_link',
+            'is_registration_open', 'created_at',
         ]
 
     def get_poster(self, obj):

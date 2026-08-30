@@ -85,4 +85,20 @@ export const updateMyProfile = (data) => {
 // ── Contact ──────────────────────────────────────────────────────────────────
 export const createContactMessage = (data) => api.post('/api/contact/', data);
 
+// ── Event Registration System ─────────────────────────────────────────────────
+/**
+ * GET /api/student-profile/
+ * Fetches the authenticated user's saved academic profile for modal autofill.
+ * Returns {} (empty object, status 200) for first-time users — no 404 handling needed.
+ */
+export const getStudentProfile = () => api.get('/api/student-profile/');
+
+/**
+ * POST /api/events/<eventId>/register/
+ * Submits an event registration with student profile details.
+ * Returns 201 on success, 400 with { detail } for duplicates or closed events.
+ */
+export const registerForEvent = (eventId, data) =>
+  api.post(`/api/events/${eventId}/register/`, data);
+
 export default api;

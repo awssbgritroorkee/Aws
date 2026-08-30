@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'corsheaders',
     'django_filters',
+    'import_export',
     # Local apps
     'apps.accounts',
     'apps.ideas',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'apps.events',
     'apps.gallery',
     'apps.contact',
+    'apps.students',
 ]
 
 SITE_ID = 1
@@ -74,7 +76,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -303,6 +305,25 @@ UNFOLD = {
                     },
                 ],
             },
+            # Event Registrations
+            {
+                "title": "Event Registrations",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Registrations",
+                        "icon": "how_to_reg",
+                        "link": "/admin/students/eventregistration/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_eventregistration'),
+                    },
+                    {
+                        "title": "Student Profiles",
+                        "icon": "school",
+                        "link": "/admin/students/studentprofile/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_studentprofile'),
+                    },
+                ],
+            },
             # Communications & Socials: Contact Messages, Social Accounts, Social Applications
             {
                 "title": "Communications & Socials",
@@ -403,6 +424,24 @@ UNFOLD = {
                     "link": "/admin/members/member/",
                     "icon": "group",
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('members.view_member'),
+                },
+            ],
+        },
+        # Event Registrations tab group
+        {
+            "models": ["students.eventregistration", "students.studentprofile"],
+            "items": [
+                {
+                    "title": "Registrations",
+                    "link": "/admin/students/eventregistration/",
+                    "icon": "how_to_reg",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_eventregistration'),
+                },
+                {
+                    "title": "Student Profiles",
+                    "link": "/admin/students/studentprofile/",
+                    "icon": "school",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_studentprofile'),
                 },
             ],
         },

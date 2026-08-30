@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import axios from 'axios';
-import { getUserContext } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // ── SSO bridge URL builder ────────────────────────────────────────────────────
-// Builds a URL to the Admin SSO endpoint, passing the current auth token so
-// the backend can establish a session cookie and redirect into the admin panel.
 const ssoUrl = (nextAdminPath = '/admin/') => {
   const token = localStorage.getItem('auth_token') || '';
   const base  = import.meta.env.VITE_API_URL ||
@@ -85,60 +83,13 @@ const DropdownButton = ({ onClick, icon, label, danger }) => (
 
 // ─────────────────────────────────────────────────────────────────────────────
 const GoogleLoginButton = () => {
-  const [user, setUser]           = useState(null);      // raw auth data (name, email, picture)
-  const [context, setContext]     = useState(null);      // rich context from /api/auth/user-context/
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState(null);
+  // ── Consume shared auth state from AuthContext ────────────────────────────
+  const { user, context, login: authLogin, logout: authLogout, refreshContext } = useAuth();
+
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // ── Fetch permission context from backend ───────────────────────────────────
-  // Declared BEFORE the restore-session useEffect that calls it, so the const
-  // is fully initialised before the effect closure references it.
-  const fetchUserContext = useCallback(async () => {
-    try {
-      const cached = localStorage.getItem('user_context');
-      if (cached) setContext(JSON.parse(cached));  // show cached while fetching
-
-      const { data } = await getUserContext();
-      setContext(data);
-      localStorage.setItem('user_context', JSON.stringify(data));
-
-      // Back-fill picture from context if missing from base user data
-      setUser((prev) => {
-        if (prev && !prev.picture && data.picture) {
-          const updated = { ...prev, picture: data.picture };
-          localStorage.setItem('user_data', JSON.stringify(updated));
-          return updated;
-        }
-        return prev;
-      });
-    } catch (err) {
-      // 401 is handled by the Axios interceptor in api.js (auto-logout)
-      // Other errors: silently degrade — basic profile still shows
-      console.warn('[UserContext] Could not fetch permissions:', err?.response?.status);
-    }
-  }, []);
-
-  // ── Restore session on mount ────────────────────────────────────────────────
-  useEffect(() => {
-    const savedUser  = localStorage.getItem('user_data');
-    const savedToken = localStorage.getItem('auth_token');
-
-    if (savedUser && savedToken) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('auth_token');
-        return;
-      }
-      // Refresh context from backend (validates token too — 401 triggers auto-logout)
-      fetchUserContext();
-    }
-  // fetchUserContext is stable (useCallback with [] deps) — safe to omit from deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // ── Close dropdown on outside click ────────────────────────────────────────
   useEffect(() => {
@@ -182,12 +133,11 @@ const GoogleLoginButton = () => {
           picture: profile?.picture          || '',
         };
 
-        localStorage.setItem('auth_token', authToken);
-        localStorage.setItem('user_data',  JSON.stringify(userData));
-        setUser(userData);
+        // 3. Push to shared AuthContext (persists to localStorage internally)
+        authLogin(userData, authToken);
 
-        // 3. Immediately fetch rich permission context
-        await fetchUserContext();
+        // 4. Immediately fetch rich permission context
+        await refreshContext();
       } catch (err) {
         console.error('Google Auth Backend Error:', err);
         setError('Login failed. Please try again.');
@@ -204,11 +154,7 @@ const GoogleLoginButton = () => {
   // ── Logout ──────────────────────────────────────────────────────────────────
   const handleLogout = () => {
     googleLogout();
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('user_context');
-    setUser(null);
-    setContext(null);
+    authLogout();
     setDropdownOpen(false);
   };
 
@@ -234,10 +180,7 @@ const GoogleLoginButton = () => {
     const isTeamMember = context?.is_team_member ?? false;
     const groups       = context?.groups         ?? [];
 
-    // Any staff or superuser gets admin dashboard access
-    // Group membership is shown as info badges only — no longer gates UI
     const hasAdminAccess = isStaff || isSuper;
-
 
     return (
       <div className="relative" ref={dropdownRef}>
@@ -345,7 +288,7 @@ const GoogleLoginButton = () => {
                 />
               )}
 
-              {/* Divider — only render when there is admin/profile content above */}
+              {/* Divider */}
               {(isTeamMember || hasAdminAccess) && (
                 <div className="my-1 border-t border-white/8" />
               )}
@@ -361,9 +304,6 @@ const GoogleLoginButton = () => {
           </div>
         )}
 
-        {/* Animation — kept in the authenticated branch so it's mounted whenever
-            the dropdown exists. Moving it here fixes the bug where it was
-            rendered in the logged-out branch and therefore missing at runtime. */}
         <style>{`
           @keyframes fadeSlideDown {
             from { opacity: 0; transform: translateY(-6px) scale(0.98); }

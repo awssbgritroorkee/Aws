@@ -25,6 +25,9 @@ urlpatterns = [
     path('api/events/',  include('apps.events.urls')),
     path('api/gallery/', include('apps.gallery.urls')),
     path('api/contact/', include('apps.contact.urls')),
+
+    # ── Event Registration System ─────────────────────────────────────────────
+    path('api/',         include('apps.students.urls')),
 ]
 
 if settings.DEBUG:

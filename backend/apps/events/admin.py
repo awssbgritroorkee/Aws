@@ -11,7 +11,7 @@ class EventAdmin(ModelAdmin):
     warn_unsaved_form   = True
 
     # ── List view ───────────────────────────────────────────────────────────
-    list_display        = ['title', 'date', 'status_badge', 'registration_link']
+    list_display        = ['title', 'date', 'status_badge', 'is_registration_open', 'registration_link']
     list_filter         = ['status']
     list_editable       = []          # status editing moved to change form
     list_display_links  = ['title']
@@ -27,7 +27,7 @@ class EventAdmin(ModelAdmin):
             'fields': ('title', 'date', 'status', 'description', 'poster', 'created_by'),
         }),
         ('🔗 Registration', {
-            'fields': ('registration_link',),
+            'fields': ('registration_link', 'is_registration_open'),
         }),
     )
 

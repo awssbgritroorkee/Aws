@@ -21,7 +21,10 @@ class Event(models.Model):
                             choices=STATUS_CHOICES,
                             default='upcoming',
                             db_index=True)
-    registration_link = models.URLField(blank=True)
+    registration_link      = models.URLField(blank=True)
+    is_registration_open   = models.BooleanField(
+                                default=True,
+                                help_text='Uncheck to close registrations. The Register button will become disabled on the frontend.')
     created_by        = models.ForeignKey(
                             User,
                             on_delete=models.SET_NULL,

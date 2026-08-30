@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, CheckCircle2, ExternalLink, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, ExternalLink, ArrowRight, Lock } from 'lucide-react';
+import axios from 'axios';
 import usePageTitle from '../hooks/usePageTitle';
+import { useAuth } from '../context/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
+import EventRegistrationModal from '../components/EventRegistrationModal';
+import { useToast } from '../components/ui/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://aws-swae.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const STATUS_TABS = ['All', 'Upcoming', 'Past'];
 
@@ -24,11 +30,56 @@ const formatDate = (dateString) => {
 const Events = () => {
   usePageTitle('Events', 'AWS workshops, cloud bootcamps, and hackathons hosted by AWS SBG RIT.');
 
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user, login: authLogin, refreshContext } = useAuth();
+  const { showToast, ToastContainer } = useToast();
+
+  const [events, setEvents]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
   const [activeTab, setActiveTab] = useState('All');
 
+  // Modal state
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // ── Google Login flow (triggered from Register button when unauthenticated) ─
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const accessToken = tokenResponse.access_token;
+
+        let profile = null;
+        try {
+          const r = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          profile = r.data;
+        } catch { /* ignore */ }
+
+        const res = await axios.post(`${API_BASE_URL}/api/auth/google/`, {
+          access_token: accessToken,
+        });
+
+        const authToken = res.data.key || res.data.token || res.data.access || accessToken;
+        const userData = {
+          name:    res.data.user?.first_name || profile?.given_name || profile?.name || 'Builder',
+          email:   res.data.user?.email || profile?.email || '',
+          picture: profile?.picture || '',
+        };
+
+        authLogin(userData, authToken);
+        await refreshContext();
+
+        // After login: open modal for the event they clicked
+        // selectedEvent is still set from the button click
+      } catch (err) {
+        showToast('Login failed. Please try again.', 'error');
+        console.error('Google login error:', err);
+      }
+    },
+    onError: () => showToast('Google Sign-In failed.', 'error'),
+  });
+
+  // ── Fetch events ─────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -46,13 +97,41 @@ const Events = () => {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
+
+  // Open modal after login — if user just logged in and selectedEvent is set
+  useEffect(() => {
+    if (user && selectedEvent) {
+      // User is now authenticated and has a pending event selected — modal will open
+    }
+  }, [user, selectedEvent]);
 
   const filteredEvents = activeTab === 'All'
     ? events
     : events.filter((e) => e.status && e.status.toLowerCase() === activeTab.toLowerCase());
+
+  // ── Register button click handler ─────────────────────────────────────────
+  const handleRegisterClick = useCallback((event) => {
+    if (!user) {
+      // Not logged in — save intended event and trigger SSO
+      setSelectedEvent(event);
+      googleLogin();
+      return;
+    }
+    // Logged in — open modal directly
+    setSelectedEvent(event);
+  }, [user, googleLogin]);
+
+  const handleModalClose = useCallback(() => setSelectedEvent(null), []);
+
+  const handleSuccess = useCallback((msg) => {
+    showToast(msg || 'Registration Successful! 🎉', 'success');
+  }, [showToast]);
+
+  const handleError = useCallback((msg) => {
+    showToast(msg, 'error');
+  }, [showToast]);
 
   return (
     <div className="relative min-h-screen bg-transparent pt-28 pb-20 px-6 overflow-hidden">
@@ -119,6 +198,8 @@ const Events = () => {
           <div className="grid md:grid-cols-2 gap-8 text-left">
             {filteredEvents.map((event) => {
               const isUpcoming = event.status && event.status.toLowerCase() === 'upcoming';
+              const regOpen    = event.is_registration_open !== false; // default true if missing
+
               return (
                 <div
                   key={event.id}
@@ -177,22 +258,24 @@ const Events = () => {
                     <span className="text-xs font-mono text-gray-500">AWS Student Builder Group</span>
 
                     {isUpcoming ? (
-                      event.registration_link ? (
-                        <a
-                          href={event.registration_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      regOpen ? (
+                        /* ── Registration OPEN ── */
+                        <button
+                          id={`register-btn-${event.id}`}
+                          onClick={() => handleRegisterClick(event)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
                         >
-                          Register Now <ArrowRight className="w-3.5 h-3.5" />
-                        </a>
+                          {user ? 'Register Now' : 'Sign In & Register'} <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
                       ) : (
-                        <Link
-                          to="/contact"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
+                        /* ── Registration CLOSED ── */
+                        <span
+                          id={`reg-closed-${event.id}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed"
+                          title="Registration is closed for this event"
                         >
-                          Register Interest <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                          <Lock className="w-3 h-3" /> Registration Closed
+                        </span>
                       )
                     ) : (
                       <Link
@@ -209,6 +292,19 @@ const Events = () => {
           </div>
         )}
       </div>
+
+      {/* ── Event Registration Modal ── */}
+      {selectedEvent && user && (
+        <EventRegistrationModal
+          event={selectedEvent}
+          onClose={handleModalClose}
+          onSuccess={handleSuccess}
+          onError={handleError}
+        />
+      )}
+
+      {/* ── Toast Notifications ── */}
+      <ToastContainer />
     </div>
   );
 };
