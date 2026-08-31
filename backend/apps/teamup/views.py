@@ -158,15 +158,15 @@ class TeamRequestListCreateView(APIView):
                 defaults={'mobile_number': mobile_number}
             )
 
-        # Force is_approved_by_admin=False regardless of any input
+        # Save post as live immediately (is_approved_by_admin=True)
         post = serializer.save(
             creator=request.user,
-            is_approved_by_admin=False,
+            is_approved_by_admin=True,
         )
         return Response(
             {
                 'id': post.id,
-                'detail': 'Your post has been submitted for admin approval. It will go live once reviewed.',
+                'detail': 'Success! Your post is now live on the Explore Board.',
             },
             status=status.HTTP_201_CREATED
         )

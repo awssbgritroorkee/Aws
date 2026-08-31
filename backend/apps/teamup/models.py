@@ -99,8 +99,8 @@ class TeamRequest(models.Model):
         help_text='4-digit numeric PIN. Share only with people you want to accept. NEVER exposed in GET APIs.'
     )
     is_approved_by_admin = models.BooleanField(
-        default=False,
-        help_text='Admin must manually approve before the post goes live on the board.'
+        default=True,
+        help_text='Automatically approved on creation. Admins can unapprove/delete if needed.'
     )
     is_active = models.BooleanField(
         default=True,

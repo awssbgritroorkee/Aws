@@ -130,7 +130,7 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
       };
 
       const res = await createTeamUpPost(payload);
-      onSuccess(res.data?.detail || 'Post created and pending admin approval!');
+      onSuccess(res.data?.detail || 'Success! Your post is now live on the Explore Board.');
       onClose();
     } catch (err) {
       const data = err?.response?.data;
