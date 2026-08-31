@@ -4,9 +4,15 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
+from apps.students.admin_views import admin_analytics_dashboard, admin_export_excel
+
 urlpatterns = [
     # ── Favicon redirect (stops browser 404 on /favicon.ico) ─────────────────
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
+
+    # ── Unfold Custom Admin Analytics ─────────────────────────────────────────
+    path('admin/custom-analytics/', admin_analytics_dashboard, name='admin_custom_analytics'),
+    path('admin/custom-analytics/export/', admin_export_excel, name='admin_analytics_export'),
 
     path('admin/', admin.site.urls),
 

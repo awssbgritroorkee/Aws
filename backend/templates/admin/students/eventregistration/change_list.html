@@ -1,0 +1,169 @@
+{% extends "admin/change_list.html" %}
+
+{% block result_list %}
+    {% if dashboard_data %}
+    <style>
+        .sbg-dash-container {
+            background: #0f141c !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+            margin-bottom: 24px !important;
+        }
+        .sbg-card {
+            background: #161d27 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 14px !important;
+            padding: 20px !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+        .sbg-card:hover {
+            background: #1c2532 !important;
+            border-color: rgba(0, 208, 132, 0.35) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(0, 208, 132, 0.1) !important;
+        }
+        .sbg-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 5px 14px !important;
+            border-radius: 9999px !important;
+            background: rgba(0, 208, 132, 0.15) !important;
+            border: 1px solid rgba(0, 208, 132, 0.3) !important;
+            color: #00d084 !important;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.05em !important;
+            text-transform: uppercase !important;
+        }
+        .sbg-dropdown {
+            background-color: #161d27 !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border-radius: 10px !important;
+            padding: 10px 16px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            outline: none !important;
+            cursor: pointer !important;
+            width: 100% !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+        }
+        .sbg-dropdown:focus {
+            border-color: #00d084 !important;
+            box-shadow: 0 0 0 3px rgba(0, 208, 132, 0.25) !important;
+        }
+        .sbg-dropdown option {
+            background-color: #111620 !important;
+            color: #ffffff !important;
+            padding: 10px !important;
+        }
+    </style>
+
+    <div class="sbg-dash-container space-y-6">
+        <!-- Header & Event Filter Dropdown -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-800/60">
+            <div>
+                <div class="sbg-badge mb-2">
+                    <span class="w-2 h-2 rounded-full bg-[#00d084] animate-pulse"></span>
+                    <span>Event Registration Dashboard</span>
+                </div>
+                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">
+                    Registration Analytics & Quick Filter
+                </h2>
+            </div>
+
+            <!-- Dynamic Dropdown syncing with Django list filter -->
+            <div class="w-64 sm:w-80">
+                <label for="event_filter_select" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                    Filter by Event:
+                </label>
+                <select 
+                    id="event_filter_select"
+                    onchange="window.location.href=this.value ? '?event__id__exact=' + this.value : '?';"
+                    class="sbg-dropdown"
+                >
+                    <option value="">All Events Combined</option>
+                    {% for event in dashboard_data.events %}
+                        <option value="{{ event.id }}" {% if dashboard_data.selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
+                            {{ event.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Metric Cards & Leaderboard Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Total Community Students -->
+            <div class="sbg-card flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        👥 Total Community Students
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-[#00d084]/15 text-[#00d084] flex items-center justify-center font-bold text-base border border-[#00d084]/30">
+                        👥
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <p class="text-4xl font-extrabold text-white font-mono mt-1">
+                        {{ dashboard_data.total_students }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Total registered student profiles</p>
+                </div>
+            </div>
+
+            <!-- Card 2: Registrations for Selected Event -->
+            <div class="sbg-card flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        🎫 Event Registrations
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-base border border-sky-500/30">
+                        🎫
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <p class="text-4xl font-extrabold text-white font-mono mt-1">
+                        {{ dashboard_data.event_registrations }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1 truncate">
+                        {% if dashboard_data.selected_event_id %}Filtered Event Registrations{% else %}Total Registrations (All Events){% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Leaderboard Mini Card -->
+            <div class="sbg-card flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-2 border-b border-gray-700/50">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        🏆 Top Active Attendees
+                    </span>
+                    <span class="text-xs font-mono text-amber-400 font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                        Top 5
+                    </span>
+                </div>
+                <div class="mt-3 space-y-2">
+                    {% for student in dashboard_data.top_students %}
+                        <div class="flex items-center justify-between text-xs text-gray-300">
+                            <span class="truncate max-w-[170px] font-sans font-semibold text-white">
+                                {{ forloop.counter }}. {% if student.full_name %}{{ student.full_name }}{% else %}{{ student.user.email }}{% endif %}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00d084]/20 text-[#00d084] border border-[#00d084]/30">
+                                {{ student.reg_count }} Events
+                            </span>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-gray-400 italic py-2">No attendee data.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {{ block.super }}
+{% endblock %}

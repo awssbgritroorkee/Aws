@@ -159,6 +159,8 @@ class EventRegistrationAdmin(UnfoldImportExportModelAdmin):
     compressed_fields  = True
     warn_unsaved_form  = True
 
+    change_list_template = "admin/students/eventregistration/change_list.html"
+
     actions            = ['export_selective_data', 'export_as_pdf']
 
     # ── List view ─────────────────────────────────────────────────────────────
@@ -175,6 +177,34 @@ class EventRegistrationAdmin(UnfoldImportExportModelAdmin):
     date_hierarchy     = 'registered_at'
 
     readonly_fields    = ['registered_at']
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+
+        event_id = request.GET.get('event__id__exact')
+
+        total_students = StudentProfile.objects.count()
+
+        if event_id:
+            event_registrations = EventRegistration.objects.filter(event_id=event_id).count()
+        else:
+            event_registrations = EventRegistration.objects.count()
+
+        top_students = StudentProfile.objects.annotate(
+            reg_count=Count('registrations')
+        ).order_by('-reg_count')[:5]
+
+        events = Event.objects.all().order_by('-date')
+
+        extra_context['dashboard_data'] = {
+            'total_students': total_students,
+            'event_registrations': event_registrations,
+            'top_students': top_students,
+            'events': events,
+            'selected_event_id': event_id or '',
+        }
+
+        return super().changelist_view(request, extra_context=extra_context)
 
     # ── Custom column ─────────────────────────────────────────────────────────
     @display(description='Student', ordering='student__user__first_name')

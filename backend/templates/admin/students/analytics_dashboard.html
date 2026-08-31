@@ -1,0 +1,320 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block content %}
+<style>
+    /* Force Unfold canvas to full dark mode background */
+    html, body, #main, #content, .content, #content-main, main, header, .app-main {
+        background-color: #0b0e14 !important;
+        color: #f3f4f6 !important;
+    }
+
+    .sbg-page-wrap {
+        background-color: #0b0e14 !important;
+        min-height: 100vh;
+        padding: 24px;
+        color: #f3f4f6;
+    }
+
+    .sbg-header-box {
+        background: #111620 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        padding: 24px !important;
+        margin-bottom: 24px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .sbg-card {
+        background: #161d28 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        padding: 22px !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .sbg-card:hover {
+        background: #1c2534 !important;
+        border-color: rgba(0, 208, 132, 0.4) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(0, 208, 132, 0.12) !important;
+    }
+
+    .sbg-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 5px 14px !important;
+        border-radius: 9999px !important;
+        background: rgba(0, 208, 132, 0.15) !important;
+        border: 1px solid rgba(0, 208, 132, 0.3) !important;
+        color: #00d084 !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+    }
+
+    .sbg-dropdown-select {
+        background-color: #1a2230 !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        outline: none !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        min-width: 260px !important;
+    }
+
+    .sbg-dropdown-select:focus {
+        border-color: #00d084 !important;
+        box-shadow: 0 0 0 3px rgba(0, 208, 132, 0.25) !important;
+    }
+
+    .sbg-dropdown-select option {
+        background-color: #111620 !important;
+        color: #ffffff !important;
+        padding: 10px !important;
+    }
+
+    .sbg-green-btn {
+        background-color: #00d084 !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        padding: 12px 20px !important;
+        border-radius: 12px !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 14px rgba(0, 208, 132, 0.3) !important;
+    }
+
+    .sbg-green-btn:hover {
+        background-color: #00e08f !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(0, 208, 132, 0.45) !important;
+    }
+
+    .sbg-label {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #9ca3af !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    .sbg-number {
+        font-size: 38px !important;
+        font-weight: 900 !important;
+        color: #ffffff !important;
+        font-family: monospace, monospace !important;
+        line-height: 1.1 !important;
+    }
+</style>
+
+<div class="sbg-page-wrap">
+    <!-- Header & Event Selector Bar -->
+    <div class="sbg-header-box flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div>
+            <div class="sbg-badge mb-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00d084] animate-pulse"></span>
+                <span>AWS SBG CONTROL CENTER</span>
+            </div>
+            <h1 class="text-3xl font-black text-white tracking-tight">
+                Event Analytics & Reports
+            </h1>
+            <p class="text-sm text-gray-400 mt-1">
+                Real-time attendee metrics, leaderboard rankings, and 1-click Excel exports.
+            </p>
+        </div>
+
+        <!-- Event Selection Form -->
+        <form method="GET" action="" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div>
+                <label for="event_id" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                    Select Event:
+                </label>
+                <select 
+                    id="event_id" 
+                    name="event_id" 
+                    onchange="this.form.submit()"
+                    class="sbg-dropdown-select"
+                >
+                    <option value="" {% if not selected_event_id %}selected{% endif %}>All Events Combined</option>
+                    {% for event in events %}
+                        <option value="{{ event.id }}" {% if selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
+                            {{ event.title }} ({% if event.date %}{{ event.date }}{% else %}No date{% endif %})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Metrics Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Card 1: Total Community Students -->
+        <div class="sbg-card flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="sbg-label">👥 Total Community Students</span>
+                <span class="w-9 h-9 rounded-xl bg-[#00d084]/15 text-[#00d084] flex items-center justify-center font-bold text-base border border-[#00d084]/30">
+                    👥
+                </span>
+            </div>
+            <div class="mt-4">
+                <p class="sbg-number">{{ total_community_students }}</p>
+                <p class="text-xs text-gray-400 mt-1 font-medium">Registered student profiles in database</p>
+            </div>
+        </div>
+
+        <!-- Card 2: Selected Event Registrations -->
+        <div class="sbg-card flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="sbg-label">🎫 Event Registrations</span>
+                <span class="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-base border border-sky-500/30">
+                    🎫
+                </span>
+            </div>
+            <div class="mt-4">
+                <p class="sbg-number text-[#00d084]">{{ event_registrations_count }}</p>
+                <p class="text-xs text-gray-400 mt-1 font-medium truncate">
+                    {% if selected_event %}{{ selected_event.title }}{% else %}All Events Combined{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Card 3: 1-Click Excel Export Button -->
+        <div class="sbg-card flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="sbg-label">📊 Excel Data Export</span>
+                <span class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/30">
+                    📊
+                </span>
+            </div>
+            <div class="mt-4">
+                {% if selected_event_id %}
+                    <a 
+                        href="{% url 'admin_analytics_export' %}?event_id={{ selected_event_id }}" 
+                        class="sbg-green-btn w-full"
+                    >
+                        <span>📥 Export Event Data (Excel)</span>
+                    </a>
+                {% else %}
+                    <a 
+                        href="{% url 'admin_analytics_export' %}?event_id={{ events.0.id }}" 
+                        class="sbg-green-btn w-full"
+                    >
+                        <span>📥 Export Recent Event (Excel)</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard & Registrations Table Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Top Attendees Leaderboard (1 Column) -->
+        <div class="sbg-card space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-700/60">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span>🏆 Top Active Attendees</span>
+                </h3>
+                <span class="text-xs font-mono text-amber-400 font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                    Leaderboard
+                </span>
+            </div>
+
+            <div class="space-y-3">
+                {% for student in top_students %}
+                    <div class="p-3.5 rounded-xl bg-[#111620] border border-gray-700/60 flex items-center justify-between gap-3 hover:border-[#00d084]/40 transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold font-mono {% if forloop.counter == 1 %}bg-amber-400 text-black{% elif forloop.counter == 2 %}bg-gray-300 text-black{% elif forloop.counter == 3 %}bg-amber-600 text-white{% else %}bg-gray-800 text-gray-300{% endif %}">
+                                #{{ forloop.counter }}
+                            </span>
+                            <div>
+                                <p class="text-sm font-bold text-white leading-tight">
+                                    {% if student.full_name %}{{ student.full_name }}{% else %}{{ student.user.email }}{% endif %}
+                                </p>
+                                <p class="text-xs text-gray-400 font-mono mt-0.5">
+                                    {{ student.branch }} {% if student.academic_year %}• {{ student.get_academic_year_display }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#00d084]/20 text-[#00d084] border border-[#00d084]/35">
+                                {{ student.reg_count }} Events
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-gray-400 italic text-center py-6 text-xs">No student profiles found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Registered Students Table (2 Columns) -->
+        <div class="lg:col-span-2 sbg-card space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-700/60">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span>📋 Registered Students List</span>
+                    <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-[#00d084]/15 text-[#00d084] border border-[#00d084]/30 font-bold">
+                        {{ registered_students|length }} Total
+                    </span>
+                </h3>
+            </div>
+
+            {% if registered_students %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-200 border-collapse">
+                        <thead>
+                            <tr class="bg-[#111620] text-gray-400 font-mono uppercase text-[10px]">
+                                <th class="p-3.5 rounded-l-xl">#</th>
+                                <th class="p-3.5">Student Name</th>
+                                <th class="p-3.5">Roll Number</th>
+                                <th class="p-3.5">Branch & Year</th>
+                                <th class="p-3.5">Phone</th>
+                                <th class="p-3.5 rounded-r-xl">Registered At</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 font-mono">
+                            {% for reg in registered_students %}
+                                <tr class="hover:bg-[#1c2534] transition-colors">
+                                    <td class="p-3.5 text-gray-400 font-bold">{{ forloop.counter }}</td>
+                                    <td class="p-3.5 font-bold text-white font-sans text-sm">
+                                        {% if reg.student.full_name %}{{ reg.student.full_name }}{% else %}{{ reg.student.user.email }}{% endif %}
+                                    </td>
+                                    <td class="p-3.5 text-gray-300">{{ reg.student.roll_number }}</td>
+                                    <td class="p-3.5 text-gray-300">
+                                        {{ reg.student.branch }} ({% if reg.student.academic_year %}{{ reg.student.get_academic_year_display }}{% else %}N/A{% endif %})
+                                    </td>
+                                    <td class="p-3.5 text-[#00d084] font-bold">
+                                        <a href="tel:{{ reg.student.mobile_number }}" class="hover:underline flex items-center gap-1">
+                                            📞 {{ reg.student.mobile_number }}
+                                        </a>
+                                    </td>
+                                    <td class="p-3.5 text-gray-400">
+                                        {{ reg.registered_at|date:"Y-m-d H:i" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="py-10 text-center space-y-2">
+                    <p class="text-sm font-semibold text-gray-300">No registered attendees for this event selection yet.</p>
+                    <p class="text-xs text-gray-500">Select another event from the dropdown above to view its attendee records.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

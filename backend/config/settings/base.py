@@ -4,6 +4,7 @@ Django settings — Base (shared between dev and prod).
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.urls import reverse_lazy
 from import_export.formats.base_formats import CSV, XLSX
 
 load_dotenv()
@@ -258,6 +259,19 @@ UNFOLD = {
                         "title": "Dashboard",
                         "icon": "dashboard",
                         "link": "/admin/",
+                        "permission": lambda request: request.user.is_staff or request.user.is_superuser,
+                    },
+                ],
+            },
+            # Analytics & Reports
+            {
+                "title": "Analytics & Reports",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "📊 Event Dashboard",
+                        "icon": "analytics",
+                        "link": reverse_lazy("admin_custom_analytics"),
                         "permission": lambda request: request.user.is_staff or request.user.is_superuser,
                     },
                 ],
