@@ -40,13 +40,13 @@ const PinVerifyBox = ({ onVerify, loading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const pin = digits.join('');
-    if (pin.length !== 4) {
+    const finalPin = digits.join('').trim();
+    if (finalPin.length !== 4) {
       setErrorMsg('Enter all 4 digits');
       return;
     }
-    onVerify(pin, (err) => {
-      setErrorMsg(err || 'Incorrect Invite Code');
+    onVerify(finalPin, (err) => {
+      setErrorMsg(err || 'Incorrect Invite Code. Try again.');
       setDigits(['', '', '', '']);
       inputRefs[0].current?.focus();
     });

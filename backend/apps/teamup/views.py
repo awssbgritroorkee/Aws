@@ -248,7 +248,7 @@ class PinVerifyView(APIView):
     Validates:
       1. User has an active 'in_process' interest.
       2. The 4-hour window has not expired.
-      3. The submitted PIN matches post.secret_pin (constant-time compare).
+      3. The submitted PIN matches post.secret_pin.
 
     On success:
       - interest.status → 'accepted'
@@ -262,48 +262,48 @@ class PinVerifyView(APIView):
     def post(self, request, post_id):
         submitted_pin = str(request.data.get('pin', '')).strip()
 
-        try:
-            post = TeamRequest.objects.select_for_update().get(pk=post_id)
-        except TeamRequest.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            interest = TeamInterest.objects.get(
-                request_post=post,
-                interested_user=request.user,
-            )
-        except TeamInterest.DoesNotExist:
-            return Response(
-                {'detail': 'You have not expressed interest in this post.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Sweep expiry first
-        sweep_expired_interests(post)
-        interest.refresh_from_db()
-
-        if interest.status == 'timeout':
-            return Response(
-                {'detail': 'Your 4-hour window has expired. Please express interest again.'},
-                status=status.HTTP_408_REQUEST_TIMEOUT
-            )
-
-        if interest.status == 'accepted':
-            return Response(
-                {'detail': 'You have already joined this team!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Constant-time PIN comparison (prevents timing attacks)
-        pin_valid = hmac.compare_digest(submitted_pin, post.secret_pin)
-        if not pin_valid:
-            return Response(
-                {'detail': 'Incorrect PIN. Please try again.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Atomic write: accept + decrement slot
         with transaction.atomic():
+            try:
+                post = TeamRequest.objects.select_for_update().get(pk=post_id)
+            except TeamRequest.DoesNotExist:
+                return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            try:
+                interest = TeamInterest.objects.get(
+                    request_post=post,
+                    interested_user=request.user,
+                )
+            except TeamInterest.DoesNotExist:
+                return Response(
+                    {'detail': 'You have not expressed interest in this post.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Sweep expiry first
+            sweep_expired_interests(post)
+            interest.refresh_from_db()
+
+            if interest.status == 'timeout':
+                return Response(
+                    {'detail': 'Your 4-hour window has expired. Please express interest again.'},
+                    status=status.HTTP_408_REQUEST_TIMEOUT
+                )
+
+            if interest.status == 'accepted':
+                return Response(
+                    {'detail': 'You have already joined this team!'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            actual_pin = str(post.secret_pin).strip()
+
+            if submitted_pin != actual_pin:
+                return Response(
+                    {'detail': 'Incorrect Invite Code. Try again.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Atomic write: accept + decrement slot
             interest.status = 'accepted'
             interest.save(update_fields=['status'])
 
