@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     TeamRequestListCreateView,
+    TeamRequestDetailView,
     TeamInterestView,
     PinVerifyView,
     ReduceSlotsView,
@@ -10,6 +11,7 @@ from .views import (
 urlpatterns = [
     # ── Public board + Post creation ────────────────────────────────────────────
     path('posts/',                          TeamRequestListCreateView.as_view(), name='teamup_posts'),
+    path('posts/<int:post_id>/',            TeamRequestDetailView.as_view(),     name='teamup_post_detail'),
 
     # ── Post-level actions (auth required) ───────────────────────────────────────
     path('posts/<int:post_id>/interest/',   TeamInterestView.as_view(),          name='teamup_interest'),

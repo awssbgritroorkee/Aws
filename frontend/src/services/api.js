@@ -104,9 +104,27 @@ export const registerForEvent = (eventId, data) =>
 // ── Team Up Matchmaking System ─────────────────────────────────────────────
 export const getTeamUpPosts       = (params)     => api.get('/api/teamup/posts/', { params });
 export const createTeamUpPost     = (data)       => api.post('/api/teamup/posts/', data);
+export const deleteTeamUpPost     = (postId)     => api.delete(`/api/teamup/posts/${postId}/`);
 export const expressInterest      = (postId)     => api.post(`/api/teamup/posts/${postId}/interest/`);
 export const verifyTeamPin        = (postId, pin) => api.post(`/api/teamup/posts/${postId}/verify-pin/`, { pin });
 export const reduceSlots          = (postId)     => api.post(`/api/teamup/posts/${postId}/reduce-slots/`);
 export const getMyTeamWorkspace   = ()           => api.get('/api/teamup/my-workspace/');
+
+// ── Admin Analytics & Export ──────────────────────────────────────────────
+export const getAnalyticsData = (params) => api.get('/api/students/analytics/', { params });
+
+export const downloadAnalyticsExcel = async (eventId) => {
+  const response = await api.get(`/api/students/analytics/export-excel/?event_id=${eventId}`, {
+    responseType: 'blob',
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `event_${eventId}_registrations.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 export default api;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, KeyRound, AlertTriangle, Users, User, Loader2 } from 'lucide-react';
-import { createTeamUpPost } from '../../services/api';
+import { createTeamUpPost, getStudentProfile } from '../../services/api';
 
 const InputField = ({ id, label, required, children, note }) => (
   <div className="flex flex-col gap-1.5">
@@ -32,9 +32,25 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
   const [genderPref, setGenderPref] = useState('any');
   const [message, setMessage] = useState('');
   const [pinDigits, setPinDigits] = useState(['', '', '', '']);
+  const [mobileNumber, setMobileNumber] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
+
+  // Auto-fill student profile details (mobile number) on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getStudentProfile();
+        if (res.data?.mobile_number) {
+          setMobileNumber(res.data.mobile_number);
+        }
+      } catch (err) {
+        console.warn('Could not load student profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleEventSelect = (e) => {
     const val = e.target.value;
@@ -82,6 +98,11 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
       return;
     }
 
+    if (!mobileNumber.trim()) {
+      setValidationError('Please enter a Mobile / WhatsApp Number.');
+      return;
+    }
+
     const pin = pinDigits.join('');
     if (!/^\d{4}$/.test(pin)) {
       setValidationError('Please enter a 4-digit numeric Invite Code.');
@@ -105,6 +126,7 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
         gender_preference: genderPref,
         message: message.trim(),
         secret_pin: pin,
+        mobile_number: mobileNumber.trim(),
       };
 
       const res = await createTeamUpPost(payload);
@@ -277,6 +299,19 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
               </select>
             </InputField>
           </div>
+
+          {/* Mobile / WhatsApp Number */}
+          <InputField id="create-mobile" label="Mobile / WhatsApp Number" required note="For team communication">
+            <input
+              id="create-mobile"
+              type="text"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              placeholder="Enter your phone number for team communication"
+              required
+              className={inputClass}
+            />
+          </InputField>
 
           {/* Gender Preference */}
           <InputField id="create-gender" label="Gender Preference" required>

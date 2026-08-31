@@ -141,6 +141,15 @@ class TeamRequestListCreateView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # Sync/update creator's mobile_number in StudentProfile if provided
+        mobile_number = str(request.data.get('mobile_number', '')).strip()
+        if mobile_number:
+            from apps.students.models import StudentProfile
+            StudentProfile.objects.update_or_create(
+                user=request.user,
+                defaults={'mobile_number': mobile_number}
+            )
+
         # Force is_approved_by_admin=False regardless of any input
         post = serializer.save(
             creator=request.user,
@@ -153,6 +162,29 @@ class TeamRequestListCreateView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+
+class TeamRequestDetailView(APIView):
+    """
+    DELETE /api/teamup/posts/<post_id>/ — Delete a post (creator only)
+    """
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes     = [IsAuthenticated]
+
+    def delete(self, request, post_id):
+        try:
+            post = TeamRequest.objects.get(pk=post_id)
+        except TeamRequest.DoesNotExist:
+            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if post.creator != request.user:
+            return Response(
+                {'detail': 'Only the creator of this post can delete it.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TeamInterestView(APIView):

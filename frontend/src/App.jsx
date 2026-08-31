@@ -10,6 +10,7 @@ import Gallery            from './pages/Gallery';
 import Contact            from './pages/Contact';
 import ProfileUpdate      from './pages/ProfileUpdate';
 import TeamUp             from './pages/TeamUp';
+import AdminAnalytics     from './pages/AdminAnalytics';
 
 const App = () => (
   <BrowserRouter>
@@ -18,16 +19,17 @@ const App = () => (
       <Navbar />
       <main id="main-content" tabIndex="-1" className="flex-grow flex flex-col">
         <Routes>
-          <Route path="/"         element={<Home />}          />
-          <Route path="/about"    element={<About />}         />
-          <Route path="/events"   element={<Events />}        />
-          <Route path="/teamup"   element={<TeamUp />}        />
-          <Route path="/team"     element={<Team />}          />
-          <Route path="/gallery"  element={<Gallery />}       />
-          <Route path="/contact"  element={<Contact />}       />
-          <Route path="/profile"  element={<ProfileUpdate />} />
+          <Route path="/"                 element={<Home />}          />
+          <Route path="/about"            element={<About />}         />
+          <Route path="/events"           element={<Events />}        />
+          <Route path="/teamup"           element={<TeamUp />}        />
+          <Route path="/team"             element={<Team />}          />
+          <Route path="/gallery"          element={<Gallery />}       />
+          <Route path="/contact"          element={<Contact />}       />
+          <Route path="/profile"          element={<ProfileUpdate />} />
+          <Route path="/admin/analytics"  element={<AdminAnalytics />}/>
           {/* Catch-all → Home */}
-          <Route path="*"         element={<Home />}          />
+          <Route path="*"                 element={<Home />}          />
         </Routes>
       </main>
       <Footer />
