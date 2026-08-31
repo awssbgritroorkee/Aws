@@ -172,7 +172,7 @@ const TeamRequestCard = ({
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#00d084]/10 border border-[#00d084]/30">
                 <div className="text-[#00d084] font-bold text-sm tracking-wide flex items-center gap-1.5">
                   <Phone className="w-4 h-4" />
-                  <span>📞 {formattedMobile}</span>
+                  <span>{formattedMobile}</span>
                 </div>
                 <a
                   href={`tel:${localMobile}`}
