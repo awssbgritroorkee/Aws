@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Phone, Users, User, Calendar, Sparkles, CheckCircle2, ShieldAlert, Lock } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import PinVerifyBox from './PinVerifyBox';
+import { getStudentProfile, updateStudentProfile } from '../../services/api';
 
 const TeamRequestCard = ({
   post,
@@ -17,6 +18,12 @@ const TeamRequestCard = ({
   const [localMobile, setLocalMobile] = useState(post.creator_mobile);
   const [localMembersNeeded, setLocalMembersNeeded] = useState(post.members_needed);
 
+  // Phone Collection Modal state
+  const [showPhonePopup, setShowPhonePopup] = useState(false);
+  const [tempPhone, setTempPhone] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
   const isCreator = currentUserId && post.creator_email === currentUserId.email;
 
   // Auto-remove card from Explore Board 30s after officially joining
@@ -30,8 +37,31 @@ const TeamRequestCard = ({
   }, [localStatus, post.id, onRemovePost]);
 
   const handleInterestedClick = async () => {
+    if (!isAuthenticated) {
+      await onInterested(post.id);
+      return;
+    }
+
     setLoading(true);
     try {
+      const profileRes = await getStudentProfile();
+      const existingMobile = profileRes.data?.mobile_number;
+
+      if (!existingMobile || !existingMobile.trim()) {
+        setLoading(false);
+        setPhoneError('');
+        setTempPhone('');
+        setShowPhonePopup(true);
+        return;
+      }
+
+      const res = await onInterested(post.id);
+      if (res) {
+        setLocalStatus('in_process');
+        setLocalLockedUntil(res.locked_until);
+        if (res.creator_mobile) setLocalMobile(res.creator_mobile);
+      }
+    } catch {
       const res = await onInterested(post.id);
       if (res) {
         setLocalStatus('in_process');
@@ -39,6 +69,38 @@ const TeamRequestCard = ({
         if (res.creator_mobile) setLocalMobile(res.creator_mobile);
       }
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePhoneAndSubmit = async () => {
+    const cleanPhone = tempPhone.trim();
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setPhoneError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    setSavingPhone(true);
+    setPhoneError('');
+    try {
+      await updateStudentProfile({ mobile_number: cleanPhone });
+      setShowPhonePopup(false);
+
+      setLoading(true);
+      const res = await onInterested(post.id);
+      if (res) {
+        setLocalStatus('in_process');
+        setLocalLockedUntil(res.locked_until);
+        if (res.creator_mobile) setLocalMobile(res.creator_mobile);
+      }
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.mobile_number?.[0] ||
+        'Failed to save mobile number. Please try again.';
+      setPhoneError(msg);
+    } finally {
+      setSavingPhone(false);
       setLoading(false);
     }
   };
@@ -52,6 +114,12 @@ const TeamRequestCard = ({
         if (typeof res.members_needed === 'number') {
           setLocalMembersNeeded(res.members_needed);
         }
+        // Strict 30-second unmount sequence
+        setTimeout(() => {
+          if (onRemovePost) {
+            onRemovePost(post.id);
+          }
+        }, 30000);
       }
     } catch (err) {
       const msg = err?.response?.data?.detail || 'Incorrect Invite Code. Try again.';
@@ -157,7 +225,7 @@ const TeamRequestCard = ({
             </p>
           </div>
         ) : localStatus === 'in_process' ? (
-          /* State 3: IN_PROCESS (4-hour Lock Active) */
+          /* State 3: IN_PROCESS (2-hour Lock Active) */
           <div className="space-y-3">
             <div className="flex items-center justify-between bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
               <div className="flex items-center gap-2 text-xs font-medium text-amber-300">
@@ -206,7 +274,7 @@ const TeamRequestCard = ({
               </button>
             </div>
             <p className="text-xs text-gray-400">
-              The 4-hour lock expired before the Invite Code was entered. Click Re-Lock to try again.
+              The 2-hour lock expired before the Invite Code was entered. Click Re-Lock to try again.
             </p>
           </div>
         ) : isCreator ? (
@@ -248,6 +316,48 @@ const TeamRequestCard = ({
           </div>
         )}
       </div>
+
+      {/* Mobile Number Collection Popup */}
+      {showPhonePopup && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#11161d] border border-gray-700 p-6 rounded-xl max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">📞 Mobile Number Required</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              You need to provide a WhatsApp/Mobile number so the team creator can share the 4-digit invite code with you.
+            </p>
+            <input
+              type="text"
+              value={tempPhone}
+              onChange={(e) => {
+                setTempPhone(e.target.value);
+                setPhoneError('');
+              }}
+              placeholder="Enter 10-digit number"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white mb-3 focus:border-[#00d084] focus:outline-none transition-all placeholder-gray-500 font-mono"
+            />
+            {phoneError && (
+              <p className="text-xs text-red-400 font-mono mb-3">{phoneError}</p>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowPhonePopup(false)}
+                className="text-gray-400 hover:text-white px-3 py-2 text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePhoneAndSubmit}
+                disabled={savingPhone}
+                className="bg-[#00d084] text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-white transition-all disabled:opacity-50"
+              >
+                {savingPhone ? 'Saving...' : 'Save & Continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

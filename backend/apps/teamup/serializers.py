@@ -14,7 +14,7 @@ from rest_framework import serializers
 from .models import TeamRequest, TeamInterest
 
 
-LOCK_HOURS = 4  # The 4-hour mutual consent window
+LOCK_HOURS = 2  # The 2-hour mutual consent window
 
 
 class CreatorProfileSerializer(serializers.Serializer):
@@ -147,7 +147,7 @@ class TeamRequestListSerializer(serializers.ModelSerializer):
 
     def get_my_locked_until(self, obj):
         """
-        Returns ISO timestamp of when the 4-hour lock expires.
+        Returns ISO timestamp of when the 2-hour lock expires.
         Only populated when status is 'in_process'.
         """
         interest = self._get_active_interest(obj)

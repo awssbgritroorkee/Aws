@@ -92,6 +92,7 @@ export const createContactMessage = (data) => api.post('/api/contact/', data);
  * Returns {} (empty object, status 200) for first-time users — no 404 handling needed.
  */
 export const getStudentProfile = () => api.get('/api/student-profile/');
+export const updateStudentProfile = (data) => api.patch('/api/student-profile/', data);
 
 /**
  * POST /api/events/<eventId>/register/

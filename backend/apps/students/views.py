@@ -13,11 +13,9 @@ from .serializers import StudentProfileSerializer, EventRegistrationSerializer
 class StudentProfileView(APIView):
     """
     GET /api/student-profile/
+    PATCH /api/student-profile/
 
-    Returns the authenticated user's StudentProfile for autofilling the
-    EventRegistrationModal. Returns an empty object ({}) instead of 404
-    when the user has never registered before, so the frontend can safely
-    try to autofill without error handling for first-time users.
+    Returns/updates the authenticated user's StudentProfile.
     """
     authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes     = [IsAuthenticated]
@@ -31,6 +29,25 @@ class StudentProfileView(APIView):
 
         serializer = StudentProfileSerializer(profile)
         return Response(serializer.data)
+
+    def patch(self, request):
+        profile, created = StudentProfile.objects.get_or_create(
+            user=request.user,
+            defaults={
+                'full_name': request.user.get_full_name() or '',
+                'course': '',
+                'branch': '',
+                'section': '',
+                'roll_number': '',
+                'mobile_number': str(request.data.get('mobile_number', '')).strip(),
+            }
+        )
+        if not created and 'mobile_number' in request.data:
+            profile.mobile_number = str(request.data['mobile_number']).strip()
+            profile.save(update_fields=['mobile_number'])
+
+        serializer = StudentProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class EventRegisterView(APIView):

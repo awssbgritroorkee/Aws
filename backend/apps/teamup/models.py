@@ -122,9 +122,9 @@ class TeamInterest(models.Model):
     The 'handshake' record created when a user clicks "Interested" on a post.
 
     Lifecycle:
-      in_process → The 4-hour timer is running. Phone numbers are revealed.
-      accepted   → PIN was verified within 4 hours. Slot officially filled.
-      timeout    → 4 hours elapsed without PIN entry. Lock expired.
+      in_process → The 2-hour timer is running. Phone numbers are revealed.
+      accepted   → PIN was verified within 2 hours. Slot officially filled.
+      timeout    → 2 hours elapsed without PIN entry. Lock expired.
 
     The timer is evaluated DYNAMICALLY on every read (no Celery required):
     the view calls sweep_expired_interests() which bulk-updates stale
@@ -157,7 +157,7 @@ class TeamInterest(models.Model):
     )
     locked_at = models.DateTimeField(
         auto_now_add=True,
-        help_text='Timestamp when the 4-hour lock window started.'
+        help_text='Timestamp when the 2-hour lock window started.'
     )
 
     class Meta:

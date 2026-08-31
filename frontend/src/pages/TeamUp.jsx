@@ -121,7 +121,7 @@ const TeamUp = () => {
     }
     try {
       const res = await expressInterest(postId);
-      showToast(res.data?.detail || 'Slot locked for 4 hours!', 'success');
+      showToast(res.data?.detail || 'Slot locked for 2 hours!', 'success');
       return res.data;
     } catch (err) {
       const msg = err?.response?.data?.detail || 'Failed to express interest.';

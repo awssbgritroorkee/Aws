@@ -12,7 +12,7 @@ All 5 Team Up API endpoints:
 
 Timer Strategy (Option A — Dynamic on Read):
   sweep_expired_interests(post) is called before serialization.
-  It bulk-updates any in_process interests older than 4 hours to 'timeout'.
+  It bulk-updates any in_process interests older than 2 hours to 'timeout'.
   This requires zero background workers — safe for Render's free tier.
 
 Auto-Cleanup (lazy, on read):
@@ -39,7 +39,7 @@ from .serializers import (
 )
 from .permissions import IsCreator
 
-LOCK_HOURS = 4
+LOCK_HOURS = 2
 OTHER_EXPIRY_DAYS = 7
 
 
@@ -199,7 +199,7 @@ class TeamInterestView(APIView):
     """
     POST /api/teamup/posts/<post_id>/interest/
 
-    Locks a slot for 4 hours by creating a TeamInterest with status='in_process'.
+    Locks a slot for 2 hours by creating a TeamInterest with status='in_process'.
     Rules:
       - Creator cannot express interest in their own post.
       - Duplicate interest is rejected.
@@ -233,6 +233,9 @@ class TeamInterestView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Sweep expired interests for this post
+        sweep_expired_interests(post)
+
         # Check for existing interest record
         existing = TeamInterest.objects.filter(
             request_post=post,
@@ -240,10 +243,6 @@ class TeamInterestView(APIView):
         ).first()
 
         if existing:
-            # Sweep before reporting status
-            sweep_expired_interests(post)
-            existing.refresh_from_db()
-
             if existing.status == 'timeout':
                 # Allow re-interest after timeout by deleting old record
                 existing.delete()
@@ -258,6 +257,19 @@ class TeamInterestView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+        # Enforce max 4 pending applicants per open slot
+        max_allowed_interests = post.members_needed * 4
+        current_in_process_count = TeamInterest.objects.filter(
+            request_post=post,
+            status='in_process'
+        ).count()
+
+        if current_in_process_count >= max_allowed_interests:
+            return Response(
+                {'detail': 'This post has reached the maximum number of pending applicants.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         interest = TeamInterest.objects.create(
             request_post=post,
             interested_user=request.user,
@@ -271,7 +283,7 @@ class TeamInterestView(APIView):
 
         return Response(
             {
-                'detail': 'Slot locked for 4 hours. Enter the PIN before the timer runs out!',
+                'detail': 'Slot locked for 2 hours. Enter the PIN before the timer runs out!',
                 'status': 'in_process',
                 'locked_until': locked_until,
                 'creator_mobile': creator_mobile,
@@ -287,7 +299,7 @@ class PinVerifyView(APIView):
     Accepts { "pin": "1234" }.
     Validates:
       1. User has an active 'in_process' interest.
-      2. The 4-hour window has not expired.
+      2. The 2-hour window has not expired.
       3. The submitted PIN matches post.secret_pin.
 
     On success:
@@ -325,7 +337,7 @@ class PinVerifyView(APIView):
 
             if interest.status == 'timeout':
                 return Response(
-                    {'detail': 'Your 4-hour window has expired. Please express interest again.'},
+                    {'detail': 'Your 2-hour window has expired. Please express interest again.'},
                     status=status.HTTP_408_REQUEST_TIMEOUT
                 )
 
