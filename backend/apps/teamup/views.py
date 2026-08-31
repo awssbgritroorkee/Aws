@@ -113,6 +113,14 @@ class TeamRequestListCreateView(APIView):
             'creator__student_profile',
         ).prefetch_related('interests')
 
+        # Exclude posts where request.user has officially joined (status='accepted')
+        if request.user and request.user.is_authenticated:
+            accepted_post_ids = TeamInterest.objects.filter(
+                interested_user=request.user,
+                status='accepted'
+            ).values_list('request_post_id', flat=True)
+            qs = qs.exclude(id__in=accepted_post_ids)
+
         # ── 4. Optional filters ───────────────────────────────────────────────
         mode = request.query_params.get('mode')
         if mode in ('need_members', 'need_team'):

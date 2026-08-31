@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Phone, Users, User, Calendar, Sparkles, CheckCircle2, ShieldAlert, Lock } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import PinVerifyBox from './PinVerifyBox';
@@ -7,6 +7,7 @@ const TeamRequestCard = ({
   post,
   onInterested,
   onVerifyPin,
+  onRemovePost,
   isAuthenticated,
   currentUserId,
 }) => {
@@ -17,6 +18,16 @@ const TeamRequestCard = ({
   const [localMembersNeeded, setLocalMembersNeeded] = useState(post.members_needed);
 
   const isCreator = currentUserId && post.creator_email === currentUserId.email;
+
+  // Auto-remove card from Explore Board 30s after officially joining
+  useEffect(() => {
+    if (localStatus === 'accepted' && onRemovePost) {
+      const timer = setTimeout(() => {
+        onRemovePost(post.id);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [localStatus, post.id, onRemovePost]);
 
   const handleInterestedClick = async () => {
     setLoading(true);
@@ -141,6 +152,9 @@ const TeamRequestCard = ({
                 </a>
               </div>
             )}
+            <p className="text-[10px] font-mono text-emerald-400/60 text-right pt-0.5">
+              ⏱ Card auto-removes from board in 30s
+            </p>
           </div>
         ) : localStatus === 'in_process' ? (
           /* State 3: IN_PROCESS (4-hour Lock Active) */

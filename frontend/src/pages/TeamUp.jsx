@@ -301,6 +301,7 @@ const TeamUp = () => {
                     post={post}
                     onInterested={handleInterested}
                     onVerifyPin={handleVerifyPin}
+                    onRemovePost={(postId) => setPosts((prev) => prev.filter((p) => p.id !== postId))}
                     isAuthenticated={!!user}
                     currentUserId={user}
                   />
