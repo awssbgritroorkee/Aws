@@ -8,6 +8,13 @@ class StudentProfile(models.Model):
     One profile per Django user — reused and updated across every event registration,
     so returning attendees see their fields autofilled.
     """
+    ACADEMIC_YEAR_CHOICES = [
+        ('1st', '1st Year'),
+        ('2nd', '2nd Year'),
+        ('3rd', '3rd Year'),
+        ('4th', '4th Year'),
+    ]
+
     user          = models.OneToOneField(
                         User,
                         on_delete=models.CASCADE,
@@ -24,6 +31,12 @@ class StudentProfile(models.Model):
     section       = models.CharField(max_length=10)
     roll_number   = models.CharField(max_length=30)
     mobile_number = models.CharField(max_length=15)
+    academic_year = models.CharField(
+                        max_length=10,
+                        choices=ACADEMIC_YEAR_CHOICES,
+                        blank=True,
+                        null=True,
+                        help_text='Academic year of the student (e.g. 1st, 2nd, 3rd, 4th).')
 
     class Meta:
         verbose_name        = 'Student Profile'

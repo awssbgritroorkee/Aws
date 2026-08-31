@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.gallery',
     'apps.contact',
     'apps.students',
+    'apps.teamup',
 ]
 
 SITE_ID = 1
@@ -330,6 +331,25 @@ UNFOLD = {
                     },
                 ],
             },
+            # Team Up: Team Requests, Team Interests
+            {
+                "title": "Team Up",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Team Requests",
+                        "icon": "group_add",
+                        "link": "/admin/teamup/teamrequest/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('teamup.view_teamrequest'),
+                    },
+                    {
+                        "title": "Team Interests",
+                        "icon": "handshake",
+                        "link": "/admin/teamup/teaminterest/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('teamup.view_teaminterest'),
+                    },
+                ],
+            },
             # Communications & Socials: Contact Messages, Social Accounts, Social Applications
             {
                 "title": "Communications & Socials",
@@ -448,6 +468,24 @@ UNFOLD = {
                     "link": "/admin/students/studentprofile/",
                     "icon": "school",
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_studentprofile'),
+                },
+            ],
+        },
+        # Team Up tab group
+        {
+            "models": ["teamup.teamrequest", "teamup.teaminterest"],
+            "items": [
+                {
+                    "title": "Team Requests",
+                    "link": "/admin/teamup/teamrequest/",
+                    "icon": "group_add",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('teamup.view_teamrequest'),
+                },
+                {
+                    "title": "Team Interests",
+                    "link": "/admin/teamup/teaminterest/",
+                    "icon": "handshake",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('teamup.view_teaminterest'),
                 },
             ],
         },

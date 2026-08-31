@@ -28,6 +28,9 @@ urlpatterns = [
 
     # ── Event Registration System ─────────────────────────────────────────────
     path('api/',         include('apps.students.urls')),
+
+    # ── Team Up — Matchmaking System ──────────────────────────────────────────
+    path('api/teamup/', include('apps.teamup.urls')),
 ]
 
 if settings.DEBUG:

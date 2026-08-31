@@ -27,6 +27,7 @@ const EMPTY_FORM = {
   section:       '',
   roll_number:   '',
   mobile_number: '',
+  academic_year: '',
 };
 
 // ── Styled input helper ───────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
             section:       data.section       || '',
             roll_number:   data.roll_number   || '',
             mobile_number: data.mobile_number || '',
+            academic_year: data.academic_year || '',
           });
         } else if (!cancelled) {
           setForm((prev) => ({ ...prev, full_name: defaultName }));
@@ -352,6 +354,29 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                     maxLength={10}
                     className={inputClass}
                   />
+                </InputField>
+
+                {/* Academic Year */}
+                <InputField id="reg-academic-year" label="Academic Year" required>
+                  <div className="relative">
+                    <select
+                      id="reg-academic-year"
+                      name="academic_year"
+                      value={form.academic_year}
+                      onChange={handleChange}
+                      required
+                      className={selectClass}
+                    >
+                      <option value="" disabled>Select academic year</option>
+                      <option value="1st">1st Year</option>
+                      <option value="2nd">2nd Year</option>
+                      <option value="3rd">3rd Year</option>
+                      <option value="4th">4th Year</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </InputField>
 
               </div>

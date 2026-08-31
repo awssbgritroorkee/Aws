@@ -94,7 +94,7 @@ class StudentProfileAdmin(ModelAdmin):
             'fields': ('user',),
         }),
         ('🎓 Academic Details', {
-            'fields': ('full_name', 'father_name', 'course', 'branch', 'section', 'roll_number', 'mobile_number'),
+            'fields': ('full_name', 'father_name', 'course', 'branch', 'section', 'roll_number', 'mobile_number', 'academic_year'),
         }),
     )
 

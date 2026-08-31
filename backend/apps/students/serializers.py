@@ -26,6 +26,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             'section',
             'roll_number',
             'mobile_number',
+            'academic_year',
         ]
 
 
@@ -46,6 +47,12 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         validators=[mobile_validator]
     )
+    academic_year = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
 
     class Meta:
         model  = EventRegistration
@@ -53,6 +60,6 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
             'id', 'registered_at',
             # Profile fields submitted by the user
             'full_name', 'father_name', 'course', 'branch',
-            'section', 'roll_number', 'mobile_number',
+            'section', 'roll_number', 'mobile_number', 'academic_year',
         ]
         read_only_fields = ['id', 'registered_at']

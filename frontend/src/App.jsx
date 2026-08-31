@@ -9,6 +9,7 @@ import Team               from './pages/Team';
 import Gallery            from './pages/Gallery';
 import Contact            from './pages/Contact';
 import ProfileUpdate      from './pages/ProfileUpdate';
+import TeamUp             from './pages/TeamUp';
 
 const App = () => (
   <BrowserRouter>
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/"         element={<Home />}          />
           <Route path="/about"    element={<About />}         />
           <Route path="/events"   element={<Events />}        />
+          <Route path="/teamup"   element={<TeamUp />}        />
           <Route path="/team"     element={<Team />}          />
           <Route path="/gallery"  element={<Gallery />}       />
           <Route path="/contact"  element={<Contact />}       />

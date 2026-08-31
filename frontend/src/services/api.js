@@ -101,4 +101,12 @@ export const getStudentProfile = () => api.get('/api/student-profile/');
 export const registerForEvent = (eventId, data) =>
   api.post(`/api/events/${eventId}/register/`, data);
 
+// ── Team Up Matchmaking System ─────────────────────────────────────────────
+export const getTeamUpPosts       = (params)     => api.get('/api/teamup/posts/', { params });
+export const createTeamUpPost     = (data)       => api.post('/api/teamup/posts/', data);
+export const expressInterest      = (postId)     => api.post(`/api/teamup/posts/${postId}/interest/`);
+export const verifyTeamPin        = (postId, pin) => api.post(`/api/teamup/posts/${postId}/verify-pin/`, { pin });
+export const reduceSlots          = (postId)     => api.post(`/api/teamup/posts/${postId}/reduce-slots/`);
+export const getMyTeamWorkspace   = ()           => api.get('/api/teamup/my-workspace/');
+
 export default api;

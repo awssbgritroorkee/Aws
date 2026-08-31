@@ -84,6 +84,7 @@ class EventRegisterView(APIView):
                 'section':       vd['section'],
                 'roll_number':   vd['roll_number'],
                 'mobile_number': vd['mobile_number'],
+                'academic_year': vd.get('academic_year') or None,
             }
         )
 
