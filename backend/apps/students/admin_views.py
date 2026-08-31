@@ -84,7 +84,7 @@ def admin_export_excel(request):
     header_fill = PatternFill(start_color="00D084", end_color="00D084", fill_type="solid")
     alignment_center = Alignment(horizontal="center", vertical="center")
 
-    headers = ["#", "Full Name", "Roll Number", "Course", "Branch", "Year", "Phone", "Father Name", "Section", "Registered At"]
+    headers = ["#", "Full Name", "Roll Number", "Course", "Branch", "Year", "Phone", "Section", "Registered At"]
     ws.append(headers)
 
     for col_num in range(1, len(headers) + 1):
@@ -103,7 +103,6 @@ def admin_export_excel(request):
             sp.branch,
             sp.get_academic_year_display() or sp.academic_year or '',
             sp.mobile_number,
-            sp.father_name,
             sp.section,
             r.registered_at.strftime("%Y-%m-%d %H:%M:%S"),
         ]

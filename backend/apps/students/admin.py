@@ -29,8 +29,6 @@ class EventRegistrationResource(resources.ModelResource):
     student_name    = fields.Field(column_name='Full Name')
     email           = fields.Field(column_name='Email',
                                    attribute='student__user__email')
-    father_name     = fields.Field(column_name='Father Name',
-                                   attribute='student__father_name')
     course          = fields.Field(column_name='Course',
                                    attribute='student__course')
     branch          = fields.Field(column_name='Branch',
@@ -53,7 +51,7 @@ class EventRegistrationResource(resources.ModelResource):
     class Meta:
         model  = EventRegistration
         fields = (
-            'student_name', 'email', 'father_name',
+            'student_name', 'email',
             'course', 'branch', 'section', 'roll_number', 'mobile_number',
             'event_title', 'event_date', 'registered_at',
         )
@@ -94,7 +92,7 @@ class StudentProfileAdmin(ModelAdmin):
             'fields': ('user',),
         }),
         ('🎓 Academic Details', {
-            'fields': ('full_name', 'father_name', 'course', 'branch', 'section', 'roll_number', 'mobile_number', 'academic_year'),
+            'fields': ('full_name', 'course', 'branch', 'section', 'roll_number', 'mobile_number', 'academic_year'),
         }),
     )
 
@@ -127,7 +125,6 @@ class UnfoldImportExportModelAdmin(ImportExportModelAdmin, ModelAdmin):
 AVAILABLE_EXPORT_COLUMNS = [
     ('student_name',  'Full Name'),
     ('email',         'Email'),
-    ('father_name',   "Father's Name"),
     ('course',        'Course'),
     ('branch',        'Branch'),
     ('section',       'Section'),
@@ -141,7 +138,6 @@ AVAILABLE_EXPORT_COLUMNS = [
 COLUMN_EXTRACTORS = {
     'student_name':  lambda r: r.student.full_name or r.student.user.get_full_name() or r.student.user.first_name or r.student.user.username or r.student.user.email,
     'email':         lambda r: r.student.user.email,
-    'father_name':   lambda r: r.student.father_name,
     'course':        lambda r: r.student.course,
     'branch':        lambda r: r.student.branch,
     'section':       lambda r: r.student.section,

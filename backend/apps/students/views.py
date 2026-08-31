@@ -72,7 +72,6 @@ class EventRegisterView(APIView):
             user=request.user,
             defaults={
                 'full_name':     vd.get('full_name', ''),
-                'father_name':   vd['father_name'],
                 'course':        vd['course'],
                 'branch':        vd['branch'],
                 'section':       vd['section'],

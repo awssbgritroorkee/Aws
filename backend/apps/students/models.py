@@ -21,7 +21,6 @@ class StudentProfile(models.Model):
                         related_name='student_profile',
                         help_text='The Django user (Google SSO account) this profile belongs to.')
     full_name     = models.CharField(max_length=150, blank=True, null=True, help_text="Student's full name for certificates and official records.")
-    father_name   = models.CharField(max_length=100)
     course        = models.CharField(
                         max_length=50,
                         help_text='e.g. B.Tech, BCA, MCA')

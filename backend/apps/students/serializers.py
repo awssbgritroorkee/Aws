@@ -20,7 +20,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         model  = StudentProfile
         fields = [
             'full_name',
-            'father_name',
             'course',
             'branch',
             'section',
@@ -38,7 +37,6 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
     """
     # Nested — submitted as part of the same POST body
     full_name     = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    father_name   = serializers.CharField(write_only=True)
     course        = serializers.CharField(write_only=True)
     branch        = serializers.CharField(write_only=True)
     section       = serializers.CharField(write_only=True)
@@ -59,7 +57,7 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'registered_at',
             # Profile fields submitted by the user
-            'full_name', 'father_name', 'course', 'branch',
+            'full_name', 'course', 'branch',
             'section', 'roll_number', 'mobile_number', 'academic_year',
         ]
         read_only_fields = ['id', 'registered_at']

@@ -21,7 +21,6 @@ const SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
 const EMPTY_FORM = {
   full_name:     '',
-  father_name:   '',
   course:        '',
   branch:        '',
   section:       '',
@@ -73,7 +72,6 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
         if (!cancelled && data && Object.keys(data).length > 0) {
           setForm({
             full_name:     data.full_name     || defaultName,
-            father_name:   data.father_name   || '',
             course:        data.course        || '',
             branch:        data.branch        || '',
             section:       data.section       || '',
@@ -241,19 +239,7 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                   />
                 </InputField>
 
-                {/* Father Name */}
-                <InputField id="reg-father-name" label="Father's Name" required>
-                  <input
-                    id="reg-father-name"
-                    name="father_name"
-                    type="text"
-                    value={form.father_name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter father's full name"
-                    className={inputClass}
-                  />
-                </InputField>
+
 
                 {/* Course + Branch — cascading */}
                 <div className="grid grid-cols-2 gap-4">
