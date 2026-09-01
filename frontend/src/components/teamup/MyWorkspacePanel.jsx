@@ -231,7 +231,7 @@ const MyWorkspacePanel = ({ showToast }) => {
                             title="Call or WhatsApp applicant to share Invite Code"
                           >
                             <Phone className="w-3.5 h-3.5" />
-                            <span>📞 {interest.applicant_mobile.startsWith('+') ? interest.applicant_mobile : `+91 ${interest.applicant_mobile}`}</span>
+                            <span>{interest.applicant_mobile.startsWith('+') ? interest.applicant_mobile : `+91 ${interest.applicant_mobile}`}</span>
                           </a>
                         </div>
                       ) : (
