@@ -16,16 +16,32 @@ except admin.sites.NotRegistered:
     pass
 
 
+class TeamMemberFilter(admin.SimpleListFilter):
+    title = 'team member'  # Renders as "By team member" in admin sidebar
+    parameter_name = 'user_id'
+
+    def lookups(self, request, model_admin):
+        # Fetch only users who are team members (is_staff=True)
+        team_members = User.objects.filter(is_staff=True).order_by('username')
+        return [(user.id, user.get_full_name() or user.username) for user in team_members]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(user_id=self.value())
+        return queryset
+
+
 @admin.register(LogEntry)
 class CustomLogEntryAdmin(ModelAdmin):
     """
     Custom LogEntry admin:
+    - Filtered by team members (is_staff=True) instead of all users.
     - Superusers can delete LogEntry records (enables smooth user deletion without 403 blocks).
     - Adding and editing log entries remains strictly forbidden for data integrity.
     """
     compressed_fields = True
     list_display = ['action_time', 'user', 'action_flag', 'content_type', 'object_repr']
-    list_filter = ['action_time', 'user', 'action_flag', 'content_type']
+    list_filter = [TeamMemberFilter, 'action_time', 'action_flag', 'content_type']
     search_fields = ['object_repr', 'change_message']
     readonly_fields = [
         'action_time', 'user', 'content_type', 'object_id',
