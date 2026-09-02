@@ -106,6 +106,10 @@ const Events = () => {
 
   // ── Register button click handler ─────────────────────────────────────────
 
+  const filteredEvents = activeTab === 'All'
+    ? events
+    : events.filter((e) => e.status && e.status.toLowerCase() === activeTab.toLowerCase());
+
   const handleRegisterClick = useCallback((event) => {
     if (!user) {
       // Not logged in — save intended event and trigger SSO
