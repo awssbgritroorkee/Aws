@@ -50,16 +50,19 @@ const CountdownTimer = ({ targetDate, meetingLink }) => {
           href={meetingLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-red-500/10 text-red-500 border border-red-500/30 animate-pulse hover:bg-red-500/20 transition-colors tracking-wider"
+          className="relative inline-flex items-center gap-2 bg-red-600 text-white border border-red-500 px-5 py-2.5 rounded-lg text-sm font-extrabold animate-pulse hover:bg-red-700 hover:scale-105 transition-all shadow-[0_0_15px_rgba(220,38,38,0.6)] uppercase tracking-wide"
         >
-          <span className="text-[10px]">🔴</span> LIVE
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+          </span>
+          Join Live Meet
         </a>
       );
     }
 
     return (
-      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-sbg-green/10 text-sbg-green border border-sbg-green/30">
-        <span className="w-1.5 h-1.5 rounded-full bg-sbg-green animate-pulse" />
+      <div className="text-[#00d084] font-bold text-sm bg-[#00d084]/20 px-4 py-2 rounded-lg border border-[#00d084]/30 w-fit">
         Event is Live! 🚀
       </div>
     );
