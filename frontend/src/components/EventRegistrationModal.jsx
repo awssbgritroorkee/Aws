@@ -108,12 +108,24 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Snapshot the link NOW (before any await) so the closure holds a stable
+    // primitive string even if the component re-renders or unmounts afterward.
+    const meetupLink = event?.registration_link;
+    console.log('[EventRegistrationModal] Redirect URL:', meetupLink);
+
     try {
       await registerForEvent(event.id, form);
-      if (event.registration_link) {
+
+      if (meetupLink && typeof meetupLink === 'string' && meetupLink.trim() !== '') {
         onSuccess('Registration Successful! 🎉 Redirecting to Meetup…');
         setTimeout(() => {
-          window.open(event.registration_link, '_blank', 'noopener,noreferrer');
+          // Attempt new-tab open
+          const newWindow = window.open(meetupLink, '_blank', 'noopener,noreferrer');
+          // Fallback: if browser blocked the popup (common in async callbacks)
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            window.location.href = meetupLink;
+          }
           onClose();
         }, 1500);
       } else {
