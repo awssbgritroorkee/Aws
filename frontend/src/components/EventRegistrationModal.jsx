@@ -54,9 +54,10 @@ const selectClass =
 
 const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
   const { user, context } = useAuth();
-  const [form, setForm]     = useState(EMPTY_FORM);
+  const [form, setForm]       = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [autofilling, setAutofilling] = useState(true);
+  const [isSuccess, setIsSuccess]     = useState(false);
 
   // Branches available based on selected course
   const availableBranches = form.course ? (COURSE_BRANCH_MAP[form.course] || []) : [];
@@ -108,30 +109,12 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    // Snapshot the link NOW (before any await) so the closure holds a stable
-    // primitive string even if the component re-renders or unmounts afterward.
-    const meetupLink = event?.registration_link;
-    console.log('[EventRegistrationModal] Redirect URL:', meetupLink);
-
     try {
       await registerForEvent(event.id, form);
-
-      if (meetupLink && typeof meetupLink === 'string' && meetupLink.trim() !== '') {
-        onSuccess('Registration Successful! 🎉 Redirecting to Meetup…');
-        setTimeout(() => {
-          // Attempt new-tab open
-          const newWindow = window.open(meetupLink, '_blank', 'noopener,noreferrer');
-          // Fallback: if browser blocked the popup (common in async callbacks)
-          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            window.location.href = meetupLink;
-          }
-          onClose();
-        }, 1500);
-      } else {
-        onSuccess('Registration Successful! 🎉');
-        onClose();
-      }
+      // Notify parent to mark the event as registered in the list
+      onSuccess('Registration Successful! 🎉');
+      // Switch modal to success screen — do NOT close yet
+      setIsSuccess(true);
     } catch (err) {
       let msg = 'Something went wrong. Please try again.';
       if (err?.response?.data) {
@@ -210,219 +193,275 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-7 py-6 overflow-y-auto max-h-[65vh]">
-          {autofilling ? (
-            <div className="flex items-center gap-3 py-8 justify-center text-gray-400 text-sm">
-              <svg className="w-4 h-4 animate-spin text-sbg-green" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              Loading your profile…
-            </div>
-          ) : (
-            <form id="event-registration-form" onSubmit={handleSubmit} noValidate>
-              <div className="grid grid-cols-1 gap-5">
+        {/* Body + Footer — swaps to success screen after submission */}
+        {isSuccess ? (
 
-                {/* Email — locked */}
-                <InputField id="reg-email" label="Email Address">
-                  <div className="relative">
-                    <input
-                      id="reg-email"
-                      type="email"
-                      value={emailDisplay}
-                      readOnly
-                      disabled
-                      className={disabledInputClass}
-                      aria-describedby="reg-email-note"
-                    />
-                    <span
-                      id="reg-email-note"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-sbg-green/70 bg-sbg-green/10 border border-sbg-green/20 px-2 py-0.5 rounded-full"
-                    >
-                      Locked
-                    </span>
-                  </div>
-                </InputField>
+          /* ── SUCCESS SCREEN ─────────────────────────────────────────────── */
+          <div className="px-7 py-10 flex flex-col items-center text-center" style={{ animation: 'modalSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)' }}>
 
-                {/* Full Name — editable */}
-                <InputField id="reg-full-name" label="Full Name" required>
-                  <input
-                    id="reg-full-name"
-                    name="full_name"
-                    type="text"
-                    value={form.full_name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your full name"
-                    className={inputClass}
-                  />
-                </InputField>
-
-
-
-                {/* Course + Branch — cascading */}
-                <div className="grid grid-cols-2 gap-4">
-                  <InputField id="reg-course" label="Course" required>
-                    <div className="relative">
-                      <select
-                        id="reg-course"
-                        name="course"
-                        value={form.course}
-                        onChange={handleChange}
-                        required
-                        className={selectClass}
-                      >
-                        <option value="" disabled>Select course</option>
-                        {COURSES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </div>
-                  </InputField>
-
-                  <InputField id="reg-branch" label="Branch" required>
-                    <div className="relative">
-                      <select
-                        id="reg-branch"
-                        name="branch"
-                        value={form.branch}
-                        onChange={handleChange}
-                        required
-                        disabled={!form.course}
-                        className={`${selectClass} ${!form.course ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      >
-                        <option value="" disabled>
-                          {form.course ? 'Select branch' : 'Select course first'}
-                        </option>
-                        {availableBranches.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </div>
-                  </InputField>
-                </div>
-
-                {/* Section + Roll Number */}
-                <div className="grid grid-cols-2 gap-4">
-                  <InputField id="reg-section" label="Section" required>
-                    <div className="relative">
-                      <select
-                        id="reg-section"
-                        name="section"
-                        value={form.section}
-                        onChange={handleChange}
-                        required
-                        className={selectClass}
-                      >
-                        <option value="" disabled>Select section</option>
-                        {SECTIONS.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </div>
-                  </InputField>
-
-                  <InputField id="reg-roll" label="Roll Number" required>
-                    <input
-                      id="reg-roll"
-                      name="roll_number"
-                      type="text"
-                      value={form.roll_number}
-                      onChange={handleChange}
-                      required
-                      placeholder="Enter your roll number"
-                      className={inputClass}
-                    />
-                  </InputField>
-                </div>
-
-                {/* Mobile */}
-                <InputField id="reg-mobile" label="Mobile Number" required>
-                  <input
-                    id="reg-mobile"
-                    name="mobile_number"
-                    type="tel"
-                    value={form.mobile_number}
-                    onChange={handleChange}
-                    required
-                    placeholder="10-digit mobile number"
-                    pattern="[6-9][0-9]{9}"
-                    maxLength={10}
-                    className={inputClass}
-                  />
-                </InputField>
-
-                {/* Academic Year */}
-                <InputField id="reg-academic-year" label="Academic Year" required>
-                  <div className="relative">
-                    <select
-                      id="reg-academic-year"
-                      name="academic_year"
-                      value={form.academic_year}
-                      onChange={handleChange}
-                      required
-                      className={selectClass}
-                    >
-                      <option value="" disabled>Select academic year</option>
-                      <option value="1st">1st Year</option>
-                      <option value="2nd">2nd Year</option>
-                      <option value="3rd">3rd Year</option>
-                      <option value="4th">4th Year</option>
-                    </select>
-                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </div>
-                </InputField>
-
+            {/* Animated checkmark ring */}
+            <div className="relative w-20 h-20 mb-6">
+              <div className="absolute inset-0 rounded-full bg-sbg-green/10 border border-sbg-green/30 animate-pulse" />
+              <div className="w-20 h-20 rounded-full bg-sbg-green/15 border border-sbg-green/40 flex items-center justify-center">
+                <svg className="w-9 h-9 text-sbg-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-            </form>
-          )}
-        </div>
+            </div>
 
-        {/* Footer */}
-        <div className="px-7 pb-7 pt-4 border-t border-white/8 flex items-center justify-between gap-4">
-          <p className="text-[10px] text-gray-500 leading-relaxed max-w-[200px]">
-            Your details will be saved for future event registrations.
-          </p>
-          <div className="flex gap-3">
+            <p className="text-[10px] font-mono font-bold tracking-[0.2em] text-sbg-green uppercase mb-2">
+              You&apos;re In!
+            </p>
+            <h3 className="text-2xl font-bold text-white mb-3">
+              Registration Successful 🎉
+            </h3>
+            <p className="text-sm text-gray-400 leading-relaxed max-w-sm mb-8">
+              Your details have been saved for the event certificate. To complete your RSVP and get the event access link, join the session on our official Meetup page.
+            </p>
+
+            {/* Primary CTA — only shown if a Meetup link exists */}
+            {event?.registration_link ? (
+              <a
+                id="join-session-link"
+                href={event.registration_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onClose}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200 mb-3"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Join Online Session 🚀
+              </a>
+            ) : null}
+
+            {/* Secondary — always present */}
             <button
-              type="button"
+              id="reg-success-close-btn"
               onClick={onClose}
-              id="reg-cancel-btn"
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-400 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+              className="text-gray-500 hover:text-white text-xs font-medium transition-colors"
             >
-              Cancel
+              Close &amp; Return to Events
             </button>
-            <button
-              type="submit"
-              form="event-registration-form"
-              id="reg-submit-btn"
-              disabled={loading || autofilling}
-              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+          </div>
+
+        ) : (
+          /* ── FORM ───────────────────────────────────────────────────────── */
+          <>
+            {/* Body */}
+            <div className="px-7 py-6 overflow-y-auto max-h-[65vh]">
+              {autofilling ? (
+                <div className="flex items-center gap-3 py-8 justify-center text-gray-400 text-sm">
+                  <svg className="w-4 h-4 animate-spin text-sbg-green" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Submitting…
-                </>
-              ) : 'Register Now →'}
-            </button>
-          </div>
-        </div>
+                  Loading your profile…
+                </div>
+              ) : (
+                <form id="event-registration-form" onSubmit={handleSubmit} noValidate>
+                  <div className="grid grid-cols-1 gap-5">
+
+                    {/* Email — locked */}
+                    <InputField id="reg-email" label="Email Address">
+                      <div className="relative">
+                        <input
+                          id="reg-email"
+                          type="email"
+                          value={emailDisplay}
+                          readOnly
+                          disabled
+                          className={disabledInputClass}
+                          aria-describedby="reg-email-note"
+                        />
+                        <span
+                          id="reg-email-note"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-sbg-green/70 bg-sbg-green/10 border border-sbg-green/20 px-2 py-0.5 rounded-full"
+                        >
+                          Locked
+                        </span>
+                      </div>
+                    </InputField>
+
+                    {/* Full Name — editable */}
+                    <InputField id="reg-full-name" label="Full Name" required>
+                      <input
+                        id="reg-full-name"
+                        name="full_name"
+                        type="text"
+                        value={form.full_name}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter your full name"
+                        className={inputClass}
+                      />
+                    </InputField>
+
+                    {/* Course + Branch — cascading */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField id="reg-course" label="Course" required>
+                        <div className="relative">
+                          <select
+                            id="reg-course"
+                            name="course"
+                            value={form.course}
+                            onChange={handleChange}
+                            required
+                            className={selectClass}
+                          >
+                            <option value="" disabled>Select course</option>
+                            {COURSES.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </div>
+                      </InputField>
+
+                      <InputField id="reg-branch" label="Branch" required>
+                        <div className="relative">
+                          <select
+                            id="reg-branch"
+                            name="branch"
+                            value={form.branch}
+                            onChange={handleChange}
+                            required
+                            disabled={!form.course}
+                            className={`${selectClass} ${!form.course ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          >
+                            <option value="" disabled>
+                              {form.course ? 'Select branch' : 'Select course first'}
+                            </option>
+                            {availableBranches.map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </div>
+                      </InputField>
+                    </div>
+
+                    {/* Section + Roll Number */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField id="reg-section" label="Section" required>
+                        <div className="relative">
+                          <select
+                            id="reg-section"
+                            name="section"
+                            value={form.section}
+                            onChange={handleChange}
+                            required
+                            className={selectClass}
+                          >
+                            <option value="" disabled>Select section</option>
+                            {SECTIONS.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </div>
+                      </InputField>
+
+                      <InputField id="reg-roll" label="Roll Number" required>
+                        <input
+                          id="reg-roll"
+                          name="roll_number"
+                          type="text"
+                          value={form.roll_number}
+                          onChange={handleChange}
+                          required
+                          placeholder="Enter your roll number"
+                          className={inputClass}
+                        />
+                      </InputField>
+                    </div>
+
+                    {/* Mobile */}
+                    <InputField id="reg-mobile" label="Mobile Number" required>
+                      <input
+                        id="reg-mobile"
+                        name="mobile_number"
+                        type="tel"
+                        value={form.mobile_number}
+                        onChange={handleChange}
+                        required
+                        placeholder="10-digit mobile number"
+                        pattern="[6-9][0-9]{9}"
+                        maxLength={10}
+                        className={inputClass}
+                      />
+                    </InputField>
+
+                    {/* Academic Year */}
+                    <InputField id="reg-academic-year" label="Academic Year" required>
+                      <div className="relative">
+                        <select
+                          id="reg-academic-year"
+                          name="academic_year"
+                          value={form.academic_year}
+                          onChange={handleChange}
+                          required
+                          className={selectClass}
+                        >
+                          <option value="" disabled>Select academic year</option>
+                          <option value="1st">1st Year</option>
+                          <option value="2nd">2nd Year</option>
+                          <option value="3rd">3rd Year</option>
+                          <option value="4th">4th Year</option>
+                        </select>
+                        <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </div>
+                    </InputField>
+
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-7 pb-7 pt-4 border-t border-white/8 flex items-center justify-between gap-4">
+              <p className="text-[10px] text-gray-500 leading-relaxed max-w-[200px]">
+                Your details will be saved for future event registrations.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  id="reg-cancel-btn"
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-400 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="event-registration-form"
+                  id="reg-submit-btn"
+                  disabled={loading || autofilling}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Submitting…
+                    </>
+                  ) : 'Register Now →'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Animations */}
         <style>{`

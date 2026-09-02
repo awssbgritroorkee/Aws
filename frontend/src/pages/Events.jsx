@@ -6,6 +6,7 @@ import usePageTitle from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import EventRegistrationModal from '../components/EventRegistrationModal';
+import CountdownTimer from '../components/CountdownTimer';
 import { useToast } from '../components/ui/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://aws-swae.onrender.com';
@@ -267,13 +268,33 @@ const Events = () => {
 
                     {event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
-                      <button
-                        id={`registered-btn-${event.id}`}
-                        disabled
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
-                      >
-                        Registered ✅
-                      </button>
+                      <div className="flex flex-col items-end gap-2">
+                        {/* Live countdown — only for upcoming events */}
+                        {isUpcoming && event.date && (
+                          <CountdownTimer targetDate={event.date} />
+                        )}
+                        {event.registration_link ? (
+                          /* Has Meetup link → show live "Join Session" link */
+                          <a
+                            id={`join-session-btn-${event.id}`}
+                            href={event.registration_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
+                          >
+                            Join Session <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          /* No link → fallback disabled badge */
+                          <button
+                            id={`registered-btn-${event.id}`}
+                            disabled
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                          >
+                            Registered ✅
+                          </button>
+                        )}
+                      </div>
                     ) : isUpcoming ? (
                       regOpen ? (
                         /* ── Registration OPEN ── */
