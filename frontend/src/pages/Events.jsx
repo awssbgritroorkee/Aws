@@ -104,12 +104,9 @@ const Events = () => {
     fetchEvents();
   }, [fetchEvents, user]);
 
-  // Open modal after login — if user just logged in and selectedEvent is set
-  useEffect(() => {
-    if (user && selectedEvent) {
-      // User is now authenticated and has a pending event selected — modal will open
-    }
-  }, [user, selectedEvent]);
+  // ── Post-login: consume any pending event stored in sessionStorage ───────────
+  // Fires when `user` transitions from null → authenticated (after OAuth redirect).
+  // Must run after handleRegisterClick is defined, so it’s placed further down.
 
 
   const filteredEvents = activeTab === 'All'
@@ -131,30 +128,61 @@ const Events = () => {
   const handleModalClose = useCallback(() => setSelectedEvent(null), []);
 
   // ── Deep-link: auto-open modal when ?event=<slug> or ?eventId=<id> is in URL ──
-  // Must be defined AFTER handleRegisterClick so the closure captures it correctly.
+  // Also persists intent to sessionStorage so it survives the Google OAuth redirect.
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
     if (events.length === 0) return;
 
-    const eventSlug = searchParams.get('event');   // slug-based (preferred)
-    const eventId   = searchParams.get('eventId'); // numeric fallback
+    // Resolve identifier: URL params take priority, then sessionStorage fallback
+    const urlSlug  = searchParams.get('event');             // preferred slug param
+    const urlId    = searchParams.get('eventId');           // numeric fallback
+    const stored   = sessionStorage.getItem('pendingEventToRegister'); // post-login
+    const identifier = urlSlug || urlId || stored;
 
-    let targetEvent = null;
-    if (eventSlug) {
-      targetEvent = events.find((e) => e.slug === eventSlug);
-    } else if (eventId) {
-      targetEvent = events.find((e) => String(e.id) === eventId);
+    if (!identifier) return; // nothing to do
+
+    // Find matching event by slug first, then by id
+    const targetEvent = events.find(
+      (e) => e.slug === identifier || String(e.id) === identifier
+    );
+
+    // Clean the URL now regardless of outcome (avoid dirty URLs being shared)
+    if (urlSlug || urlId) {
+      setSearchParams({}, { replace: true });
     }
 
-    if (!eventSlug && !eventId) return; // no param in URL at all
+    if (!targetEvent || !targetEvent.is_registration_open) return;
 
+    if (user) {
+      // ✅ Logged in — open modal immediately and clear stored intent
+      handleRegisterClick(targetEvent);
+      sessionStorage.removeItem('pendingEventToRegister');
+    } else {
+      // ⏳ Not logged in — persist intent so it survives the OAuth redirect
+      // Store the most specific identifier we have (prefer slug)
+      const toStore = targetEvent.slug || String(targetEvent.id);
+      sessionStorage.setItem('pendingEventToRegister', toStore);
+      // Show a nudge so the user knows WHY they’re being asked to log in
+      showToast('Please sign in to register for this event 🚀', 'info');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]); // runs when events array first populates
+
+  // ── Post-login: consume pending sessionStorage intent after OAuth redirect ─────
+  useEffect(() => {
+    if (!user || events.length === 0) return;
+    const stored = sessionStorage.getItem('pendingEventToRegister');
+    if (!stored) return;
+
+    const targetEvent = events.find(
+      (e) => e.slug === stored || String(e.id) === stored
+    );
     if (targetEvent && targetEvent.is_registration_open) {
       handleRegisterClick(targetEvent);
     }
-    // Strip the param so a page refresh doesn't re-trigger the modal
-    setSearchParams({}, { replace: true });
+    sessionStorage.removeItem('pendingEventToRegister');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]); // intentionally runs only when events list populates
+  }, [user, events]); // re-runs when user logs in OR events load (whichever is last)
 
   const handleSuccess = useCallback((msg) => {
     showToast(msg || 'Registration Successful! 🎉', 'success');
