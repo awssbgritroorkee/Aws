@@ -42,7 +42,12 @@ const CountdownTimer = ({ targetDate, meetingLink }) => {
   // ── Invalid / missing date ─────────────────────────────────────────────────
   if (!targetMs) return null;
 
-  // ── Event has started / passed ────────────────────────────────────────────
+  // ── Event ended (more than 2 hours past start time) ─────────────────────────
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  const hasEventEnded = Date.now() > (targetMs + TWO_HOURS_MS);
+  if (hasEventEnded) return null;
+
+  // ── Event has started / passed (within 2 hours window) ────────────────────
   if (!timeLeft) {
     if (meetingLink && typeof meetingLink === 'string' && meetingLink.trim() !== '') {
       return (
