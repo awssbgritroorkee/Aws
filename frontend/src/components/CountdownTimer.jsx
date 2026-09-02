@@ -56,28 +56,20 @@ const CountdownTimer = ({ targetDate }) => {
   const pad = (n) => String(n).padStart(2, '0');
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-white/4 border border-white/10">
-      <span className="text-gray-500 text-[10px] tracking-wide uppercase">Starts in</span>
-      <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2 text-sm font-mono font-bold w-fit">
+      <span className="text-gray-500 text-[10px] tracking-wider uppercase">Starts in</span>
+      <div className="flex items-center gap-1 text-yellow-400">
         {timeLeft.d > 0 && (
           <>
-            <span className="px-1.5 py-0.5 rounded bg-white/8 text-white font-bold">
-              {timeLeft.d}d
-            </span>
-            <span className="text-white/20">·</span>
+            <span>{timeLeft.d}d</span>
+            <span className="text-gray-600 font-normal">•</span>
           </>
         )}
-        <span className="px-1.5 py-0.5 rounded bg-white/8 text-white font-bold">
-          {pad(timeLeft.h)}h
-        </span>
-        <span className="text-white/20">·</span>
-        <span className="px-1.5 py-0.5 rounded bg-white/8 text-white font-bold">
-          {pad(timeLeft.m)}m
-        </span>
-        <span className="text-white/20">·</span>
-        <span className="px-1.5 py-0.5 rounded bg-sbg-green/15 text-sbg-green font-bold tabular-nums animate-pulse">
-          {pad(timeLeft.s)}s
-        </span>
+        <span>{pad(timeLeft.h)}h</span>
+        <span className="text-gray-600 font-normal">•</span>
+        <span>{pad(timeLeft.m)}m</span>
+        <span className="text-gray-600 font-normal">•</span>
+        <span className="text-sbg-green animate-pulse">{pad(timeLeft.s)}s</span>
       </div>
     </div>
   );

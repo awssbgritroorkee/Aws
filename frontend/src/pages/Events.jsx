@@ -263,8 +263,7 @@ const Events = () => {
                   </div>
 
                   {/* Card Footer Actions */}
-                  <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-xs font-mono text-gray-500">AWS Student Builder Group</span>
+                  <div className="pt-6 mt-6 border-t border-white/10 flex justify-end items-center">
 
                     {event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
@@ -280,7 +279,7 @@ const Events = () => {
                             href={event.registration_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
                           >
                             Join Session <ExternalLink className="w-3.5 h-3.5" />
                           </a>
