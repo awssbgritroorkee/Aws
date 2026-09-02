@@ -104,27 +104,13 @@ const Events = () => {
     fetchEvents();
   }, [fetchEvents, user]);
 
-  // ── Deep-link: auto-open modal when ?event=<slug> is in the URL ─────────────
-  const [searchParams, setSearchParams] = useSearchParams();
-  useEffect(() => {
-    const eventSlug = searchParams.get('event');
-    if (!eventSlug || events.length === 0) return;
-
-    const targetEvent = events.find((e) => e.slug === eventSlug);
-    if (targetEvent && targetEvent.is_registration_open) {
-      handleRegisterClick(targetEvent);
-    }
-    // Strip param from URL so refreshing doesn't re-trigger
-    setSearchParams({}, { replace: true });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]); // runs once after events load
-
   // Open modal after login — if user just logged in and selectedEvent is set
   useEffect(() => {
     if (user && selectedEvent) {
       // User is now authenticated and has a pending event selected — modal will open
     }
   }, [user, selectedEvent]);
+
 
   const filteredEvents = activeTab === 'All'
     ? events
@@ -143,6 +129,32 @@ const Events = () => {
   }, [user, googleLogin]);
 
   const handleModalClose = useCallback(() => setSelectedEvent(null), []);
+
+  // ── Deep-link: auto-open modal when ?event=<slug> or ?eventId=<id> is in URL ──
+  // Must be defined AFTER handleRegisterClick so the closure captures it correctly.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (events.length === 0) return;
+
+    const eventSlug = searchParams.get('event');   // slug-based (preferred)
+    const eventId   = searchParams.get('eventId'); // numeric fallback
+
+    let targetEvent = null;
+    if (eventSlug) {
+      targetEvent = events.find((e) => e.slug === eventSlug);
+    } else if (eventId) {
+      targetEvent = events.find((e) => String(e.id) === eventId);
+    }
+
+    if (!eventSlug && !eventId) return; // no param in URL at all
+
+    if (targetEvent && targetEvent.is_registration_open) {
+      handleRegisterClick(targetEvent);
+    }
+    // Strip the param so a page refresh doesn't re-trigger the modal
+    setSearchParams({}, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]); // intentionally runs only when events list populates
 
   const handleSuccess = useCallback((msg) => {
     showToast(msg || 'Registration Successful! 🎉', 'success');
