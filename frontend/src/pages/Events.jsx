@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle2, ExternalLink, ArrowRight, Lock } from 'lucide-react';
 import axios from 'axios';
 import usePageTitle from '../hooks/usePageTitle';
@@ -104,6 +104,21 @@ const Events = () => {
     fetchEvents();
   }, [fetchEvents, user]);
 
+  // ── Deep-link: auto-open modal when ?eventId=<id> is in the URL ────────────
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const eventIdParam = searchParams.get('eventId');
+    if (!eventIdParam || events.length === 0) return;
+
+    const targetEvent = events.find((e) => String(e.id) === eventIdParam);
+    if (targetEvent && targetEvent.is_registration_open) {
+      handleRegisterClick(targetEvent);
+    }
+    // Strip param from URL so sharing the page again doesn't re-trigger
+    setSearchParams({}, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]); // run once after events load; intentionally omit handleRegisterClick
+
   // Open modal after login — if user just logged in and selectedEvent is set
   useEffect(() => {
     if (user && selectedEvent) {
@@ -140,6 +155,18 @@ const Events = () => {
 
   const handleError = useCallback((msg) => {
     showToast(msg, 'error');
+  }, [showToast]);
+
+  // ── Share / copy deep link ─────────────────────────────────────────────────
+  const handleShare = useCallback((e, eventId) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/events?eventId=${eventId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      showToast('Event link copied to clipboard! 📋', 'success');
+    }).catch(() => {
+      // Fallback for browsers that block clipboard without HTTPS
+      showToast('Copy this link: ' + link, 'success');
+    });
   }, [showToast]);
 
   return (
@@ -228,10 +255,26 @@ const Events = () => {
                           COMPLETED
                         </span>
                       )}
-                      <span className="text-xs font-mono text-gray-400 flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {formatDate(event.date)}
-                      </span>
+                      {/* Date + Share button */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-gray-400 flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {formatDate(event.date)}
+                        </span>
+                        <button
+                          id={`share-btn-${event.id}`}
+                          onClick={(e) => handleShare(e, event.id)}
+                          title="Copy direct registration link"
+                          className="p-1.5 rounded-full text-gray-500 hover:text-sbg-green hover:bg-sbg-green/10 transition-all duration-200"
+                          aria-label="Copy event link"
+                        >
+                          {/* Share icon */}
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Poster Image or Fallback */}
