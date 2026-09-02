@@ -104,16 +104,8 @@ const Events = () => {
     fetchEvents();
   }, [fetchEvents, user]);
 
-  // ── Post-login: consume any pending event stored in sessionStorage ───────────
-  // Fires when `user` transitions from null → authenticated (after OAuth redirect).
-  // Must run after handleRegisterClick is defined, so it’s placed further down.
-
-
-  const filteredEvents = activeTab === 'All'
-    ? events
-    : events.filter((e) => e.status && e.status.toLowerCase() === activeTab.toLowerCase());
-
   // ── Register button click handler ─────────────────────────────────────────
+
   const handleRegisterClick = useCallback((event) => {
     if (!user) {
       // Not logged in — save intended event and trigger SSO
@@ -134,19 +126,19 @@ const Events = () => {
     if (events.length === 0) return;
 
     // Resolve identifier: URL params take priority, then sessionStorage fallback
-    const urlSlug  = searchParams.get('event');             // preferred slug param
-    const urlId    = searchParams.get('eventId');           // numeric fallback
-    const stored   = sessionStorage.getItem('pendingEventToRegister'); // post-login
+    const urlSlug    = searchParams.get('event');    // preferred slug param
+    const urlId      = searchParams.get('eventId');  // numeric fallback
+    const stored     = sessionStorage.getItem('pendingEventToRegister');
     const identifier = urlSlug || urlId || stored;
 
     if (!identifier) return; // nothing to do
 
-    // Find matching event by slug first, then by id
+    // Find matching event by slug first, then by numeric id
     const targetEvent = events.find(
       (e) => e.slug === identifier || String(e.id) === identifier
     );
 
-    // Clean the URL now regardless of outcome (avoid dirty URLs being shared)
+    // Clean the URL regardless of outcome (never leave dirty params in the bar)
     if (urlSlug || urlId) {
       setSearchParams({}, { replace: true });
     }
@@ -154,21 +146,31 @@ const Events = () => {
     if (!targetEvent || !targetEvent.is_registration_open) return;
 
     if (user) {
-      // ✅ Logged in — open modal immediately and clear stored intent
-      handleRegisterClick(targetEvent);
+      // ── Authenticated path ────────────────────────────────────────────────
       sessionStorage.removeItem('pendingEventToRegister');
+
+      if (targetEvent.is_registered) {
+        // Already registered — don't open modal again, just confirm
+        showToast("You're already registered for this event! 🎉", 'success');
+      } else {
+        // Not yet registered — open the registration modal
+        handleRegisterClick(targetEvent);
+      }
     } else {
-      // ⏳ Not logged in — persist intent so it survives the OAuth redirect
-      // Store the most specific identifier we have (prefer slug)
+      // ── Unauthenticated path ──────────────────────────────────────────────
+      // Persist intent FIRST so it survives the Google OAuth redirect
       const toStore = targetEvent.slug || String(targetEvent.id);
       sessionStorage.setItem('pendingEventToRegister', toStore);
-      // Show a nudge so the user knows WHY they’re being asked to log in
-      showToast('Please sign in to register for this event 🚀', 'info');
+
+      // handleRegisterClick calls googleLogin() internally when !user —
+      // this immediately triggers the Google OAuth popup/redirect.
+      handleRegisterClick(targetEvent);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]); // runs when events array first populates
+  }, [events]); // runs once when the events array first populates
 
-  // ── Post-login: consume pending sessionStorage intent after OAuth redirect ─────
+  // ── Post-login: consume pending sessionStorage intent after OAuth redirect ──
+  // Fires when `user` transitions null → authenticated (after Google login).
   useEffect(() => {
     if (!user || events.length === 0) return;
     const stored = sessionStorage.getItem('pendingEventToRegister');
@@ -177,10 +179,18 @@ const Events = () => {
     const targetEvent = events.find(
       (e) => e.slug === stored || String(e.id) === stored
     );
-    if (targetEvent && targetEvent.is_registration_open) {
+
+    // Clear storage FIRST — prevents any retry loop
+    sessionStorage.removeItem('pendingEventToRegister');
+
+    if (!targetEvent || !targetEvent.is_registration_open) return;
+
+    if (targetEvent.is_registered) {
+      // Already registered (e.g. registered on another device/tab)
+      showToast("You're already registered for this event! 🎉", 'success');
+    } else {
       handleRegisterClick(targetEvent);
     }
-    sessionStorage.removeItem('pendingEventToRegister');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, events]); // re-runs when user logs in OR events load (whichever is last)
 
