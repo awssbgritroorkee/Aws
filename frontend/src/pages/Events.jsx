@@ -328,7 +328,7 @@ const Events = () => {
                       <div className="flex items-center gap-3">
                         {/* Live countdown — only for upcoming events, sits left of the button */}
                         {isUpcoming && event.date && (
-                          <CountdownTimer targetDate={event.date} />
+                          <CountdownTimer targetDate={event.date} meetingLink={event.meeting_link} />
                         )}
                         {event.registration_link ? (
                           /* Has Meetup link → show live "Join Session" link */

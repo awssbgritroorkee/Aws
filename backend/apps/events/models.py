@@ -27,6 +27,11 @@ class Event(models.Model):
                             default='upcoming',
                             db_index=True)
     registration_link      = models.URLField(blank=True)
+    meeting_link           = models.URLField(
+                                max_length=500,
+                                null=True,
+                                blank=True,
+                                help_text='Google Meet or Zoom link for the live session')
     is_registration_open   = models.BooleanField(
                                 default=True,
                                 help_text='Uncheck to close registrations. The Register button will become disabled on the frontend.')

@@ -27,7 +27,7 @@ function calcTimeLeft(targetMs) {
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-const CountdownTimer = ({ targetDate }) => {
+const CountdownTimer = ({ targetDate, meetingLink }) => {
   const targetMs = parseDateFieldToMs(targetDate);
 
   const getTimeLeft = useCallback(() => calcTimeLeft(targetMs), [targetMs]);
@@ -44,6 +44,19 @@ const CountdownTimer = ({ targetDate }) => {
 
   // ── Event has started / passed ────────────────────────────────────────────
   if (!timeLeft) {
+    if (meetingLink && typeof meetingLink === 'string' && meetingLink.trim() !== '') {
+      return (
+        <a
+          href={meetingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-red-500/10 text-red-500 border border-red-500/30 animate-pulse hover:bg-red-500/20 transition-colors tracking-wider"
+        >
+          <span className="text-[10px]">🔴</span> LIVE
+        </a>
+      );
+    }
+
     return (
       <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-sbg-green/10 text-sbg-green border border-sbg-green/30">
         <span className="w-1.5 h-1.5 rounded-full bg-sbg-green animate-pulse" />
