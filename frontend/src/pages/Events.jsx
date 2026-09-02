@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle2, ExternalLink, ArrowRight, Lock } from 'lucide-react';
 import axios from 'axios';
 import usePageTitle from '../hooks/usePageTitle';
@@ -42,6 +42,11 @@ const Events = () => {
   // Modal state
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  // Deferred actions set by fetchEvents (avoids calling hooks in async context)
+  const [pendingAutoOpen,      setPendingAutoOpen]      = useState(null);  // event obj to auto-open
+  const [pendingAutoLogin,     setPendingAutoLogin]     = useState(false); // trigger googleLogin()
+  const [pendingSuccessToast,  setPendingSuccessToast]  = useState(null);  // already-registered msg
+
   // ── Google Login flow (triggered from Register button when unauthenticated) ─
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -80,7 +85,7 @@ const Events = () => {
     onError: () => showToast('Google Sign-In failed.', 'error'),
   });
 
-  // ── Fetch events ─────────────────────────────────────────────────────────
+  // ── Fetch events + resolve any pending deep-link intent ─────────────────
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
@@ -91,14 +96,57 @@ const Events = () => {
         throw new Error(`Failed to fetch events: ${response.statusText}`);
       }
       const data = await response.json();
-      setEvents(Array.isArray(data) ? data : (data.results || []));
+      const eventsArray = Array.isArray(data) ? data : (data.results || []);
+      setEvents(eventsArray);
+
+      // ── Deep-link resolution (runs on every fetch, including post-login re-fetch) ──
+      // Using local `eventsArray` (not stale `events` state) avoids race conditions.
+      const urlSlug  = new URLSearchParams(window.location.search).get('event');
+      const urlId    = new URLSearchParams(window.location.search).get('eventId');
+      const stored   = sessionStorage.getItem('pendingEventToRegister');
+      const identifier = urlSlug || urlId || stored;
+
+      if (identifier && eventsArray.length > 0) {
+        const targetEvent = eventsArray.find(
+          (e) => e.slug === identifier || String(e.id) === identifier
+        );
+
+        // Always clean URL params immediately
+        if (urlSlug || urlId) {
+          window.history.replaceState({}, '', '/events');
+        }
+
+        if (targetEvent && targetEvent.is_registration_open) {
+          const isLoggedIn = !!localStorage.getItem('auth_token');
+
+          if (isLoggedIn) {
+            // ✅ Authenticated: clear storage and open modal
+            sessionStorage.removeItem('pendingEventToRegister');
+            if (targetEvent.is_registered) {
+              // Already registered — inform, don't re-open modal
+              // (showToast not available here; use a deferred call via state)
+              setPendingSuccessToast("You're already registered for this event! 🎉");
+            } else {
+              setPendingAutoOpen(targetEvent);
+            }
+          } else {
+            // ⏳ Not authenticated: save intent and trigger Google login
+            const toStore = targetEvent.slug || String(targetEvent.id);
+            sessionStorage.setItem('pendingEventToRegister', toStore);
+            window.history.replaceState({}, '', '/events');
+            // Trigger login — googleLogin() ref is stable via useCallback
+            setPendingAutoLogin(true);
+          }
+        }
+      }
     } catch (err) {
       console.error('Error fetching events:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // stable — dependencies managed via re-mount on user change
 
   useEffect(() => {
     fetchEvents();
@@ -123,80 +171,26 @@ const Events = () => {
 
   const handleModalClose = useCallback(() => setSelectedEvent(null), []);
 
-  // ── Deep-link: auto-open modal when ?event=<slug> or ?eventId=<id> is in URL ──
-  // Also persists intent to sessionStorage so it survives the Google OAuth redirect.
-  const [searchParams, setSearchParams] = useSearchParams();
+  // ── Consumer: auto-open modal after fetchEvents resolves deep-link ─────────
   useEffect(() => {
-    if (events.length === 0) return;
+    if (!pendingAutoOpen) return;
+    setSelectedEvent(pendingAutoOpen);
+    setPendingAutoOpen(null);
+  }, [pendingAutoOpen]);
 
-    // Resolve identifier: URL params take priority, then sessionStorage fallback
-    const urlSlug    = searchParams.get('event');    // preferred slug param
-    const urlId      = searchParams.get('eventId');  // numeric fallback
-    const stored     = sessionStorage.getItem('pendingEventToRegister');
-    const identifier = urlSlug || urlId || stored;
-
-    if (!identifier) return; // nothing to do
-
-    // Find matching event by slug first, then by numeric id
-    const targetEvent = events.find(
-      (e) => e.slug === identifier || String(e.id) === identifier
-    );
-
-    // Clean the URL regardless of outcome (never leave dirty params in the bar)
-    if (urlSlug || urlId) {
-      setSearchParams({}, { replace: true });
-    }
-
-    if (!targetEvent || !targetEvent.is_registration_open) return;
-
-    if (user) {
-      // ── Authenticated path ────────────────────────────────────────────────
-      sessionStorage.removeItem('pendingEventToRegister');
-
-      if (targetEvent.is_registered) {
-        // Already registered — don't open modal again, just confirm
-        showToast("You're already registered for this event! 🎉", 'success');
-      } else {
-        // Not yet registered — open the registration modal
-        handleRegisterClick(targetEvent);
-      }
-    } else {
-      // ── Unauthenticated path ──────────────────────────────────────────────
-      // Persist intent FIRST so it survives the Google OAuth redirect
-      const toStore = targetEvent.slug || String(targetEvent.id);
-      sessionStorage.setItem('pendingEventToRegister', toStore);
-
-      // handleRegisterClick calls googleLogin() internally when !user —
-      // this immediately triggers the Google OAuth popup/redirect.
-      handleRegisterClick(targetEvent);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]); // runs once when the events array first populates
-
-  // ── Post-login: consume pending sessionStorage intent after OAuth redirect ──
-  // Fires when `user` transitions null → authenticated (after Google login).
+  // ── Consumer: trigger Google login for unauthenticated deep-link visits ────
   useEffect(() => {
-    if (!user || events.length === 0) return;
-    const stored = sessionStorage.getItem('pendingEventToRegister');
-    if (!stored) return;
+    if (!pendingAutoLogin) return;
+    setPendingAutoLogin(false);
+    googleLogin(); // fires the local useGoogleLogin instance
+  }, [pendingAutoLogin, googleLogin]);
 
-    const targetEvent = events.find(
-      (e) => e.slug === stored || String(e.id) === stored
-    );
-
-    // Clear storage FIRST — prevents any retry loop
-    sessionStorage.removeItem('pendingEventToRegister');
-
-    if (!targetEvent || !targetEvent.is_registration_open) return;
-
-    if (targetEvent.is_registered) {
-      // Already registered (e.g. registered on another device/tab)
-      showToast("You're already registered for this event! 🎉", 'success');
-    } else {
-      handleRegisterClick(targetEvent);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, events]); // re-runs when user logs in OR events load (whichever is last)
+  // ── Consumer: show already-registered toast ────────────────────────────────
+  useEffect(() => {
+    if (!pendingSuccessToast) return;
+    showToast(pendingSuccessToast, 'success');
+    setPendingSuccessToast(null);
+  }, [pendingSuccessToast, showToast]);
 
   const handleSuccess = useCallback((msg) => {
     showToast(msg || 'Registration Successful! 🎉', 'success');
