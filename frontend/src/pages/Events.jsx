@@ -42,11 +42,6 @@ const Events = () => {
   // Modal state
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Deferred actions set by fetchEvents (avoids calling hooks in async context)
-  const [pendingAutoOpen,      setPendingAutoOpen]      = useState(null);  // event obj to auto-open
-  const [pendingAutoLogin,     setPendingAutoLogin]     = useState(false); // trigger googleLogin()
-  const [pendingSuccessToast,  setPendingSuccessToast]  = useState(null);  // already-registered msg
-
   // ── Google Login flow (triggered from Register button when unauthenticated) ─
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -74,9 +69,6 @@ const Events = () => {
 
         authLogin(userData, authToken);
         await refreshContext();
-
-        // After login: open modal for the event they clicked
-        // selectedEvent is still set from the button click
       } catch (err) {
         showToast('Login failed. Please try again.', 'error');
         console.error('Google login error:', err);
@@ -85,7 +77,7 @@ const Events = () => {
     onError: () => showToast('Google Sign-In failed.', 'error'),
   });
 
-  // ── Fetch events + resolve any pending deep-link intent ─────────────────
+  // ── Fetch events ─────────────────────────────────────────────────────────
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
@@ -96,57 +88,14 @@ const Events = () => {
         throw new Error(`Failed to fetch events: ${response.statusText}`);
       }
       const data = await response.json();
-      const eventsArray = Array.isArray(data) ? data : (data.results || []);
-      setEvents(eventsArray);
-
-      // ── Deep-link resolution (runs on every fetch, including post-login re-fetch) ──
-      // Using local `eventsArray` (not stale `events` state) avoids race conditions.
-      const urlSlug  = new URLSearchParams(window.location.search).get('event');
-      const urlId    = new URLSearchParams(window.location.search).get('eventId');
-      const stored   = sessionStorage.getItem('pendingEventToRegister');
-      const identifier = urlSlug || urlId || stored;
-
-      if (identifier && eventsArray.length > 0) {
-        const targetEvent = eventsArray.find(
-          (e) => e.slug === identifier || String(e.id) === identifier
-        );
-
-        // Always clean URL params immediately
-        if (urlSlug || urlId) {
-          window.history.replaceState({}, '', '/events');
-        }
-
-        if (targetEvent && targetEvent.is_registration_open) {
-          const isLoggedIn = !!localStorage.getItem('auth_token');
-
-          if (isLoggedIn) {
-            // ✅ Authenticated: clear storage and open modal
-            sessionStorage.removeItem('pendingEventToRegister');
-            if (targetEvent.is_registered) {
-              // Already registered — inform, don't re-open modal
-              // (showToast not available here; use a deferred call via state)
-              setPendingSuccessToast("You're already registered for this event! 🎉");
-            } else {
-              setPendingAutoOpen(targetEvent);
-            }
-          } else {
-            // ⏳ Not authenticated: save intent and trigger Google login
-            const toStore = targetEvent.slug || String(targetEvent.id);
-            sessionStorage.setItem('pendingEventToRegister', toStore);
-            window.history.replaceState({}, '', '/events');
-            // Trigger login — googleLogin() ref is stable via useCallback
-            setPendingAutoLogin(true);
-          }
-        }
-      }
+      setEvents(Array.isArray(data) ? data : (data.results || []));
     } catch (err) {
       console.error('Error fetching events:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // stable — dependencies managed via re-mount on user change
+  }, []);
 
   useEffect(() => {
     fetchEvents();
@@ -171,26 +120,42 @@ const Events = () => {
 
   const handleModalClose = useCallback(() => setSelectedEvent(null), []);
 
-  // ── Consumer: auto-open modal after fetchEvents resolves deep-link ─────────
+  // ── Handle deep linking via URL params (?event=slug or ?eventId=id) ────────
   useEffect(() => {
-    if (!pendingAutoOpen) return;
-    setSelectedEvent(pendingAutoOpen);
-    setPendingAutoOpen(null);
-  }, [pendingAutoOpen]);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const eventSlug = params.get('event');
+      const eventId = params.get('eventId');
 
-  // ── Consumer: trigger Google login for unauthenticated deep-link visits ────
-  useEffect(() => {
-    if (!pendingAutoLogin) return;
-    setPendingAutoLogin(false);
-    googleLogin(); // fires the local useGoogleLogin instance
-  }, [pendingAutoLogin, googleLogin]);
+      const targetIdentifier = eventSlug || eventId;
 
-  // ── Consumer: show already-registered toast ────────────────────────────────
-  useEffect(() => {
-    if (!pendingSuccessToast) return;
-    showToast(pendingSuccessToast, 'success');
-    setPendingSuccessToast(null);
-  }, [pendingSuccessToast, showToast]);
+      if (targetIdentifier && events && events.length > 0) {
+        const targetEvent = events.find(
+          (e) => e.slug === targetIdentifier || e.id?.toString() === targetIdentifier
+        );
+
+        if (targetEvent && targetEvent.is_registration_open) {
+          const isUserLoggedIn = typeof user !== 'undefined' && user !== null;
+
+          if (isUserLoggedIn) {
+            if (targetEvent.is_registered) {
+              showToast("You are already registered for this event! 🎉", 'info');
+            } else {
+              handleRegisterClick(targetEvent);
+            }
+          } else {
+            showToast("Please sign in to register for this event 🚀", 'error');
+          }
+
+          // Always clean the URL afterwards so it just shows /events
+          window.history.replaceState({}, '', '/events');
+        }
+      }
+    } catch (error) {
+      console.error("Error processing deep link:", error);
+    }
+  }, [events, user, handleRegisterClick, showToast]);
+
 
   const handleSuccess = useCallback((msg) => {
     showToast(msg || 'Registration Successful! 🎉', 'success');
