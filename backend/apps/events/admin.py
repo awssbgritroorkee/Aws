@@ -27,7 +27,7 @@ class EventAdmin(ModelAdmin):
             'fields': ('title', 'date', 'status', 'description', 'poster', 'created_by'),
         }),
         ('🔗 Registration', {
-            'fields': ('registration_link', 'is_registration_open'),
+            'fields': ('registration_link', 'meeting_link', 'is_registration_open'),
         }),
     )
 
