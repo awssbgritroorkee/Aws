@@ -104,20 +104,20 @@ const Events = () => {
     fetchEvents();
   }, [fetchEvents, user]);
 
-  // ── Deep-link: auto-open modal when ?eventId=<id> is in the URL ────────────
+  // ── Deep-link: auto-open modal when ?event=<slug> is in the URL ─────────────
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
-    const eventIdParam = searchParams.get('eventId');
-    if (!eventIdParam || events.length === 0) return;
+    const eventSlug = searchParams.get('event');
+    if (!eventSlug || events.length === 0) return;
 
-    const targetEvent = events.find((e) => String(e.id) === eventIdParam);
+    const targetEvent = events.find((e) => e.slug === eventSlug);
     if (targetEvent && targetEvent.is_registration_open) {
       handleRegisterClick(targetEvent);
     }
-    // Strip param from URL so sharing the page again doesn't re-trigger
+    // Strip param from URL so refreshing doesn't re-trigger
     setSearchParams({}, { replace: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]); // run once after events load; intentionally omit handleRegisterClick
+  }, [events]); // runs once after events load
 
   // Open modal after login — if user just logged in and selectedEvent is set
   useEffect(() => {
@@ -158,13 +158,15 @@ const Events = () => {
   }, [showToast]);
 
   // ── Share / copy deep link ─────────────────────────────────────────────────
-  const handleShare = useCallback((e, eventId) => {
+  const handleShare = useCallback((e, eventObj) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/events?eventId=${eventId}`;
+    // Prefer slug for human-readable URL; fall back to id for old events without slug
+    const identifier = eventObj.slug || eventObj.id;
+    const paramKey   = eventObj.slug ? 'event' : 'eventId';
+    const link = `${window.location.origin}/events?${paramKey}=${identifier}`;
     navigator.clipboard.writeText(link).then(() => {
       showToast('Event link copied to clipboard! 📋', 'success');
     }).catch(() => {
-      // Fallback for browsers that block clipboard without HTTPS
       showToast('Copy this link: ' + link, 'success');
     });
   }, [showToast]);
@@ -263,7 +265,7 @@ const Events = () => {
                         </span>
                         <button
                           id={`share-btn-${event.id}`}
-                          onClick={(e) => handleShare(e, event.id)}
+                          onClick={(e) => handleShare(e, event)}
                           title="Copy direct registration link"
                           className="p-1.5 rounded-full text-gray-500 hover:text-sbg-green hover:bg-sbg-green/10 transition-all duration-200"
                           aria-label="Copy event link"
