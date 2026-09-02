@@ -3,16 +3,14 @@ import { useState, useEffect, useCallback } from 'react';
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Parse the backend DateField value ("YYYY-MM-DD") into a JS timestamp.
- * Treating it as local midnight avoids UTC-shift surprises (e.g. "2026-09-05"
- * becoming Sep 4 23:30 in IST if parsed as UTC).
+ * Parse the backend DateTimeField ISO string (e.g. "2026-09-05T10:00:00+05:30")
+ * into a JS timestamp in ms.  new Date() handles all ISO 8601 variants natively,
+ * including timezone offsets, so no manual splitting needed.
  */
 function parseDateFieldToMs(dateStr) {
   if (!dateStr) return null;
-  // "YYYY-MM-DD" → local midnight
-  const [y, m, d] = String(dateStr).split('-').map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d).getTime(); // local midnight
+  const ms = new Date(dateStr).getTime();
+  return Number.isNaN(ms) ? null : ms;
 }
 
 function calcTimeLeft(targetMs) {

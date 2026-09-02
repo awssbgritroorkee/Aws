@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Event(models.Model):
@@ -13,7 +14,10 @@ class Event(models.Model):
     ]
 
     title             = models.CharField(max_length=200)
-    date              = models.DateField()
+    date              = models.DateTimeField(
+                            default=timezone.now,
+                            help_text='Set the exact date AND time for the event (e.g. 2026-09-05 10:00). '
+                                      'The frontend countdown timer uses this precise timestamp.')
     description       = models.TextField(blank=True)
     poster            = models.ImageField(upload_to='events/', blank=True, null=True)
     status            = models.CharField(

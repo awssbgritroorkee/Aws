@@ -268,8 +268,8 @@ const Events = () => {
 
                     {event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
-                      <div className="flex flex-col items-end gap-2">
-                        {/* Live countdown — only for upcoming events */}
+                      <div className="flex items-center gap-3">
+                        {/* Live countdown — only for upcoming events, sits left of the button */}
                         {isUpcoming && event.date && (
                           <CountdownTimer targetDate={event.date} />
                         )}
