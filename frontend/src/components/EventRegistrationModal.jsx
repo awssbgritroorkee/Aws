@@ -110,8 +110,16 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
     setLoading(true);
     try {
       await registerForEvent(event.id, form);
-      onSuccess('Registration Successful! 🎉');
-      onClose();
+      if (event.registration_link) {
+        onSuccess('Registration Successful! 🎉 Redirecting to Meetup…');
+        setTimeout(() => {
+          window.open(event.registration_link, '_blank', 'noopener,noreferrer');
+          onClose();
+        }, 1500);
+      } else {
+        onSuccess('Registration Successful! 🎉');
+        onClose();
+      }
     } catch (err) {
       let msg = 'Something went wrong. Please try again.';
       if (err?.response?.data) {
