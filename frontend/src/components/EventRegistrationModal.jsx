@@ -227,23 +227,22 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClose}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200 mb-3"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-                Join Online Session 🚀
+                RSVP on Meetup (Compulsory) 🚀
               </a>
-            ) : null}
-
-            {/* Secondary — always present */}
-            <button
-              id="reg-success-close-btn"
-              onClick={onClose}
-              className="text-gray-500 hover:text-white text-xs font-medium transition-colors"
-            >
-              Close &amp; Return to Events
-            </button>
+            ) : (
+              <button
+                id="reg-success-close-btn"
+                onClick={onClose}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200"
+              >
+                Close &amp; Return to Events
+              </button>
+            )}
           </div>
 
         ) : (
