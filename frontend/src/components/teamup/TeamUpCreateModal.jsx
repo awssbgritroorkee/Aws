@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, KeyRound, AlertTriangle, Users, User, Loader2 } from 'lucide-react';
 import { createTeamUpPost, getStudentProfile } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const InputField = ({ id, label, required, children, note }) => (
   <div className="flex flex-col gap-1.5">
@@ -23,6 +24,7 @@ const selectClass =
   'focus:outline-none focus:border-sbg-green/60 transition-all duration-200 appearance-none cursor-pointer';
 
 const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
+  const { user, context, refreshContext } = useAuth();
   const [mode, setMode] = useState('need_members');
   const [eventName, setEventName] = useState('');
   const [customEvent, setCustomEvent] = useState('');
@@ -33,17 +35,26 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
   const [message, setMessage] = useState('');
   const [pinDigits, setPinDigits] = useState(['', '', '', '']);
   const [mobileNumber, setMobileNumber] = useState('');
+  const [displayName, setDisplayName] = useState(
+    context?.first_name
+      ? `${context.first_name} ${context.last_name || ''}`.trim()
+      : user?.name || ''
+  );
 
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
 
-  // Auto-fill student profile details (mobile number) on mount
+  // Auto-fill student profile details (mobile number + name) on mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await getStudentProfile();
         if (res.data?.mobile_number) {
           setMobileNumber(res.data.mobile_number);
+        }
+        // Pre-fill display name from saved profile if it exists
+        if (res.data?.full_name) {
+          setDisplayName(res.data.full_name);
         }
       } catch (err) {
         console.warn('Could not load student profile:', err);
@@ -92,6 +103,11 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
     e.preventDefault();
     setValidationError('');
 
+    if (!displayName.trim()) {
+      setValidationError('Please enter your display name.');
+      return;
+    }
+
     const finalEventName = eventName === 'Other' ? customEvent.trim() : eventName;
     if (!finalEventName) {
       setValidationError('Please select or specify an Event Name.');
@@ -127,9 +143,12 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
         message: message.trim(),
         secret_pin: pin,
         mobile_number: mobileNumber.trim(),
+        display_name: displayName.trim(),
       };
 
       const res = await createTeamUpPost(payload);
+      // Refresh auth context so navbar & other UI reflect the updated name
+      refreshContext();
       onSuccess(res.data?.detail || 'Success! Your post is now live on the Explore Board.');
       onClose();
     } catch (err) {
@@ -220,6 +239,19 @@ const TeamUpCreateModal = ({ events = [], onClose, onSuccess, onError }) => {
               <span className="text-[10px] font-mono text-gray-400">Solo builder looking to join</span>
             </button>
           </div>
+
+          {/* Display Name */}
+          <InputField id="create-display-name" label="Your Display Name" required note="Shown on your post">
+            <input
+              id="create-display-name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+              className={inputClass}
+            />
+          </InputField>
 
           {/* Event Select */}
           <InputField id="create-event" label="Event / Project" required>

@@ -158,6 +158,14 @@ class TeamRequestListCreateView(APIView):
                 defaults={'mobile_number': mobile_number}
             )
 
+        # Sync/update creator's display name on the Django User model if provided
+        display_name = str(request.data.get('display_name', '')).strip()
+        if display_name:
+            parts = display_name.split(' ', 1)
+            request.user.first_name = parts[0]
+            request.user.last_name  = parts[1] if len(parts) > 1 else ''
+            request.user.save(update_fields=['first_name', 'last_name'])
+
         # Save post as live immediately (is_approved_by_admin=True)
         post = serializer.save(
             creator=request.user,
