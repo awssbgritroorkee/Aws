@@ -39,7 +39,7 @@ const CountdownTimer = ({ targetDate, meetingLink }) => {
     return () => clearInterval(id);
   }, [targetMs]);
 
-  // ── Invalid / missing date ─────────────────────────────────────────────────
+  // ── Invalid / missing date ─Ll────────────────────────────────────────────────
   if (!targetMs) return null;
 
   // ── Event ended (more than 2 hours past start time) ─────────────────────────

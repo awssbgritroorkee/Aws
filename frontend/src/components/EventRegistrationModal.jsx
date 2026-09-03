@@ -14,6 +14,8 @@ const COURSE_BRANCH_MAP = {
   ],
   'BCA': ['Bachelor of Computer Application'],
   'MCA': ['Master in Computer Application'],
+  'BBA': ['Bachelor of Business Administration'],
+  'Others': ['Other / Not Listed'],
 };
 
 const COURSES = Object.keys(COURSE_BRANCH_MAP);
