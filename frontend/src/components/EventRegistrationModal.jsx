@@ -227,22 +227,11 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClose}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200"
+                className="block w-full bg-[#00d084] text-black font-bold py-3 text-center rounded-lg hover:bg-[#00b373] transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
                 RSVP on Meetup (Compulsory) 🚀
               </a>
-            ) : (
-              <button
-                id="reg-success-close-btn"
-                onClick={onClose}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-sbg-green text-aws-navy hover:bg-white transition-all duration-200"
-              >
-                Close &amp; Return to Events
-              </button>
-            )}
+            ) : null}
           </div>
 
         ) : (
