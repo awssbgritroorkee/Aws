@@ -330,51 +330,61 @@ const Events = () => {
                   <div className="pt-6 mt-6 border-t border-white/10 flex justify-end items-center">
 
                     {isEventEnded ? (
-                      /* ── SESSION ENDED — show completion badge + optional PPT / YouTube / Other links ── */
+                      /* ── SESSION ENDED — reordered: YouTube → PPT → Other Materials → Meetup ── */
                       <div className="flex flex-wrap items-center gap-3">
-                        <button
-                          id={`session-complete-btn-${event.id}`}
-                          disabled
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-gray-800/80 text-gray-400 cursor-not-allowed border border-gray-700"
-                        >
-                          Session Complete ✅
-                        </button>
 
-                        {event.ppt_link && (
-                          <a
-                            id={`ppt-btn-${event.id}`}
-                            href={event.ppt_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-[#00d084] border border-[#00d084]/30 hover:bg-[#00d084]/10 transition-colors"
-                          >
-                            View PPT 📊
-                          </a>
-                        )}
-
+                        {/* 1. YouTube */}
                         {event.youtube_link && (
                           <a
                             id={`youtube-btn-${event.id}`}
                             href={event.youtube_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg text-xs font-mono font-bold hover:bg-red-500/20 transition-all hover:scale-105"
                           >
                             Watch on YouTube 🎥
                           </a>
                         )}
 
+                        {/* 2. PPT */}
+                        {event.ppt_link && (
+                          <a
+                            id={`ppt-btn-${event.id}`}
+                            href={event.ppt_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-mono font-bold hover:bg-emerald-500/20 transition-all hover:scale-105"
+                          >
+                            View PPT 📊
+                          </a>
+                        )}
+
+                        {/* 3. Other Materials */}
                         {event.other_material_link && (
                           <a
                             id={`other-material-btn-${event.id}`}
                             href={event.other_material_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-blue-400 border border-blue-400/30 hover:bg-blue-400/10 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg text-xs font-mono font-bold hover:bg-blue-500/20 transition-all hover:scale-105"
                           >
                             Other Materials 📂
                           </a>
                         )}
+
+                        {/* 4. Meetup / Original Event */}
+                        {event.registration_link && (
+                          <a
+                            id={`meetup-btn-${event.id}`}
+                            href={event.registration_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 border border-gray-600 rounded-lg text-xs font-mono font-bold hover:bg-gray-700 transition-all hover:scale-105"
+                          >
+                            View Meetup Event ↗
+                          </a>
+                        )}
+
                       </div>
                     ) : event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
