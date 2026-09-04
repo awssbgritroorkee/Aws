@@ -4,6 +4,18 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+
+  // Classes injected dynamically via classList.add() in Events.jsx (deep-link highlight effect).
+  // Tailwind's scanner cannot detect these at build time, so they must be safelisted explicitly.
+  safelist: [
+    'ring-4',
+    'ring-[#00d084]',
+    'ring-offset-2',
+    'ring-offset-[#0b0f14]',
+    'transition-all',
+    'duration-500',
+  ],
+
   theme: {
     extend: {
       colors: {

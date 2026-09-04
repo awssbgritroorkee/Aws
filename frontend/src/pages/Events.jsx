@@ -125,7 +125,7 @@ const Events = () => {
     try {
       const params = new URLSearchParams(window.location.search);
       const eventSlug = params.get('event');
-      const eventId = params.get('eventId');
+      const eventId   = params.get('eventId');
 
       const targetIdentifier = eventSlug || eventId;
 
@@ -134,25 +134,58 @@ const Events = () => {
           (e) => e.slug === targetIdentifier || e.id?.toString() === targetIdentifier
         );
 
-        if (targetEvent && targetEvent.is_registration_open) {
-          const isUserLoggedIn = typeof user !== 'undefined' && user !== null;
+        if (targetEvent) {
+          // ── Determine whether this event has already ended (start + 2 h) ──
+          const isEventEnded =
+            new Date().getTime() > new Date(targetEvent.date).getTime() + 2 * 60 * 60 * 1000;
 
-          if (isUserLoggedIn) {
-            if (targetEvent.is_registered) {
-              showToast("You are already registered for this event! 🎉", 'info');
-            } else {
-              handleRegisterClick(targetEvent);
-            }
+          if (isEventEnded) {
+            // ── COMPLETED EVENT: scroll to card & flash a highlight ring ──────
+            // No auth check, no modal — just bring the card into view.
+            setTimeout(() => {
+              const cardEl = document.getElementById(`event-card-${targetEvent.id}`);
+              if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Add highlight ring
+                cardEl.classList.add(
+                  'ring-4', 'ring-[#00d084]', 'ring-offset-2',
+                  'ring-offset-[#0b0f14]', 'transition-all', 'duration-500'
+                );
+
+                // Remove highlight after 3 s so it fades away naturally
+                setTimeout(() => {
+                  cardEl.classList.remove(
+                    'ring-4', 'ring-[#00d084]', 'ring-offset-2',
+                    'ring-offset-[#0b0f14]'
+                  );
+                }, 3000);
+              }
+            }, 300); // small delay lets React finish rendering the list
+
           } else {
-            showToast("Please sign in to register for this event 🚀", 'error');
+            // ── ACTIVE EVENT: keep the original registration / login flow ────
+            if (targetEvent.is_registration_open) {
+              const isUserLoggedIn = typeof user !== 'undefined' && user !== null;
+
+              if (isUserLoggedIn) {
+                if (targetEvent.is_registered) {
+                  showToast('You are already registered for this event! 🎉', 'info');
+                } else {
+                  handleRegisterClick(targetEvent);
+                }
+              } else {
+                showToast('Please sign in to register for this event 🚀', 'error');
+              }
+            }
           }
 
-          // Always clean the URL afterwards so it just shows /events
+          // Always clean the URL so it reverts to /events
           window.history.replaceState({}, '', '/events');
         }
       }
     } catch (error) {
-      console.error("Error processing deep link:", error);
+      console.error('Error processing deep link:', error);
     }
   }, [events, user, handleRegisterClick, showToast]);
 
@@ -260,6 +293,7 @@ const Events = () => {
               return (
                 <div
                   key={event.id}
+                  id={`event-card-${event.id}`}
                   className="p-8 rounded-2xl bg-[#10151c]/90 backdrop-blur-2xl border border-white/10 hover:border-sbg-green/40 transition-all duration-300 flex flex-col justify-between group"
                 >
                   <div className="space-y-4">
