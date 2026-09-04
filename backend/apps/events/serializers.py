@@ -11,6 +11,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'date', 'description',
             'poster', 'status', 'registration_link', 'meeting_link',
+            'ppt_link', 'youtube_link', 'other_material_link',
             'is_registration_open', 'is_registered', 'created_at',
         ]
 

@@ -251,6 +251,12 @@ const Events = () => {
               const isUpcoming = event.status && event.status.toLowerCase() === 'upcoming';
               const regOpen    = event.is_registration_open !== false; // default true if missing
 
+              // Determine if the session has ended (event start + 2 hours in the past)
+              const eventTime    = new Date(event.date).getTime();
+              const currentTime  = new Date().getTime();
+              const twoHoursInMs = 2 * 60 * 60 * 1000;
+              const isEventEnded = currentTime > (eventTime + twoHoursInMs);
+
               return (
                 <div
                   key={event.id}
@@ -323,7 +329,54 @@ const Events = () => {
                   {/* Card Footer Actions */}
                   <div className="pt-6 mt-6 border-t border-white/10 flex justify-end items-center">
 
-                    {event.is_registered ? (
+                    {isEventEnded ? (
+                      /* ── SESSION ENDED — show completion badge + optional PPT / YouTube / Other links ── */
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          id={`session-complete-btn-${event.id}`}
+                          disabled
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-gray-800/80 text-gray-400 cursor-not-allowed border border-gray-700"
+                        >
+                          Session Complete ✅
+                        </button>
+
+                        {event.ppt_link && (
+                          <a
+                            id={`ppt-btn-${event.id}`}
+                            href={event.ppt_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-[#00d084] border border-[#00d084]/30 hover:bg-[#00d084]/10 transition-colors"
+                          >
+                            View PPT 📊
+                          </a>
+                        )}
+
+                        {event.youtube_link && (
+                          <a
+                            id={`youtube-btn-${event.id}`}
+                            href={event.youtube_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors"
+                          >
+                            Watch on YouTube 🎥
+                          </a>
+                        )}
+
+                        {event.other_material_link && (
+                          <a
+                            id={`other-material-btn-${event.id}`}
+                            href={event.other_material_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#11161d] text-blue-400 border border-blue-400/30 hover:bg-blue-400/10 transition-colors"
+                          >
+                            Other Materials 📂
+                          </a>
+                        )}
+                      </div>
+                    ) : event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
                       <div className="flex items-center gap-3">
                         {/* Live countdown — only for upcoming events, sits left of the button */}

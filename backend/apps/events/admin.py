@@ -29,6 +29,10 @@ class EventAdmin(ModelAdmin):
         ('🔗 Registration', {
             'fields': ('registration_link', 'meeting_link', 'is_registration_open'),
         }),
+        ('📎 Post-Event Materials', {
+            'fields': ('ppt_link', 'youtube_link', 'other_material_link'),
+            'description': 'Paste these after the session concludes. They will appear as buttons on the Event Card.',
+        }),
     )
 
     def save_model(self, request, obj, form, change):
