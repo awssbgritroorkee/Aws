@@ -8,7 +8,7 @@ const Footer = () => (
       {/* Tagline Banner */}
       <div className="pb-3 mb-4 border-b border-white/5 w-full flex justify-center items-center overflow-hidden">
         <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-widest text-white/80 whitespace-nowrap text-center w-full font-mono uppercase block">
-          BUILD. DEPLOY. GROW.
+          LEARN. BUILD. CONNECT.
         </span>
       </div>
 
