@@ -315,6 +315,8 @@ const GoogleLoginButton = () => {
   }
 
   // ── Unauthenticated — Google Sign-In button ─────────────────────────────────
+  // 🔍 DEBUG: Check if VITE_GOOGLE_CLIENT_ID is available in this build
+  console.log("Vercel Client ID Check:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
   return (
     <div className="relative group inline-block">
       <button

@@ -15,7 +15,14 @@ import { AuthProvider } from './context/AuthContext'
 import './index.css'
 import App from './App.jsx'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1047120194829-demoappsbg.apps.googleusercontent.com'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+if (!GOOGLE_CLIENT_ID) {
+  console.warn(
+    '⚠️ [Auth] VITE_GOOGLE_CLIENT_ID is not set!\n' +
+    'Google Login will NOT work on this deployment.\n' +
+    'Fix: Add VITE_GOOGLE_CLIENT_ID to your Vercel environment variables and redeploy.'
+  );
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
