@@ -1,14 +1,30 @@
-"""Dev settings — SQLite, DEBUG=True, CORS open to Vite dev server."""
+import os
+import dj_database_url
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=False,
+        )
     }
-}
+    # Add SSL + timeout options for Azure PostgreSQL
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
+    DATABASES['default']['OPTIONS']['sslmode'] = 'require'
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
