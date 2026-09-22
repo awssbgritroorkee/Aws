@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Calendar, Wrench, Rocket, Trophy } from 'lucide-react';
+import { TypeAnimation } from 'react-type-animation';
 import usePageTitle from '../hooks/usePageTitle';
 
 const WHY_BUILD_CARDS = [
@@ -55,6 +56,24 @@ const Home = () => {
             BECOME CLOUD BUILDERS
           </span>
         </h1>
+
+        {/* Typewriter Tagline */}
+        <div className="mt-5 italic text-xl md:text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 min-h-[2rem]">
+          <TypeAnimation
+            sequence={[
+              'Where Cloud Learners Become Cloud Builders ☁️',
+              1500,
+              'Learn. Build. Deploy. Together 🚀',
+              1500,
+              'Empowering Students with AWS Tech 💡',
+              1500,
+            ]}
+            wrapper="span"
+            speed={50}
+            repeat={Infinity}
+            cursor={true}
+          />
+        </div>
 
         {/* Subtext */}
         <p className="mt-6 text-gray-400 text-base md:text-lg lg:text-xl font-medium max-w-3xl text-center leading-relaxed">
