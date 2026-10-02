@@ -356,17 +356,22 @@ const ChallengeDetail = () => {
                 </span>
               </div>
 
-              {/* Description & Typography */}
-              {challenge.long_description ? (
-                <div
-                  className="mt-6 text-gray-300 leading-relaxed text-[15px] challenge-rich-content prose prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: challenge.long_description }}
-                />
-              ) : (challenge.short_description || challenge.description) ? (
-                <p className="mt-6 text-gray-300 leading-relaxed text-[15px]">
-                  {challenge.short_description || challenge.description}
+              {/* Short Description Teaser */}
+              {challenge.short_description && (
+                <p className="text-gray-300 text-lg leading-relaxed mb-6 font-medium">
+                  {challenge.short_description}
                 </p>
-              ) : null}
+              )}
+
+              {/* Rich Text Description */}
+              {(challenge.description || challenge.long_description) && (
+                <div className="mt-8 mb-12 text-gray-300 leading-relaxed space-y-4">
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: challenge.long_description || challenge.description }} 
+                    className="html-content-container challenge-rich-content prose prose-invert max-w-none"
+                  />
+                </div>
+              )}
 
               {/* 3. Stats Grid Alignment */}
               {stats.length > 0 && (

@@ -201,7 +201,8 @@
    Scoped to .challenge-rich-content so it doesn't bleed into other components.
    Typography is set to look beautiful on the dark challenge detail page.
    ─────────────────────────────────────────────────────────────────────────── */
-.challenge-rich-content {
+.challenge-rich-content,
+.html-content-container {
   font-size: 1rem;
   line-height: 1.75;
   color: #cbd5e1; /* text-gray-300 equivalent */
