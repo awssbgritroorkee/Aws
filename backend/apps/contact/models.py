@@ -20,6 +20,11 @@ class ContactMessage(models.Model):
                     default=list, blank=True,
                     help_text='List of selected interest domains from the form')
     created_at = models.DateTimeField(auto_now_add=True)
+    is_read    = models.BooleanField(
+                    default=False,
+                    help_text='Mark as read after reviewing — hides it from the unread counter in the admin sidebar.',
+                    db_index=True,   # indexed: badge queries scan millions of rows in O(log n)
+                 )
 
     class Meta:
         ordering        = ['-created_at']
@@ -27,5 +32,6 @@ class ContactMessage(models.Model):
         verbose_name_plural = 'Contact Messages'
 
     def __str__(self):
-        return f'{self.name} <{self.email}> — {self.created_at:%Y-%m-%d %H:%M}'
+        prefix = '🔵' if not self.is_read else '✅'
+        return f'{prefix} {self.name} <{self.email}> — {self.created_at:%Y-%m-%d %H:%M}'
 

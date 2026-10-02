@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'import_export',
+    'tinymce',              # Rich text editor for long_description and similar HTML fields
     # Local apps
     'apps.accounts',
     'apps.ideas',
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     'apps.contact',
     'apps.students',
     'apps.teamup',
+    'apps.challenges',
 ]
 
 SITE_ID = 1
@@ -188,6 +190,47 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', os.environ.get('EMAIL_HOST_USER', 'AWS SBG <noreply@awssbg.com>'))
 EMAIL_TIMEOUT = 30  # Increased from 10s — gives Render more time to establish SSL connection
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Unfold sidebar badge callbacks
+# Each function receives `request` and returns a string to show as a badge,
+# or None/empty-string to hide the badge entirely.
+# Queries are intentionally lazy (inside the function) to avoid import-time
+# side effects and circular references.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _badge_pending_challenge_verifications(request):
+    """Count ChallengeRegistrations awaiting admin review."""
+    try:
+        from apps.challenges.models import ChallengeRegistration
+        count = ChallengeRegistration.objects.filter(status='pending_approval').count()
+        return str(count) if count > 0 else None
+    except Exception:
+        return None
+
+
+def _badge_unread_contact_messages(request):
+    """Count ContactMessages that have not been marked as read yet."""
+    try:
+        from apps.contact.models import ContactMessage
+        count = ContactMessage.objects.filter(is_read=False).count()
+        return str(count) if count > 0 else None
+    except Exception:
+        return None
+
+
+def _badge_new_teamup_requests(request):
+    """Count TeamUp requests created in the last 7 days (freshness indicator)."""
+    try:
+        from django.utils import timezone
+        from datetime import timedelta
+        from apps.teamup.models import TeamRequest
+        cutoff = timezone.now() - timedelta(days=7)
+        count = TeamRequest.objects.filter(created_at__gte=cutoff).count()
+        return str(count) if count > 0 else None
+    except Exception:
+        return None
+
+
 # Django Unfold Admin Theme
 UNFOLD = {
     # Branding
@@ -313,6 +356,12 @@ UNFOLD = {
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
                     },
                     {
+                        "title": "Challenges",
+                        "icon": "military_tech",
+                        "link": "/admin/challenges/challenge/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
+                    },
+                    {
                         "title": "Gallery Albums",
                         "icon": "photo_library",
                         "link": "/admin/gallery/galleryalbum/",
@@ -343,6 +392,13 @@ UNFOLD = {
                         "link": "/admin/students/studentprofile/",
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('students.view_studentprofile'),
                     },
+                    {
+                        "title": "Challenge Verifications",
+                        "icon": "verified",
+                        "link": "/admin/challenges/challengeregistration/?status__exact=pending_approval",
+                        "badge": _badge_pending_challenge_verifications,
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challengeregistration'),
+                    },
                 ],
             },
             # Team Up: Team Requests, Team Interests
@@ -354,6 +410,7 @@ UNFOLD = {
                         "title": "Team Requests",
                         "icon": "group_add",
                         "link": "/admin/teamup/teamrequest/",
+                        "badge": _badge_new_teamup_requests,
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('teamup.view_teamrequest'),
                     },
                     {
@@ -373,6 +430,7 @@ UNFOLD = {
                         "title": "Contact Messages",
                         "icon": "mail",
                         "link": "/admin/contact/contactmessage/",
+                        "badge": _badge_unread_contact_messages,
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('contact.view_contactmessage'),
                     },
                     {
@@ -445,13 +503,19 @@ UNFOLD = {
         },
         # Website Content tab group
         {
-            "models": ["events.event", "gallery.galleryalbum", "members.member"],
+            "models": ["events.event", "challenges.challenge", "gallery.galleryalbum", "members.member"],
             "items": [
                 {
                     "title": "Events",
                     "link": "/admin/events/event/",
                     "icon": "event",
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
+                },
+                {
+                    "title": "Challenges",
+                    "link": "/admin/challenges/challenge/",
+                    "icon": "military_tech",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
                 },
                 {
                     "title": "Gallery Albums",
@@ -556,4 +620,40 @@ UNFOLD = {
             ],
         },
     ],
+}
+# ── TinyMCE Rich Text Editor Config ─────────────────────────────────────────
+# Used for the long_description field on the Challenge model.
+# The `content_css = 'dark'` setting enables TinyMCE's built-in dark skin,
+# which pairs reasonably well with Unfold's dark admin theme.
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'silver',
+    'skin': 'oxide-dark',
+    'content_css': 'dark',
+    'height': 500,
+    'menubar': 'file edit view insert format tools table help',
+    'plugins': (
+        'advlist autolink lists link image charmap preview anchor '
+        'searchreplace visualblocks code fullscreen '
+        'insertdatetime media table paste code help wordcount'
+    ),
+    'toolbar': (
+        'undo redo | formatselect | bold italic underline strikethrough | '
+        'forecolor backcolor removeformat | '
+        'alignleft aligncenter alignright alignjustify | '
+        'bullist numlist outdent indent | '
+        'link image media table | '
+        'blockquote code codesample | '
+        'fullscreen preview | help'
+    ),
+    'content_style': (
+        'body { font-family: Inter, system-ui, sans-serif; font-size: 15px; '
+        'background: #0d1117; color: #e6edf3; line-height: 1.7; }'
+        'h1,h2,h3,h4 { color: #00d084; }'
+        'a { color: #58a6ff; }'
+        'code { background: #161b22; border-radius: 4px; padding: 2px 6px; color: #e6edf3; }'
+        'pre { background: #161b22; padding: 16px; border-radius: 8px; overflow: auto; }'
+    ),
+    'promotion': False,
+    'branding': False,
+    'resize': True,
 }

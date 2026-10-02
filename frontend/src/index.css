@@ -196,3 +196,129 @@
     background-clip: text;
   }
 }
+
+/* ── Challenge Rich Text Content (TinyMCE HTML output) ────────────────────────
+   Scoped to .challenge-rich-content so it doesn't bleed into other components.
+   Typography is set to look beautiful on the dark challenge detail page.
+   ─────────────────────────────────────────────────────────────────────────── */
+.challenge-rich-content {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #cbd5e1; /* text-gray-300 equivalent */
+}
+
+.challenge-rich-content h1,
+.challenge-rich-content h2,
+.challenge-rich-content h3,
+.challenge-rich-content h4,
+.challenge-rich-content h5,
+.challenge-rich-content h6 {
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.75em;
+  margin-bottom: 0.6em;
+}
+
+.challenge-rich-content h1 { font-size: 1.875rem; color: #00d084; }
+.challenge-rich-content h2 { font-size: 1.5rem;   color: #00d084; }
+.challenge-rich-content h3 { font-size: 1.25rem; }
+.challenge-rich-content h4 { font-size: 1.1rem; }
+
+.challenge-rich-content p {
+  margin-bottom: 1em;
+  color: #cbd5e1;
+}
+
+.challenge-rich-content a {
+  color: #00d084;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.challenge-rich-content a:hover { color: #00ffaa; }
+
+.challenge-rich-content strong { color: #ffffff; font-weight: 700; }
+.challenge-rich-content em    { color: #e2e8f0; font-style: italic; }
+
+.challenge-rich-content ul,
+.challenge-rich-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.challenge-rich-content ul { list-style-type: disc; }
+.challenge-rich-content ol { list-style-type: decimal; }
+.challenge-rich-content li {
+  margin-bottom: 0.35em;
+  color: #cbd5e1;
+}
+
+.challenge-rich-content blockquote {
+  border-left: 3px solid #00d084;
+  padding: 0.75em 1.25em;
+  margin: 1.25em 0;
+  background: rgba(0, 208, 132, 0.05);
+  border-radius: 0 8px 8px 0;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.challenge-rich-content code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.85em;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.15em 0.45em;
+  color: #e2e8f0;
+}
+
+.challenge-rich-content pre {
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25em 1.5em;
+  overflow-x: auto;
+  margin: 1.25em 0;
+}
+.challenge-rich-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #e2e8f0;
+}
+
+.challenge-rich-content img {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 1.25em 0;
+}
+
+.challenge-rich-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25em 0;
+  font-size: 0.9rem;
+}
+.challenge-rich-content th {
+  background: rgba(0, 208, 132, 0.08);
+  color: #00d084;
+  font-weight: 700;
+  padding: 0.65em 1em;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 208, 132, 0.2);
+}
+.challenge-rich-content td {
+  padding: 0.6em 1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+}
+.challenge-rich-content tr:last-child td { border-bottom: none; }
+
+.challenge-rich-content hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 2em 0;
+}

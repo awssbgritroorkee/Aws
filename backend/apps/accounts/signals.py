@@ -172,3 +172,16 @@ RIT Roorkee</p>"""
             recipient_list=[instance.email],
             html_content=html_content,
         ).start()
+
+
+@receiver(post_save, sender=User)
+def create_builder_profile(sender, instance, created, **kwargs):
+    """
+    Automatically create a BuilderProfile whenever a new User is created.
+    Handles Google OAuth sign-ups, admin-created users, and any other
+    registration path. Uses get_or_create to be idempotent — safe to call
+    multiple times without creating duplicate profiles.
+    """
+    if created:
+        from .models import BuilderProfile  # local import prevents circular deps
+        BuilderProfile.objects.get_or_create(user=instance)

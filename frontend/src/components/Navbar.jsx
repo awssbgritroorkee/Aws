@@ -4,13 +4,14 @@ import OriginalLogoMark from './OriginalLogoMark';
 import GoogleLoginButton from './GoogleLoginButton';
 
 const NAV_LINKS = [
-  { label: 'Home',     to: '/' },
-  { label: 'About',    to: '/about' },
-  { label: 'Events',   to: '/events' },
-  { label: 'Team Up',  to: '/teamup' },
-  { label: 'Team',     to: '/team' },
-  { label: 'Gallery',  to: '/gallery' },
-  { label: 'Contact',  to: '/contact' },
+  { label: 'Home',        to: '/' },
+  { label: 'About',       to: '/about' },
+  { label: 'Events',      to: '/events' },
+  { label: 'Challenges',  to: '/challenges' },
+  { label: 'Team Up',     to: '/teamup' },
+  { label: 'Team',        to: '/team' },
+  { label: 'Gallery',     to: '/gallery' },
+  { label: 'Contact',     to: '/contact' },
 ];
 
 const Navbar = () => {
@@ -41,7 +42,7 @@ const Navbar = () => {
       {/* ── Center pill nav — desktop ── */}
       <nav
         aria-label="Main navigation"
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full absolute left-1/2 -translate-x-1/2"
+        className="hidden md:flex items-center gap-3 px-2 py-1.5 rounded-full absolute left-1/2 -translate-x-1/2"
         style={{
           background: 'rgba(255,255,255,0.04)',
           border: '1px solid rgba(255,255,255,0.07)',
@@ -52,9 +53,9 @@ const Navbar = () => {
             key={to}
             to={to}
             end={to === '/'}
-            id={`nav-${label.toLowerCase()}`}
+            id={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
             className={({ isActive }) =>
-              `px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              `px-3.5 py-1.5 rounded-full text-[15px] font-medium whitespace-nowrap transition-all duration-200 ${
                 isActive
                   ? 'text-sbg-green bg-sbg-green/10 border border-sbg-green/30 font-semibold'
                   : 'text-gray-400 hover:text-white hover:bg-white/[0.06] border border-transparent'

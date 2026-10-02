@@ -111,4 +111,33 @@ export const verifyTeamPin        = (postId, pin) => api.post(`/api/teamup/posts
 export const reduceSlots          = (postId)     => api.post(`/api/teamup/posts/${postId}/reduce-slots/`);
 export const getMyTeamWorkspace   = ()           => api.get('/api/teamup/my-workspace/');
 
+// ── Gamification — XP, Streaks & Leaderboard ─────────────────────────────────
+/** POST /api/gamification/checkin/ — daily check-in, awards XP and manages streak */
+export const dailyCheckin         = ()           => api.post('/api/gamification/checkin/');
+/** GET  /api/gamification/my-profile/ — current user's BuilderProfile */
+export const getBuilderProfile    = ()           => api.get('/api/gamification/my-profile/');
+/** PATCH /api/gamification/my-profile/ — update academic details */
+export const updateBuilderProfile = (data)       => api.patch('/api/gamification/my-profile/', data);
+/** GET  /api/gamification/leaderboard/ — top-10 students (core team excluded) */
+export const getLeaderboard       = ()           => api.get('/api/gamification/leaderboard/');
+
+// ── Challenge RSVPs & Project Submissions ────────────────────────────────────
+/** GET /api/challenges/my-registrations/ — fetch all registrations for current user */
+export const getMyRegistrations = async () => {
+  const response = await api.get('/api/challenges/my-registrations/');
+  return response.data;
+};
+
+/** POST /api/challenges/<challengeId>/register/ — RSVP for a challenge */
+export const registerForChallenge = async (challengeId) => {
+  const response = await api.post(`/api/challenges/${challengeId}/register/`);
+  return response.data;
+};
+
+/** POST /api/challenges/<challengeId>/submit/ — submit proof of registration link */
+export const submitChallengeProject = async (challengeId, proofLink) => {
+  const response = await api.post(`/api/challenges/${challengeId}/submit/`, { proof_link: proofLink });
+  return response.data;
+};
+
 export default api;

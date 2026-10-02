@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -45,7 +46,33 @@ const IconExternal = () => (
   </svg>
 );
 
+const IconGrid = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>
+);
+
 // ── Dropdown item components ──────────────────────────────────────────────────
+
+/** Internal router link — same visual style as DropdownLink but uses <Link> */
+const DropdownNavLink = ({ to, icon, label, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium
+               text-gray-300 hover:bg-white/8 hover:text-white
+               transition-all duration-150 group/item"
+  >
+    <span className="flex-shrink-0 opacity-70 group-hover/item:opacity-100 transition-opacity">
+      {icon}
+    </span>
+    <span className="flex-1">{label}</span>
+  </Link>
+);
+
 const DropdownLink = ({ href, icon, label, highlight }) => (
   <a
     href={href}
@@ -181,6 +208,7 @@ const GoogleLoginButton = () => {
     const groups       = context?.groups         ?? [];
 
     const hasAdminAccess = isStaff || isSuper;
+    const isCoreTeam = isTeamMember || hasAdminAccess;
 
     return (
       <div className="relative" ref={dropdownRef}>
@@ -266,6 +294,21 @@ const GoogleLoginButton = () => {
             {/* ── Menu items ── */}
             <div className="p-2 flex flex-col gap-0.5">
 
+              {/* Dashboard — only for regular students (non-core team) */}
+              {!isCoreTeam && (
+                <DropdownNavLink
+                  to="/dashboard"
+                  icon={<IconGrid />}
+                  label="Dashboard"
+                  onClick={() => setDropdownOpen(false)}
+                />
+              )}
+
+              {/* Divider below Dashboard when other items follow */}
+              {(isTeamMember || hasAdminAccess) && (
+                <div className="my-1 border-t border-white/8" />
+              )}
+
               {/* My Profile — only for verified team members */}
               {isTeamMember && (
                 <DropdownButton
@@ -288,10 +331,8 @@ const GoogleLoginButton = () => {
                 />
               )}
 
-              {/* Divider */}
-              {(isTeamMember || hasAdminAccess) && (
-                <div className="my-1 border-t border-white/8" />
-              )}
+              {/* Divider before Sign Out */}
+              <div className="my-1 border-t border-white/8" />
 
               {/* Logout */}
               <DropdownButton

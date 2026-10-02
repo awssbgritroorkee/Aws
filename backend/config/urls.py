@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from apps.students.admin_views import admin_analytics_dashboard, admin_export_excel
+from apps.challenges.urls import hackathon_urlpatterns
 
 urlpatterns = [
     # ── Favicon redirect (stops browser 404 on /favicon.ico) ─────────────────
@@ -20,6 +21,9 @@ urlpatterns = [
     path('api/auth/',    include('apps.accounts.urls')),
     path('accounts/',    include('allauth.urls')),
 
+    # ── TinyMCE rich text editor (JS/CSS assets served from admin) ───────────
+    path('tinymce/', include('tinymce.urls')),
+
     # ── Existing endpoints ────────────────────────────────────────────────────
     path('api/ideas/',   include('apps.ideas.urls')),
     path('api/teams/',   include('apps.teams.urls')),
@@ -28,15 +32,20 @@ urlpatterns = [
     path('api/members/', include('apps.members.urls')),
 
     # ── New dynamic content endpoints ─────────────────────────────────────────
-    path('api/events/',  include('apps.events.urls')),
-    path('api/gallery/', include('apps.gallery.urls')),
-    path('api/contact/', include('apps.contact.urls')),
+    path('api/events/',      include('apps.events.urls')),
+    path('api/challenges/',  include('apps.challenges.urls')),
+    path('api/hackathons/',  include((hackathon_urlpatterns, 'hackathons'))),
+    path('api/gallery/',     include('apps.gallery.urls')),
+    path('api/contact/',     include('apps.contact.urls')),
 
     # ── Event Registration System ─────────────────────────────────────────────
     path('api/',         include('apps.students.urls')),
 
     # ── Team Up — Matchmaking System ──────────────────────────────────────────
     path('api/teamup/', include('apps.teamup.urls')),
+
+    # ── Gamification — XP, Streaks & Leaderboard ──────────────────────────────
+    path('api/gamification/', include('apps.accounts.gamification_urls')),
 ]
 
 if settings.DEBUG:

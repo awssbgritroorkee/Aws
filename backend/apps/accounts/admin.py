@@ -5,7 +5,7 @@ from django.contrib.admin.models import LogEntry
 from django.conf import settings
 from unfold.admin import ModelAdmin
 
-from .models import EmailBroadcast
+from .models import EmailBroadcast, BuilderProfile
 from .signals import EmailThread
 
 
@@ -176,6 +176,54 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
         """Shows a green tick if this user is linked to a TeamMember profile."""
         return hasattr(obj, 'team_profile') and obj.team_profile is not None
 
+
+# ── Builder Profile Admin (Gamification) ─────────────────────────────────────
+
+@admin.register(BuilderProfile)
+class BuilderProfileAdmin(ModelAdmin):
+    """
+    Admin interface for the gamification BuilderProfile model.
+
+    Fair Play: The is_core_team flag can be toggled here to exclude or include
+    a user in the public student leaderboard.
+    """
+    compressed_fields = True
+    warn_unsaved_form = True
+
+    # ── List view ──────────────────────────────────────────────────────────────
+    list_display       = ['user', 'xp_points', 'current_streak', 'longest_streak',
+                          'last_checkin_date', 'is_core_team']
+    list_display_links = ['user']
+    list_filter        = ['is_core_team']
+    search_fields      = ['user__username', 'user__email', 'user__first_name', 'user__last_name']
+    ordering           = ['-xp_points', '-current_streak']
+    list_editable      = ['is_core_team']
+
+    # ── Detail form ────────────────────────────────────────────────────────────
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('👤 User', {
+            'fields': ('user',),
+        }),
+        ('⚡ Gamification', {
+            'fields': ('xp_points', 'current_streak', 'longest_streak', 'last_checkin_date'),
+            'description': (
+                'XP is earned via daily check-ins (+10 per day). '
+                'Streaks track consecutive daily check-ins.'
+            ),
+        }),
+        ('🛡️ Fair Play', {
+            'fields': ('is_core_team',),
+            'description': (
+                '<strong>Core Team = True</strong> → this user is excluded from the public '
+                'student leaderboard and their XP is <em>never</em> modified by the check-in API.'
+            ),
+        }),
+        ('📅 Audit', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
 
 # ── Email Broadcast Admin ─────────────────────────────────────────────────────
