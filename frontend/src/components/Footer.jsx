@@ -146,7 +146,7 @@ const Footer = () => (
 
           {/* AWS Builder Center */}
           <a
-            href="https://builder.aws.com"
+            href="https://bit.ly/4wkLTHX"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-sbg-green hover:underline underline-offset-4 transition-all"
