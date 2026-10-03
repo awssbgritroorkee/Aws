@@ -436,6 +436,25 @@ class ChallengeRegistration(models.Model):
         verbose_name        = 'Challenge Registration'
         verbose_name_plural = 'Challenge Registrations'
 
+    def save(self, *args, **kwargs):
+        """
+        State-tracking save:
+        Detects if status transitions to 'approved' and automatically awards +50 XP
+        to non-core team members.
+        """
+        if self.pk:
+            old_instance = ChallengeRegistration.objects.filter(pk=self.pk).first()
+            if old_instance and old_instance.status != 'approved' and self.status == 'approved':
+                try:
+                    from apps.accounts.models import BuilderProfile
+                    profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
+                    if not profile.is_core_team:
+                        profile.xp_points += 50
+                        profile.save(update_fields=['xp_points'])
+                except Exception:
+                    pass
+        super().save(*args, **kwargs)
+
     def __str__(self):
         name = self.student.get_full_name() or self.student.first_name or self.student.username
         return f'{name} — {self.challenge.title} [{self.get_status_display()}]'

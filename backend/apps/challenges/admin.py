@@ -1,3 +1,5 @@
+from django import forms
+from django.db import models
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
@@ -46,6 +48,9 @@ class ChallengeRegistrationInline(TabularInline):
     extra               = 0          # no blank rows — registrations come from the API
     readonly_fields     = ['student', 'view_proof_link', 'registered_at', 'submitted_at']
     fields              = ['student', 'status', 'proof_link', 'view_proof_link', 'rejection_reason', 'registered_at', 'submitted_at']
+    formfield_overrides = {
+        models.TextField: {'widget': forms.Textarea(attrs={'rows': 1, 'style': 'width: 100%; min-width: 150px; resize: vertical;'})},
+    }
     ordering            = ['-registered_at']
     verbose_name        = 'Registered Student'
     verbose_name_plural = 'Registered Students'
@@ -313,45 +318,20 @@ class ChallengeRegistrationAdmin(ModelAdmin):
     @admin.action(description='✅ Approve selected registration proofs (+50 XP)')
     def approve_proofs(self, request, queryset):
         approved_count = 0
-        xp_awarded_count = 0
-        from apps.accounts.models import BuilderProfile
-
-        for reg in queryset.filter(status='pending_approval'):
+        for reg in queryset.exclude(status='approved'):
             reg.status = 'approved'
-            reg.save(update_fields=['status'])
+            reg.save()
             approved_count += 1
-
-            # Award +50 XP to non-core team members
-            try:
-                profile, _ = BuilderProfile.objects.get_or_create(user=reg.student)
-                if not profile.is_core_team:
-                    profile.xp_points += 50
-                    profile.save(update_fields=['xp_points'])
-                    xp_awarded_count += 1
-            except Exception:
-                pass
 
         self.message_user(
             request,
-            f"Approved {approved_count} registration proof(s). Awarded +50 XP to {xp_awarded_count} non-core student(s)."
+            f"Approved {approved_count} registration proof(s) and awarded XP where applicable."
         )
 
     @admin.action(description='❌ Reject selected registration proofs')
     def reject_proofs(self, request, queryset):
         updated = queryset.update(status='rejected')
         self.message_user(request, f"Rejected {updated} registration proof(s). Edit individual entries to add a rejection reason.")
-
-    def save_model(self, request, obj, form, change):
-        if change and 'status' in form.changed_data and obj.status == 'approved':
-            try:
-                from apps.accounts.models import BuilderProfile
-                profile, _ = BuilderProfile.objects.get_or_create(user=obj.student)
-                if not profile.is_core_team:
-                    profile.xp_points += 50
-                    profile.save(update_fields=['xp_points'])
-            except Exception:
-                pass
-        super().save_model(request, obj, form, change)
 
     # ── Custom display columns ────────────────────────────────────────────────────────────────
     @display(description='Status', label={
