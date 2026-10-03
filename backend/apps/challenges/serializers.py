@@ -237,6 +237,7 @@ class ChallengeRegistrationSerializer(serializers.ModelSerializer):
             # Registration state
             'status',
             'status_display',
+            'rejection_reason',
             'proof_link',
             'project_link',
             # Timestamps
@@ -248,7 +249,7 @@ class ChallengeRegistrationSerializer(serializers.ModelSerializer):
             'challenge_title', 'challenge_event_type', 'challenge_slug',
             'challenge_start_time', 'challenge_end_time', 'challenge_image',
             'challenge_status', 'challenge_submission_type', 'challenge_submission_instructions',
-            'status_display', 'project_link',
+            'status_display', 'project_link', 'rejection_reason',
         ]
 
     # ── SerializerMethodField implementations ─────────────────────────────────

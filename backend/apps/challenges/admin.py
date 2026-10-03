@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 from .models import Challenge, ChallengeRule, ChallengeReward, Hackathon, ChallengeRegistration
@@ -43,11 +44,20 @@ class ChallengeRegistrationInline(TabularInline):
     """
     model               = ChallengeRegistration
     extra               = 0          # no blank rows — registrations come from the API
-    readonly_fields     = ['student', 'registered_at', 'submitted_at']
-    fields              = ['student', 'status', 'proof_link', 'registered_at', 'submitted_at']
+    readonly_fields     = ['student', 'view_proof_link', 'registered_at', 'submitted_at']
+    fields              = ['student', 'status', 'proof_link', 'view_proof_link', 'rejection_reason', 'registered_at', 'submitted_at']
     ordering            = ['-registered_at']
     verbose_name        = 'Registered Student'
     verbose_name_plural = 'Registered Students'
+
+    def view_proof_link(self, obj):
+        if obj.proof_link:
+            return format_html(
+                '<a href="{}" target="_blank" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px;">↗️ Open</a>',
+                obj.proof_link
+            )
+        return "-"
+    view_proof_link.short_description = "View"
 
     def has_add_permission(self, request, obj=None):
         """Registrations are created via the API, not manually in admin."""
@@ -268,10 +278,10 @@ class ChallengeRegistrationAdmin(ModelAdmin):
     warn_unsaved_form = True
 
     # ── List view ───────────────────────────────────────────────────────────────────
-    list_display       = ['student', 'challenge', 'reg_status_badge', 'proof_link_display', 'registered_at']
+    list_display       = ['student', 'challenge', 'reg_status_badge', 'proof_link_display', 'rejection_reason', 'registered_at']
     list_display_links = ['student']
     list_filter        = ['status', 'challenge__event_type', 'challenge']
-    search_fields      = ['student__email', 'student__first_name', 'student__last_name', 'challenge__title']
+    search_fields      = ['student__email', 'student__first_name', 'student__last_name', 'challenge__title', 'rejection_reason']
     ordering           = ['-registered_at']
     date_hierarchy     = 'registered_at'
     readonly_fields    = ['registered_at', 'submitted_at']
@@ -282,11 +292,11 @@ class ChallengeRegistrationAdmin(ModelAdmin):
         ('🧑‍💻 Registration', {
             'fields': ('student', 'challenge'),
         }),
-        ('📊 Status', {
-            'fields': ('status',),
+        ('📊 Status & Feedback', {
+            'fields': ('status', 'rejection_reason'),
             'description': (
-                'Move the status forward as the student progresses: '
-                '<strong>Registered</strong> → <strong>Under Review</strong> → <strong>Approved</strong> / <strong>Rejected</strong>.'
+                'Move status forward: <strong>Registered</strong> → <strong>Under Review</strong> → <strong>Approved</strong> / <strong>Rejected</strong>.<br>'
+                'If marking as <strong>Rejected</strong>, specify a clear rejection reason for the student.'
             ),
         }),
         ('🔗 Proof of Registration', {
@@ -329,7 +339,19 @@ class ChallengeRegistrationAdmin(ModelAdmin):
     @admin.action(description='❌ Reject selected registration proofs')
     def reject_proofs(self, request, queryset):
         updated = queryset.update(status='rejected')
-        self.message_user(request, f"Rejected {updated} registration proof(s).")
+        self.message_user(request, f"Rejected {updated} registration proof(s). Edit individual entries to add a rejection reason.")
+
+    def save_model(self, request, obj, form, change):
+        if change and 'status' in form.changed_data and obj.status == 'approved':
+            try:
+                from apps.accounts.models import BuilderProfile
+                profile, _ = BuilderProfile.objects.get_or_create(user=obj.student)
+                if not profile.is_core_team:
+                    profile.xp_points += 50
+                    profile.save(update_fields=['xp_points'])
+            except Exception:
+                pass
+        super().save_model(request, obj, form, change)
 
     # ── Custom display columns ────────────────────────────────────────────────────────────────
     @display(description='Status', label={

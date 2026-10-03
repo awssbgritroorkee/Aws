@@ -247,65 +247,12 @@ class SubmitProjectView(APIView):
                 status=drf_status.HTTP_400_BAD_REQUEST,
             )
 
-        submission_type = challenge.submission_type  # 'github' | 'drive' | 'live_url' | 'official'
-
-        # ════════════════════════════════════════════════════════════════════
-        # PATH A — GitHub auto-validation
-        # ════════════════════════════════════════════════════════════════════
-        if submission_type == 'github':
-            try:
-                validate_github_repo(
-                    repo_url    = proof_link,
-                    event_start = challenge.start_time,
-                    event_end   = challenge.end_time,
-                )
-            except ValueError as exc:
-                # Student-facing validation failure — 400 with exact message
-                return Response(
-                    {'detail': str(exc)},
-                    status=drf_status.HTTP_400_BAD_REQUEST,
-                )
-            except RuntimeError as exc:
-                # GitHub API unreachable — 503 so the student knows to retry
-                return Response(
-                    {'detail': str(exc)},
-                    status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
-                )
-
-            # Validation passed — auto-approve and award XP
-            registration.proof_link   = proof_link
-            registration.status       = 'approved'
-            registration.submitted_at = timezone.now()
-            registration.save(update_fields=['proof_link', 'status', 'submitted_at'])
-
-            xp_awarded = False
-            try:
-                from apps.accounts.models import BuilderProfile
-                profile, _ = BuilderProfile.objects.get_or_create(user=request.user)
-                if not profile.is_core_team:
-                    profile.xp_points += 50
-                    profile.save(update_fields=['xp_points'])
-                    xp_awarded = True
-            except Exception:
-                pass  # XP is non-critical; never break the submission response
-
-            detail = (
-                '✅ Project verified and approved! +50 XP has been added to your profile.'
-                if xp_awarded else
-                '✅ Project verified and approved!'
-            )
-            return Response(
-                {'detail': detail, 'auto_approved': True},
-                status=drf_status.HTTP_200_OK,
-            )
-
-        # ════════════════════════════════════════════════════════════════════
-        # PATH B — Manual review (drive / official / live_url)
-        # ════════════════════════════════════════════════════════════════════
-        registration.proof_link   = proof_link
-        registration.status       = 'pending_approval'
-        registration.submitted_at = timezone.now()
-        registration.save(update_fields=['proof_link', 'status', 'submitted_at'])
+        # ── All submissions go to manual review ─────────────────────────
+        registration.proof_link       = proof_link
+        registration.status           = 'pending_approval'
+        registration.rejection_reason = ''  # Reset any previous rejection reason
+        registration.submitted_at     = timezone.now()
+        registration.save(update_fields=['proof_link', 'status', 'rejection_reason', 'submitted_at'])
 
         return Response(
             {'detail': '⏳ Proof submitted successfully. Under review by admins.', 'auto_approved': False},

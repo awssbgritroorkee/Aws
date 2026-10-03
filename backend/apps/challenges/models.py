@@ -407,11 +407,16 @@ class ChallengeRegistration(models.Model):
                     )
 
     # ── Submission ─────────────────────────────────────────────────────────────
-    proof_link    = models.URLField(
-                        blank=True,
-                        null=True,
-                        help_text='Public Google Drive link of the registration screenshot'
-                    )
+    proof_link       = models.URLField(
+                           blank=True,
+                           null=True,
+                           help_text='Public Google Drive link of the registration screenshot'
+                       )
+    rejection_reason = models.TextField(
+                           blank=True,
+                           null=True,
+                           help_text='Explanation provided by admins if submission proof is rejected.'
+                       )
 
     # ── Timestamps ─────────────────────────────────────────────────────────────
     registered_at = models.DateTimeField(
