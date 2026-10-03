@@ -49,7 +49,8 @@ class ChallengeRegistrationInline(TabularInline):
     readonly_fields     = ['student', 'view_proof_link', 'approved_by', 'registered_at', 'submitted_at']
     fields              = ['student', 'status', 'proof_link', 'view_proof_link', 'rejection_reason', 'approved_by', 'registered_at', 'submitted_at']
     formfield_overrides = {
-        models.TextField: {'widget': forms.Textarea(attrs={'rows': 1, 'style': 'width: 100%; min-width: 150px; resize: vertical;'})},
+        models.URLField: {'widget': forms.URLInput(attrs={'style': 'width: 200px;'})},
+        models.TextField: {'widget': forms.Textarea(attrs={'rows': 2, 'style': 'width: 250px; min-height: 42px; resize: vertical;'})},
     }
     ordering            = ['-registered_at']
     verbose_name        = 'Registered Student'
@@ -58,7 +59,7 @@ class ChallengeRegistrationInline(TabularInline):
     def view_proof_link(self, obj):
         if obj.proof_link:
             return format_html(
-                '<a href="{}" target="_blank" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px;">↗️ Open</a>',
+                '<a href="{}" target="_blank" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px; white-space: nowrap; min-width: 70px; display: inline-block; text-align: center;">↗️ Open</a>',
                 obj.proof_link
             )
         return "-"
