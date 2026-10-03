@@ -251,8 +251,11 @@ class EventRegistrationBridgeFormSet(BaseInlineFormSet):
         instance = kwargs.get('instance')
         if isinstance(instance, BuilderProfile):
             try:
-                kwargs['instance'] = instance.user.student_profile
-            except (ObjectDoesNotExist, AttributeError):
+                if hasattr(instance, 'user') and instance.user and hasattr(instance.user, 'student_profile'):
+                    kwargs['instance'] = instance.user.student_profile
+                else:
+                    kwargs['instance'] = None
+            except Exception:
                 kwargs['instance'] = None
 
         target = kwargs.get('instance')
@@ -262,16 +265,19 @@ class EventRegistrationBridgeFormSet(BaseInlineFormSet):
         super().__init__(*args, **kwargs)
 
     def get_queryset(self):
-        if not self.instance or not getattr(self.instance, 'pk', None):
+        try:
+            if not self.instance or not getattr(self.instance, 'pk', None):
+                return EventRegistration.objects.none()
+            if self.queryset is not None:
+                return self.queryset
+            return (
+                super()
+                .get_queryset()
+                .select_related('event')             # avoids N+1 on event title
+                .order_by('-registered_at')
+            )
+        except Exception:
             return EventRegistration.objects.none()
-        if self.queryset is not None:
-            return self.queryset
-        return (
-            super()
-            .get_queryset()
-            .select_related('event')             # avoids N+1 on event title
-            .order_by('-registered_at')
-        )
 
 
 # ── Read-Only Inlines ─────────────────────────────────────────────────────────

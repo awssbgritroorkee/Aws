@@ -162,6 +162,9 @@ const MyRegistrations = () => {
   };
 
   const isChallengeEnded = (reg) => {
+    if (reg.is_event_registration) {
+      return reg.challenge_status === 'CONCLUDED';
+    }
     if (!reg.challenge_end_time) return reg.challenge_status === 'CONCLUDED';
     return new Date(reg.challenge_end_time) < new Date();
   };
@@ -398,15 +401,15 @@ const MyRegistrations = () => {
                   {/* Card Actions */}
                   <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
                     <Link
-                      to={reg.challenge_slug ? `/challenges/${reg.challenge_slug}` : '/challenges'}
+                      to={reg.is_event_registration ? '/events' : (reg.challenge_slug ? `/challenges/${reg.challenge_slug}` : '/challenges')}
                       className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1 font-medium"
                     >
                       <span>View Details</span>
                       <ExternalLink className="w-3 h-3" />
                     </Link>
 
-                    {/* Submit / Resubmit button — for registered & rejected status before deadline */}
-                    {(reg.status === 'registered' || reg.status === 'rejected') && !ended && (
+                    {/* Submit / Resubmit button — for registered & rejected challenge status before deadline */}
+                    {!reg.is_event_registration && (reg.status === 'registered' || reg.status === 'rejected') && !ended && (
                       <button
                         onClick={() => openSubmitModal(reg)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5 ${

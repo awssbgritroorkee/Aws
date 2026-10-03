@@ -159,30 +159,85 @@ class MyRegistrationsView(APIView):
     """
     GET /api/challenges/my-registrations/
 
-    Returns all ChallengeRegistration records for the authenticated user,
+    Returns all ChallengeRegistration records and EventRegistration records for the authenticated user,
     ordered by most recently registered first.  Each record includes
-    denormalized challenge fields (title, event_type, slug, image, status)
+    denormalized challenge/event fields (title, event_type, slug, image, status)
     so the frontend can render cards without extra API calls.
 
     Responses:
-        200  [ { ...registration + challenge fields... }, ... ]
+        200  [ { ...registration + challenge/event fields... }, ... ]
     """
     authentication_classes = _AUTH
     permission_classes     = [IsAuthenticated]
 
     def get(self, request):
-        registrations = (
+        # 1. Challenge & Hackathon Registrations
+        challenge_regs = (
             ChallengeRegistration.objects
             .filter(student=request.user)
             .select_related('challenge')   # single JOIN — avoids N+1 on challenge fields
             .order_by('-registered_at')
         )
-        serializer = ChallengeRegistrationSerializer(
-            registrations,
+        challenge_data = ChallengeRegistrationSerializer(
+            challenge_regs,
             many=True,
             context={'request': request},
+        ).data
+
+        # 2. Student Event Registrations
+        event_data = []
+        try:
+            from apps.students.models import EventRegistration
+            event_regs = (
+                EventRegistration.objects
+                .filter(student__user=request.user)
+                .select_related('event')
+                .order_by('-registered_at')
+            )
+            for reg in event_regs:
+                poster_url = None
+                if reg.event and reg.event.poster:
+                    try:
+                        url = reg.event.poster.url
+                        if url.startswith('http://') or url.startswith('https://'):
+                            poster_url = url
+                        else:
+                            poster_url = request.build_absolute_uri(url)
+                    except Exception:
+                        poster_url = str(reg.event.poster)
+
+                event_data.append({
+                    'id': f"event-{reg.id}",
+                    'challenge': None,
+                    'challenge_title': reg.event.title if reg.event else 'Event',
+                    'challenge_event_type': 'event',
+                    'challenge_slug': reg.event.slug if reg.event else '',
+                    'challenge_start_time': reg.event.date if reg.event else reg.registered_at,
+                    'challenge_end_time': None,
+                    'challenge_image': poster_url,
+                    'challenge_status': 'LIVE' if (reg.event and reg.event.status == 'upcoming') else 'CONCLUDED',
+                    'challenge_submission_type': 'live_url',
+                    'challenge_submission_instructions': None,
+                    'status': 'registered',
+                    'status_display': 'Registered',
+                    'rejection_reason': '',
+                    'proof_link': '',
+                    'project_link': '',
+                    'registered_at': reg.registered_at,
+                    'submitted_at': None,
+                    'is_event_registration': True,
+                })
+        except Exception:
+            pass
+
+        # Combine both datasets and sort by registered_at descending
+        combined = list(challenge_data) + event_data
+        combined.sort(
+            key=lambda x: str(x.get('registered_at') or ''),
+            reverse=True,
         )
-        return Response(serializer.data, status=drf_status.HTTP_200_OK)
+
+        return Response(combined, status=drf_status.HTTP_200_OK)
 
 
 class SubmitProjectView(APIView):
