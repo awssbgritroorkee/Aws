@@ -455,21 +455,33 @@ class ChallengeRegistration(models.Model):
     def save(self, *args, **kwargs):
         """
         State-tracking save:
-        Validates proof link presence for approved status, and automatically awards +50 XP
-        to non-core team members when status transitions to 'approved'.
+        Validates proof link presence for approved status, awards +50 XP to non-core team members
+        when status transitions to 'approved', and rolls back 50 XP if status transitions away from 'approved'.
         """
         self.clean()
         if self.pk:
             old_instance = ChallengeRegistration.objects.filter(pk=self.pk).first()
-            if old_instance and old_instance.status != 'approved' and self.status == 'approved':
-                try:
-                    from apps.accounts.models import BuilderProfile
-                    profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
-                    if not profile.is_core_team:
-                        profile.xp_points += 50
-                        profile.save(update_fields=['xp_points'])
-                except Exception:
-                    pass
+            if old_instance:
+                # Transition: Non-Approved -> Approved (+50 XP)
+                if old_instance.status != 'approved' and self.status == 'approved':
+                    try:
+                        from apps.accounts.models import BuilderProfile
+                        profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
+                        if not profile.is_core_team:
+                            profile.xp_points += 50
+                            profile.save(update_fields=['xp_points'])
+                    except Exception:
+                        pass
+                # Transition: Approved -> Non-Approved (-50 XP Rollback)
+                elif old_instance.status == 'approved' and self.status != 'approved':
+                    try:
+                        from apps.accounts.models import BuilderProfile
+                        profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
+                        if not profile.is_core_team:
+                            profile.xp_points = max(0, profile.xp_points - 50)
+                            profile.save(update_fields=['xp_points'])
+                    except Exception:
+                        pass
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
