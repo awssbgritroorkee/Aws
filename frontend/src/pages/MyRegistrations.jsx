@@ -107,18 +107,23 @@ const MyRegistrations = () => {
         ? '✅ Project verified and approved! +50 XP added.'
         : '⏳ Proof submitted! Your registration is now under review.');
 
-      // ── Optimistic local state update ─────────────────────────────────────
-      // If the backend auto-approved (GitHub path), flip the card badge
-      // immediately without waiting for a full refetch.
-      if (res.auto_approved) {
-        setRegistrations((prev) =>
-          prev.map((r) =>
-            r.id === selectedReg.id
-              ? { ...r, status: 'approved', proof_link: proofUrl.trim(), project_link: proofUrl.trim() }
-              : r
-          )
-        );
-      }
+      // ── Optimistic local state update — runs for BOTH paths ───────────────
+      // Auto-approved (GitHub):             flip to 'approved' immediately.
+      // Manual review (drive/official/url): flip to 'pending_approval' so the
+      // amber "⏳ Under Review" badge appears instantly without waiting for the
+      // async refetch to complete.
+      setRegistrations((prev) =>
+        prev.map((r) =>
+          r.id === selectedReg.id
+            ? {
+                ...r,
+                status:       res.auto_approved ? 'approved' : 'pending_approval',
+                proof_link:   proofUrl.trim(),
+                project_link: proofUrl.trim(),
+              }
+            : r
+        )
+      );
 
       setToastMessage(toastText);
       // ── Colour the toast differently for auto-approvals ──────────────────
@@ -126,7 +131,7 @@ const MyRegistrations = () => {
 
       closeSubmitModal();
 
-      // Always refetch to sync any server-side field changes (submitted_at, xp, etc.)
+      // Always refetch to sync server-side fields (submitted_at, xp, etc.)
       fetchRegistrations();
       setTimeout(() => setToastMessage(null), 7000);
     } catch (err) {

@@ -340,6 +340,7 @@ const ChallengeDetail = () => {
                     challengeSlug={challenge.slug}
                     isExternal={isExternal}
                     externalUrl={targetLink}
+                    challenge={challenge}
                   />
                 </div>
               </div>

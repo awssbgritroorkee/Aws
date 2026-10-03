@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getBuilderProfile, registerForChallenge, getMyRegistrations } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Zap, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react';
+import ExternalEventRegistrationModal from './ExternalEventRegistrationModal';
 
-const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalUrl, className = '' }) => {
+const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalUrl, challenge, className = '' }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [registering, setRegistering] = useState(false);
+  const [registering, setRegistering]   = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [toast, setToast] = useState(null); // { type: 'warning' | 'success' | 'info' | 'error', text }
+  const [showModal, setShowModal]       = useState(false);
+  const [toast, setToast]               = useState(null); // { type: 'warning' | 'success' | 'info' | 'error', text }
 
-  // Check if already registered on mount
+  // ── Check if already registered on mount ────────────────────────────────
   useEffect(() => {
     if (!user || isExternal) return;
     let isMounted = true;
@@ -34,6 +36,28 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
     return () => { isMounted = false; };
   }, [user, challengeId, challengeSlug, isExternal]);
 
+  // ── Also check external registrations on mount ───────────────────────────
+  useEffect(() => {
+    if (!user || !isExternal) return;
+    let isMounted = true;
+    const checkExternalRegistration = async () => {
+      try {
+        const regs = await getMyRegistrations();
+        const list = Array.isArray(regs) ? regs : regs.results || [];
+        const found = list.some(
+          (r) => r.challenge === challengeId || (challengeSlug && r.challenge_slug === challengeSlug)
+        );
+        if (found && isMounted) {
+          setIsRegistered(true);
+        }
+      } catch {
+        // Silent fail
+      }
+    };
+    checkExternalRegistration();
+    return () => { isMounted = false; };
+  }, [user, challengeId, challengeSlug, isExternal]);
+
   const showToast = (type, text) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 5000);
@@ -43,28 +67,29 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
     e.preventDefault();
     e.stopPropagation();
 
-    // 1. Unauthenticated check
+    // 1. Unauthenticated guard
     if (!user) {
       showToast('warning', '⚠️ Please sign in with Google to register for challenges.');
       return;
     }
 
-    // 2. External event redirect check
-    if (isExternal && externalUrl) {
-      window.open(externalUrl, '_blank');
+    // 2. External event → open the registration modal instead of direct redirect
+    if (isExternal) {
+      setShowModal(true);
       return;
     }
 
+    // ── Internal challenge registration flow (unchanged) ─────────────────────
     setRegistering(true);
 
     try {
-      // 3. Fetch current profile data
-      const res = await getBuilderProfile();
+      // Fetch current profile data
+      const res     = await getBuilderProfile();
       const profile = res.data || res;
 
       const rollNumber = (profile.roll_number || '').trim();
-      const course = (profile.course || '').trim();
-      const branch = (profile.branch || '').trim();
+      const course     = (profile.course     || '').trim();
+      const branch     = (profile.branch     || '').trim();
 
       // Condition A (Incomplete Profile): Stop & redirect to /dashboard/profile
       if (!rollNumber || !course || !branch) {
@@ -97,16 +122,21 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
     }
   };
 
-  // Toast UI rendering
+  // ── Modal success callback — fired when local registration is confirmed ───
+  const handleModalSuccess = () => {
+    setIsRegistered(true);
+    setShowModal(false);
+  };
+
+  // ── Toast UI ──────────────────────────────────────────────────────────────
   const renderToast = () => {
     if (!toast) return null;
     const typeStyles = {
       warning: 'bg-amber-950/90 border-amber-500/40 text-amber-200',
       success: 'bg-emerald-950/90 border-emerald-400/40 text-emerald-200',
-      info: 'bg-blue-950/90 border-blue-400/40 text-blue-200',
-      error: 'bg-red-950/90 border-red-500/40 text-red-200',
+      info:    'bg-blue-950/90 border-blue-400/40 text-blue-200',
+      error:   'bg-red-950/90 border-red-500/40 text-red-200',
     };
-
     return (
       <div className="fixed top-6 right-6 z-50 animate-bounce">
         <div
@@ -120,25 +150,47 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
     );
   };
 
+  // ── Registered state — two branches based on event type ──────────────────
   if (isRegistered) {
     return (
       <>
         {renderToast()}
-        <Link
-          to="/dashboard/registrations"
-          onClick={(e) => e.stopPropagation()}
-          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all ${className}`}
-        >
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>✅ Registered · View in Dashboard</span>
-        </Link>
+
+        {/* External event: show "Register on official website" button */}
+        {isExternal ? (
+          <button
+            id="ext-official-register-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (externalUrl) window.open(externalUrl, '_blank', 'noopener,noreferrer');
+            }}
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 transition-all duration-200 ${className}`}
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span>🌐 Now register on Official website</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+          </button>
+        ) : (
+          /* Internal event: show dashboard link (unchanged) */
+          <Link
+            to="/dashboard/registrations"
+            onClick={(e) => e.stopPropagation()}
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all ${className}`}
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>✅ Registered · View in Dashboard</span>
+          </Link>
+        )}
       </>
     );
   }
 
+  // ── Default state — Register button ──────────────────────────────────────
   return (
     <>
       {renderToast()}
+
       <button
         onClick={handleRegister}
         disabled={registering}
@@ -157,6 +209,15 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
           </>
         )}
       </button>
+
+      {/* External event registration modal */}
+      {showModal && isExternal && (
+        <ExternalEventRegistrationModal
+          challenge={challenge || { id: challengeId, title: '', registration_link: externalUrl }}
+          onClose={() => setShowModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
     </>
   );
 };
