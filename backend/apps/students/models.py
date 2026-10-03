@@ -71,5 +71,36 @@ class EventRegistration(models.Model):
         verbose_name        = 'Event Registration'
         verbose_name_plural = 'Event Registrations'
 
+    def save(self, *args, **kwargs):
+        """
+        Awards +30 XP to non-core team members upon new event registration creation.
+        """
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            try:
+                from apps.accounts.models import BuilderProfile
+                profile, _ = BuilderProfile.objects.get_or_create(user=self.student.user)
+                if not profile.is_core_team:
+                    profile.xp_points += 30
+                    profile.save(update_fields=['xp_points'])
+            except Exception:
+                pass
+
+    def delete(self, *args, **kwargs):
+        """
+        XP Rollback on deletion:
+        If an event registration is deleted or cancelled, deduct 30 XP from non-core team members.
+        """
+        try:
+            from apps.accounts.models import BuilderProfile
+            profile, _ = BuilderProfile.objects.get_or_create(user=self.student.user)
+            if not profile.is_core_team:
+                profile.xp_points = max(0, profile.xp_points - 30)
+                profile.save(update_fields=['xp_points'])
+        except Exception:
+            pass
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f'{self.student} → {self.event}'

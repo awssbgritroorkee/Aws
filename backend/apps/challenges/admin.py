@@ -155,6 +155,17 @@ class ChallengeAdmin(ModelAdmin):
         }),
     )
 
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, ChallengeRegistration) or hasattr(instance, 'status'):
+                if instance.status == 'approved' and not instance.approved_by:
+                    instance.approved_by = request.user
+                elif instance.status != 'approved':
+                    instance.approved_by = None
+            instance.save()
+        formset.save_m2m()
+
     # ── Custom display badges ─────────────────────────────────────────────────
     @display(description='Status', label={
         'Active': 'success',
