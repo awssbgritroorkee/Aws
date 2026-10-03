@@ -1,34 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Globe, X, Lock, ExternalLink } from 'lucide-react';
+import { Globe, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getBuilderProfile, registerForChallenge } from '../services/api';
+import { getBuilderProfile, updateBuilderProfile, registerForChallenge } from '../services/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Reusable sub-components (scoped to this modal)
+// Reusable editable field
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Renders a labelled locked field with a "Locked" badge */
-const LockedField = ({ id, label, value, placeholder = '—' }) => (
+const EditableField = ({ id, label, value, onChange, placeholder = '' }) => (
   <div className="flex flex-col gap-1.5">
     <label
       htmlFor={id}
-      className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase flex items-center gap-1.5"
+      className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase"
     >
       {label}
-      <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-sbg-green/70 bg-sbg-green/10 border border-sbg-green/20 px-1.5 py-0.5 rounded-full">
-        <Lock className="w-2 h-2" />
-        Locked
-      </span>
     </label>
     <input
       id={id}
       type="text"
-      value={value || ''}
-      readOnly
-      disabled
-      aria-label={label}
+      value={value}
+      onChange={onChange}
       placeholder={placeholder}
-      className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-sm text-gray-300 cursor-not-allowed select-none placeholder-gray-600 font-mono tracking-wide"
+      aria-label={label}
+      className="w-full px-3.5 py-2.5 rounded-xl bg-gray-800 text-white placeholder-gray-400 border border-gray-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 text-sm transition-colors duration-150"
     />
   </div>
 );
@@ -49,14 +43,27 @@ const LockedField = ({ id, label, value, placeholder = '—' }) => (
 const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
   const { user, context } = useAuth();
 
-  const [profile, setProfile]         = useState(null);
   const [autofilling, setAutofilling] = useState(true);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
   const [isSuccess, setIsSuccess]     = useState(false);
 
-  // ── Derive the outbound URL (external_link preferred, fallback registration_link) ──
+  // ── Controlled form state (seeded from profile on mount) ──────────────────
+  const [formData, setFormData] = useState({
+    full_name:     '',
+    course:        '',
+    branch:        '',
+    section:       '',
+    roll_number:   '',
+    mobile_number: '',
+    academic_year: '',
+  });
+
+  // ── Derive the outbound URL ────────────────────────────────────────────────
   const externalUrl = challenge?.external_link || challenge?.registration_link || '';
+
+  // ── Email — auth-managed, display only ────────────────────────────────────
+  const emailDisplay = context?.email || user?.email || '';
 
   // ── Autofill on mount — fetch BuilderProfile ───────────────────────────────
   useEffect(() => {
@@ -64,11 +71,39 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
 
     const fetchProfile = async () => {
       try {
-        const res     = await getBuilderProfile();
-        const data    = res.data || res;
-        if (!cancelled) setProfile(data);
+        const res  = await getBuilderProfile();
+        const data = res.data || res;
+
+        if (!cancelled) {
+          setFormData({
+            full_name:
+              data.full_name ||
+              (context?.first_name
+                ? `${context.first_name} ${context.last_name || ''}`.trim()
+                : '') ||
+              user?.name ||
+              '',
+            course:        data.course        || '',
+            branch:        data.branch        || '',
+            section:       data.section       || '',
+            roll_number:   data.roll_number   || '',
+            mobile_number: data.mobile_number || '',
+            academic_year: data.academic_year || '',
+          });
+        }
       } catch {
-        // silently fall back — profile stays null, fields show empty
+        // Silently fall back — fields stay empty; user can type in manually
+        if (!cancelled && (context?.first_name || user?.name)) {
+          setFormData(prev => ({
+            ...prev,
+            full_name:
+              (context?.first_name
+                ? `${context.first_name} ${context.last_name || ''}`.trim()
+                : '') ||
+              user?.name ||
+              '',
+          }));
+        }
       } finally {
         if (!cancelled) setAutofilling(false);
       }
@@ -76,20 +111,11 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
 
     fetchProfile();
     return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Derived display values ────────────────────────────────────────────────
-  const emailDisplay = context?.email || user?.email || '';
-  const fullName     = profile?.full_name
-    || (context?.first_name ? `${context.first_name} ${context.last_name || ''}`.trim() : '')
-    || user?.name
-    || '';
-  const course       = profile?.course        || '';
-  const branch       = profile?.branch        || '';
-  const section      = profile?.section       || '';
-  const rollNumber   = profile?.roll_number   || '';
-  const mobile       = profile?.mobile_number || '';
-  const academicYear = profile?.academic_year || '';
+  // ── Generic field change handler ──────────────────────────────────────────
+  const handleFieldChange = (field) => (e) =>
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
 
   // ── Submit handler ────────────────────────────────────────────────────────
   const handleSubmit = useCallback(async (e) => {
@@ -98,15 +124,20 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
+      // 1. Persist any edited profile data
+      await updateBuilderProfile(formData);
+    } catch (profileErr) {
+      // Non-blocking: log and continue — don't block registration
+      console.warn('Profile update warning:', profileErr?.response?.data || profileErr.message);
+    }
+
+    try {
+      // 2. Register locally
       await registerForChallenge(challenge.id);
 
-      // 1. Notify parent to flip the SmartRegisterButton to "registered" state
+      // 3. Notify parent + show success + open external link
       onSuccess();
-
-      // 2. Show success screen inside modal
       setIsSuccess(true);
-
-      // 3. Auto-open the official external registration link in a new tab
       if (externalUrl) {
         window.open(externalUrl, '_blank', 'noopener,noreferrer');
       }
@@ -122,7 +153,6 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
         return;
       }
 
-      // Fair-play block or closed registration — surface readable message
       if (status === 403) {
         setError(`🚫 ${detail || 'You are not eligible to register for this event.'}`);
       } else if (status === 400) {
@@ -133,7 +163,7 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
     } finally {
       setLoading(false);
     }
-  }, [challenge.id, externalUrl, onSuccess]);
+  }, [challenge.id, externalUrl, formData, onSuccess]);
 
   // ── Close on backdrop click ────────────────────────────────────────────────
   const handleBackdrop = (e) => {
@@ -181,7 +211,7 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
                 {challenge.title}
               </h2>
               <p className="text-[11px] text-gray-500 mt-1 font-mono">
-                Your profile data is locked and will be submitted as-is.
+                Review and confirm your details before registering.
               </p>
             </div>
             <button
@@ -265,85 +295,89 @@ const ExternalEventRegistrationModal = ({ challenge, onClose, onSuccess }) => {
                 </div>
               ) : (
                 <form id="ext-event-registration-form" onSubmit={handleSubmit} noValidate>
-                  {/* Info banner */}
-                  <div className="mb-5 px-4 py-3 rounded-xl bg-amber-500/[0.08] border border-amber-500/20 flex items-start gap-3">
-                    <Lock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-amber-300/80 leading-relaxed">
-                      Your profile data is pre-filled and locked. To update it, visit{' '}
-                      <a
-                        href="/dashboard/profile"
-                        className="underline underline-offset-2 text-amber-300 hover:text-amber-200 transition-colors"
-                        onClick={onClose}
-                      >
-                        Builder Profile
-                      </a>{' '}
-                      before registering.
-                    </p>
-                  </div>
-
                   <div className="grid grid-cols-1 gap-5">
 
-                    {/* Email */}
-                    <LockedField
-                      id="ext-reg-email"
-                      label="Email Address"
-                      value={emailDisplay}
-                      placeholder="Not available"
-                    />
+                    {/* Email — display only */}
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="ext-reg-email"
+                        className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase"
+                      >
+                        Email Address
+                      </label>
+                      <input
+                        id="ext-reg-email"
+                        type="email"
+                        value={emailDisplay}
+                        readOnly
+                        aria-label="Email Address"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 text-gray-400 border border-gray-700 text-sm cursor-not-allowed select-none"
+                      />
+                      <p className="text-[11px] text-gray-500 italic mt-0.5">
+                        Any updates made here will automatically save to your Builder Profile.
+                      </p>
+                    </div>
 
                     {/* Full Name */}
-                    <LockedField
+                    <EditableField
                       id="ext-reg-fullname"
                       label="Full Name"
-                      value={fullName}
-                      placeholder="Update in Builder Profile"
+                      value={formData.full_name}
+                      onChange={handleFieldChange('full_name')}
+                      placeholder="Enter your full name"
                     />
 
                     {/* Course + Branch */}
                     <div className="grid grid-cols-2 gap-4">
-                      <LockedField
+                      <EditableField
                         id="ext-reg-course"
                         label="Course"
-                        value={course}
-                        placeholder="Not set"
+                        value={formData.course}
+                        onChange={handleFieldChange('course')}
+                        placeholder="e.g. B.Tech"
                       />
-                      <LockedField
+                      <EditableField
                         id="ext-reg-branch"
                         label="Branch"
-                        value={branch}
-                        placeholder="Not set"
+                        value={formData.branch}
+                        onChange={handleFieldChange('branch')}
+                        placeholder="e.g. CSE"
                       />
                     </div>
 
                     {/* Section + Roll Number */}
                     <div className="grid grid-cols-2 gap-4">
-                      <LockedField
+                      <EditableField
                         id="ext-reg-section"
                         label="Section"
-                        value={section}
-                        placeholder="Not set"
+                        value={formData.section}
+                        onChange={handleFieldChange('section')}
+                        placeholder="e.g. A"
                       />
-                      <LockedField
+                      <EditableField
                         id="ext-reg-roll"
                         label="Roll Number"
-                        value={rollNumber}
-                        placeholder="Not set"
+                        value={formData.roll_number}
+                        onChange={handleFieldChange('roll_number')}
+                        placeholder="e.g. 22CSE001"
                       />
                     </div>
 
                     {/* Mobile + Academic Year */}
                     <div className="grid grid-cols-2 gap-4">
-                      <LockedField
+                      <EditableField
                         id="ext-reg-mobile"
                         label="Mobile Number"
-                        value={mobile}
-                        placeholder="Not set"
+                        value={formData.mobile_number}
+                        onChange={handleFieldChange('mobile_number')}
+                        placeholder="10-digit number"
                       />
-                      <LockedField
+                      <EditableField
                         id="ext-reg-academic-year"
                         label="Academic Year"
-                        value={academicYear}
-                        placeholder="Not set"
+                        value={formData.academic_year}
+                        onChange={handleFieldChange('academic_year')}
+                        placeholder="e.g. 2nd Year"
                       />
                     </div>
 

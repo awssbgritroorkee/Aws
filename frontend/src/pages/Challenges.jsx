@@ -5,7 +5,7 @@ import {
   Share2, Check, Globe, Layers, DollarSign,
   Building2, LayoutGrid, Cpu, BookOpen,
 } from 'lucide-react';
-import SmartRegisterButton from '../components/SmartRegisterButton';
+
 import usePageTitle from '../hooks/usePageTitle';
 import { useToast } from '../components/ui/Toast';
 
@@ -212,17 +212,9 @@ const SpotlightCard = ({ challenge, onShare, isCopied }) => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <SmartRegisterButton
-                challengeId={challenge.id}
-                challengeSlug={challenge.slug}
-                isExternal={Boolean(challenge.external_link || challenge.event_type === 'hackathon' || challenge.event_type === 'workshop')}
-                externalUrl={challenge.external_link || challenge.registration_link}
-              />
-              <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-xs bg-white/10 text-white hover:bg-white/20 transition-all duration-200">
-                Details <ChevronRight className="w-4 h-4" />
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-xs bg-white/10 text-white hover:bg-white/20 transition-all duration-200">
+              Details <ChevronRight className="w-4 h-4" />
+            </span>
           </div>
         </div>
       </div>
