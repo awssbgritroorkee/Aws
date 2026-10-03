@@ -5,6 +5,7 @@ from django.contrib.admin.models import LogEntry
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
+from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
@@ -216,13 +217,19 @@ class ChallengeRegistrationBridgeFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         instance = kwargs.get('instance')
         if isinstance(instance, BuilderProfile):
-            kwargs['instance'] = instance.user   # User always has a pk ✓
+            kwargs['instance'] = getattr(instance, 'user', None)
+
+        target = kwargs.get('instance')
+        if not target or not getattr(target, 'pk', None):
+            kwargs['queryset'] = ChallengeRegistration.objects.none()
+
         super().__init__(*args, **kwargs)
 
     def get_queryset(self):
-        # Guard: if instance has no pk, return an empty queryset.
-        if not self.instance or not self.instance.pk:
+        if not self.instance or not getattr(self.instance, 'pk', None):
             return ChallengeRegistration.objects.none()
+        if self.queryset is not None:
+            return self.queryset
         return (
             super()
             .get_queryset()
@@ -246,15 +253,19 @@ class EventRegistrationBridgeFormSet(BaseInlineFormSet):
             try:
                 kwargs['instance'] = instance.user.student_profile
             except (ObjectDoesNotExist, AttributeError):
-                # Student has a BuilderProfile but no StudentProfile yet — fine,
-                # get_queryset will return none() via the pk guard below.
                 kwargs['instance'] = None
+
+        target = kwargs.get('instance')
+        if not target or not getattr(target, 'pk', None):
+            kwargs['queryset'] = EventRegistration.objects.none()
+
         super().__init__(*args, **kwargs)
 
     def get_queryset(self):
-        # Guard: if instance has no pk (unsaved or missing), return empty qs.
-        if not self.instance or not self.instance.pk:
+        if not self.instance or not getattr(self.instance, 'pk', None):
             return EventRegistration.objects.none()
+        if self.queryset is not None:
+            return self.queryset
         return (
             super()
             .get_queryset()
@@ -306,6 +317,9 @@ class ChallengeRegistrationReadOnlyInline(TabularInline):
         """Deletions are handled from the dedicated ChallengeRegistration admin."""
         return False
 
+    def has_view_permission(self, request, obj=None):
+        return True
+
     def get_formset(self, request, obj=None, **kwargs):
         """
         Build the formset factory using User as the declared parent so that
@@ -313,13 +327,18 @@ class ChallengeRegistrationReadOnlyInline(TabularInline):
         The BridgeFormSet __init__ transparently converts the BuilderProfile
         instance passed at runtime to the correct User object.
         """
+        defaults = {
+            'formset': ChallengeRegistrationBridgeFormSet,
+            'fields': self.fields,
+            'extra': 0,
+            'can_delete': False,
+            'fk_name': 'student',
+        }
+        defaults.update(kwargs)
         return inlineformset_factory(
             User,
             ChallengeRegistration,
-            formset=ChallengeRegistrationBridgeFormSet,
-            fields=self.fields,
-            extra=0,
-            can_delete=False,
+            **defaults
         )
 
 
@@ -364,6 +383,9 @@ class EventRegistrationReadOnlyInline(TabularInline):
         """Deletions are handled from the dedicated EventRegistration admin."""
         return False
 
+    def has_view_permission(self, request, obj=None):
+        return True
+
     def get_formset(self, request, obj=None, **kwargs):
         """
         Build the formset factory using StudentProfile as the declared parent
@@ -371,13 +393,18 @@ class EventRegistrationReadOnlyInline(TabularInline):
         The BridgeFormSet __init__ transparently converts the BuilderProfile
         instance passed at runtime to the linked StudentProfile.
         """
+        defaults = {
+            'formset': EventRegistrationBridgeFormSet,
+            'fields': self.fields,
+            'extra': 0,
+            'can_delete': False,
+            'fk_name': 'student',
+        }
+        defaults.update(kwargs)
         return inlineformset_factory(
             StudentProfile,
             EventRegistration,
-            formset=EventRegistrationBridgeFormSet,
-            fields=self.fields,
-            extra=0,
-            can_delete=False,
+            **defaults
         )
 
 
@@ -418,8 +445,8 @@ class StudentProfile360Admin(ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """Profiles cannot be deleted from the 360 view."""
-        return False
+        """Allow superusers to delete profiles (enables deleting linked User accounts)."""
+        return request.user.is_superuser
 
     # ── List view ─────────────────────────────────────────────────────────────
     list_display = [
@@ -536,9 +563,12 @@ class StudentProfile360Admin(ModelAdmin):
         """
         Computes the student's current level from their accumulated XP.
         Formula: Level = (XP ÷ 100) + 1  →  Level 1 = 0–99 XP, Level 2 = 100–199 XP, …
+        Uses format_html with white-space: nowrap to prevent column text wrapping.
         """
         level = (obj.xp_points // 100) + 1
-        return f'Level {level}'
+        return format_html('<span style="white-space: nowrap;">Level {}</span>', level)
+
+    get_level = current_level_display
 
 
 # ── Email Broadcast Admin ─────────────────────────────────────────────────────
