@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from tinymce.models import HTMLField
 
 User = get_user_model()
@@ -418,6 +419,16 @@ class ChallengeRegistration(models.Model):
                            help_text='Explanation provided by admins if submission proof is rejected.'
                        )
 
+    # ── Approval Audit ─────────────────────────────────────────────────────────
+    approved_by      = models.ForeignKey(
+                           User,
+                           null=True,
+                           blank=True,
+                           on_delete=models.SET_NULL,
+                           related_name='approved_challenges',
+                           help_text='Admin user who approved this registration.'
+                       )
+
     # ── Timestamps ─────────────────────────────────────────────────────────────
     registered_at = models.DateTimeField(
                         auto_now_add=True,
@@ -436,12 +447,18 @@ class ChallengeRegistration(models.Model):
         verbose_name        = 'Challenge Registration'
         verbose_name_plural = 'Challenge Registrations'
 
+    def clean(self):
+        super().clean()
+        if self.status == 'approved' and not (self.proof_link and self.proof_link.strip()):
+            raise ValidationError('Cannot approve a registration without a submitted proof link.')
+
     def save(self, *args, **kwargs):
         """
         State-tracking save:
-        Detects if status transitions to 'approved' and automatically awards +50 XP
-        to non-core team members.
+        Validates proof link presence for approved status, and automatically awards +50 XP
+        to non-core team members when status transitions to 'approved'.
         """
+        self.clean()
         if self.pk:
             old_instance = ChallengeRegistration.objects.filter(pk=self.pk).first()
             if old_instance and old_instance.status != 'approved' and self.status == 'approved':
@@ -454,6 +471,22 @@ class ChallengeRegistration(models.Model):
                 except Exception:
                     pass
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        XP Rollback on deletion:
+        If an approved registration is deleted, deduct 50 XP from non-core team members.
+        """
+        if self.status == 'approved':
+            try:
+                from apps.accounts.models import BuilderProfile
+                profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
+                if not profile.is_core_team:
+                    profile.xp_points = max(0, profile.xp_points - 50)
+                    profile.save(update_fields=['xp_points'])
+            except Exception:
+                pass
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         name = self.student.get_full_name() or self.student.first_name or self.student.username

@@ -3,10 +3,17 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
 from django.conf import settings
-from unfold.admin import ModelAdmin
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import BaseInlineFormSet, inlineformset_factory
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import display
 
 from .models import EmailBroadcast, BuilderProfile
 from .signals import EmailThread
+
+# Cross-app model imports (loaded after all models, so no circular-import risk)
+from apps.challenges.models import ChallengeRegistration
+from apps.students.models import EventRegistration, StudentProfile
 
 
 # Unregister default LogEntry admin if already registered
@@ -177,46 +184,297 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
         return hasattr(obj, 'team_profile') and obj.team_profile is not None
 
 
-# ── Builder Profile Admin (Gamification) ─────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Student 360 View — Bridge FormSets, Read-Only Inlines, Admin
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ARCHITECTURE NOTE — The FK Gap Problem
+# ─────────────────────────────────────────────────────────────────────────────
+# Django inlines require a direct FK from the child model to the parent model.
+# Our parent admin manages BuilderProfile, but:
+#
+#   ChallengeRegistration.student  → FK to User          (not BuilderProfile)
+#   EventRegistration.student      → FK to StudentProfile (not BuilderProfile)
+#
+# Solution: Custom "bridge" FormSet classes that intercept Django's formset
+# instantiation and convert the BuilderProfile instance to the correct related
+# object (User or StudentProfile) before Django's queryset filtering runs.
+# This requires zero model changes and no migrations.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class ChallengeRegistrationBridgeFormSet(BaseInlineFormSet):
+    """
+    Bridges BuilderProfile → User ← ChallengeRegistration.
+
+    Django calls FormSet(instance=builder_profile). We intercept in __init__
+    and swap the instance to builder_profile.user before the base class runs,
+    so BaseInlineFormSet.get_queryset correctly filters:
+        ChallengeRegistration.objects.filter(student=user)
+    """
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+        if isinstance(instance, BuilderProfile):
+            kwargs['instance'] = instance.user   # User always has a pk ✓
+        super().__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        # Guard: if instance has no pk, return an empty queryset.
+        if not self.instance or not self.instance.pk:
+            return ChallengeRegistration.objects.none()
+        return (
+            super()
+            .get_queryset()
+            .select_related('challenge')         # avoids N+1 on challenge title
+            .order_by('-registered_at')
+        )
+
+
+class EventRegistrationBridgeFormSet(BaseInlineFormSet):
+    """
+    Bridges BuilderProfile → User ← StudentProfile ← EventRegistration.
+
+    Converts the BuilderProfile instance to the linked StudentProfile.
+    If the student has never registered for an event (no StudentProfile yet),
+    returns an empty queryset instead of raising an exception.
+    """
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+        if isinstance(instance, BuilderProfile):
+            try:
+                kwargs['instance'] = instance.user.student_profile
+            except (ObjectDoesNotExist, AttributeError):
+                # Student has a BuilderProfile but no StudentProfile yet — fine,
+                # get_queryset will return none() via the pk guard below.
+                kwargs['instance'] = None
+        super().__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        # Guard: if instance has no pk (unsaved or missing), return empty qs.
+        if not self.instance or not self.instance.pk:
+            return EventRegistration.objects.none()
+        return (
+            super()
+            .get_queryset()
+            .select_related('event')             # avoids N+1 on event title
+            .order_by('-registered_at')
+        )
+
+
+# ── Read-Only Inlines ─────────────────────────────────────────────────────────
+
+class ChallengeRegistrationReadOnlyInline(TabularInline):
+    """
+    Read-only inline showing all Challenge & Hackathon registrations for a student.
+
+    Uses ChallengeRegistrationBridgeFormSet to resolve the FK gap between
+    BuilderProfile (parent admin) and ChallengeRegistration (which links to User).
+    All add / change / delete actions are permanently disabled.
+    """
+    model               = ChallengeRegistration
+    extra               = 0
+    can_delete          = False
+    verbose_name        = 'Challenge / Hackathon Registration'
+    verbose_name_plural = '🏆 Challenge & Hackathon Registrations'
+
+    readonly_fields = ['challenge', 'status', 'proof_link', 'registered_at', 'submitted_at']
+    fields          = ['challenge', 'status', 'proof_link', 'registered_at', 'submitted_at']
+
+    def has_add_permission(self, request, obj=None):
+        """Registrations are created via the API — never manually in admin."""
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """360 view is strictly read-only — no edits allowed here."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Deletions are handled from the dedicated ChallengeRegistration admin."""
+        return False
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """
+        Build the formset factory using User as the declared parent so that
+        Django can resolve the ChallengeRegistration.student FK.
+        The BridgeFormSet __init__ transparently converts the BuilderProfile
+        instance passed at runtime to the correct User object.
+        """
+        return inlineformset_factory(
+            User,
+            ChallengeRegistration,
+            formset=ChallengeRegistrationBridgeFormSet,
+            fields=self.fields,
+            extra=0,
+            can_delete=False,
+        )
+
+
+class EventRegistrationReadOnlyInline(TabularInline):
+    """
+    Read-only inline showing all Event registrations for a student.
+
+    Uses EventRegistrationBridgeFormSet to resolve the two-hop FK path:
+        BuilderProfile → User ← StudentProfile ← EventRegistration
+    All add / change / delete actions are permanently disabled.
+    """
+    model               = EventRegistration
+    extra               = 0
+    can_delete          = False
+    verbose_name        = 'Event Registration'
+    verbose_name_plural = '📅 Event Registrations'
+
+    readonly_fields = ['event', 'registered_at']
+    fields          = ['event', 'registered_at']
+
+    def has_add_permission(self, request, obj=None):
+        """Registrations are created via the API — never manually in admin."""
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """360 view is strictly read-only — no edits allowed here."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Deletions are handled from the dedicated EventRegistration admin."""
+        return False
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """
+        Build the formset factory using StudentProfile as the declared parent
+        so that Django can resolve the EventRegistration.student FK.
+        The BridgeFormSet __init__ transparently converts the BuilderProfile
+        instance passed at runtime to the linked StudentProfile.
+        """
+        return inlineformset_factory(
+            StudentProfile,
+            EventRegistration,
+            formset=EventRegistrationBridgeFormSet,
+            fields=self.fields,
+            extra=0,
+            can_delete=False,
+        )
+
+
+# ── Student 360 Admin View ────────────────────────────────────────────────────
 
 @admin.register(BuilderProfile)
-class BuilderProfileAdmin(ModelAdmin):
+class StudentProfile360Admin(ModelAdmin):
     """
-    Admin interface for the gamification BuilderProfile model.
+    Consolidated read-only "Student 360 View" in the Django Admin.
 
-    Fair Play: The is_core_team flag can be toggled here to exclude or include
-    a user in the public student leaderboard.
+    Presents a single profile page per student showing:
+      • Identity   — full name, email, roll number (from StudentProfile)
+      • Gamification — XP, computed level, current & longest streaks
+      • History    — every challenge/hackathon and event registration as inlines
+
+    Nothing on this page can be added, changed, or deleted — it is a pure
+    observation interface designed for use during team meetings, reviews,
+    and public presentations without any risk of accidental data mutation.
+
+    Technical note:
+        The inlines use custom FormSet bridge classes to traverse the FK gap
+        between BuilderProfile and the ChallengeRegistration / EventRegistration
+        child models.  See ChallengeRegistrationBridgeFormSet and
+        EventRegistrationBridgeFormSet for details.
     """
     compressed_fields = True
-    warn_unsaved_form = True
 
-    # ── List view ──────────────────────────────────────────────────────────────
-    list_display       = ['user', 'xp_points', 'current_streak', 'longest_streak',
-                          'last_checkin_date', 'is_core_team']
-    list_display_links = ['user']
+    # ── Read-only inlines ─────────────────────────────────────────────────────
+    inlines = [ChallengeRegistrationReadOnlyInline, EventRegistrationReadOnlyInline]
+
+    # ── Hard lock — zero mutations allowed ────────────────────────────────────
+    def has_add_permission(self, request):
+        """The 360 view is a read-only dashboard — no new profiles can be added."""
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """All fields are read-only — no edits can be made from this view."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Profiles cannot be deleted from the 360 view."""
+        return False
+
+    # ── List view ─────────────────────────────────────────────────────────────
+    list_display = [
+        'student_full_name',
+        'email_display',
+        'roll_number_display',
+        'xp_points',
+        'current_level_display',
+        'current_streak',
+        'longest_streak',
+        'last_checkin_date',
+        'is_core_team',
+    ]
+    list_display_links = ['student_full_name']
     list_filter        = ['is_core_team']
-    search_fields      = ['user__username', 'user__email', 'user__first_name', 'user__last_name']
-    ordering           = ['-xp_points', '-current_streak']
-    list_editable      = ['is_core_team']
 
-    # ── Detail form ────────────────────────────────────────────────────────────
-    readonly_fields = ['created_at', 'updated_at']
+    # Search covers email, full name, and roll number for quick lookups
+    # during team meetings or presentations.
+    search_fields = [
+        'user__email',
+        'user__first_name',
+        'user__last_name',
+        'user__student_profile__roll_number',
+    ]
+    ordering = ['-xp_points', '-current_streak']
+
+    # ── All fields forced to read-only ────────────────────────────────────────
+    # Listing every model field here (plus computed helpers) ensures the detail
+    # page renders plain text even if has_change_permission is somehow bypassed.
+    readonly_fields = [
+        'student_full_name',
+        'email_display',
+        'roll_number_display',
+        'user',
+        'xp_points',
+        'current_level_display',
+        'current_streak',
+        'longest_streak',
+        'last_checkin_date',
+        'is_core_team',
+        'created_at',
+        'updated_at',
+    ]
+
+    # ── Detail form ───────────────────────────────────────────────────────────
     fieldsets = (
-        ('👤 User', {
-            'fields': ('user',),
-        }),
-        ('⚡ Gamification', {
-            'fields': ('xp_points', 'current_streak', 'longest_streak', 'last_checkin_date'),
+        ('👤 Student Identity', {
+            'fields': (
+                'user',
+                'student_full_name',
+                'email_display',
+                'roll_number_display',
+            ),
             'description': (
-                'XP is earned via daily check-ins (+10 per day). '
-                'Streaks track consecutive daily check-ins.'
+                'Core identity pulled from the linked Django user account. '
+                'Academic details (roll number) come from the student\'s '
+                '<strong>Student Profile</strong> record.'
             ),
         }),
-        ('🛡️ Fair Play', {
+        ('⚡ Gamification Stats', {
+            'fields': (
+                'xp_points',
+                'current_level_display',
+                'current_streak',
+                'longest_streak',
+                'last_checkin_date',
+            ),
+            'description': (
+                'Live XP and streak metrics earned through daily check-ins '
+                'and approved challenge / hackathon registrations. '
+                'Level is computed as <code>(XP ÷ 100) + 1</code>.'
+            ),
+        }),
+        ('🛡️ Fair Play Flag', {
             'fields': ('is_core_team',),
             'description': (
-                '<strong>Core Team = True</strong> → this user is excluded from the public '
-                'student leaderboard and their XP is <em>never</em> modified by the check-in API.'
+                'Core team members are excluded from the public student leaderboard. '
+                'To change this flag, use the dedicated '
+                '<strong>Builder Profiles</strong> admin section.'
             ),
         }),
         ('📅 Audit', {
@@ -224,6 +482,39 @@ class BuilderProfileAdmin(ModelAdmin):
             'classes': ('collapse',),
         }),
     )
+
+    # ── Custom display columns (list view + detail readonly fields) ────────────
+
+    @display(description='Student', ordering='user__first_name')
+    def student_full_name(self, obj):
+        """Returns the student's full name, falling back to their username."""
+        return obj.user.get_full_name() or obj.user.username
+
+    @display(description='Email', ordering='user__email')
+    def email_display(self, obj):
+        """Returns the student's email address."""
+        return obj.user.email
+
+    @display(description='Roll Number', ordering='user__student_profile__roll_number')
+    def roll_number_display(self, obj):
+        """
+        Returns the student's roll number from their linked StudentProfile.
+        Displays '—' if the student has not yet completed event registration
+        (which is when the StudentProfile is created).
+        """
+        try:
+            return obj.user.student_profile.roll_number
+        except (ObjectDoesNotExist, AttributeError):
+            return '—'
+
+    @display(description='Level', ordering='xp_points')
+    def current_level_display(self, obj):
+        """
+        Computes the student's current level from their accumulated XP.
+        Formula: Level = (XP ÷ 100) + 1  →  Level 1 = 0–99 XP, Level 2 = 100–199 XP, …
+        """
+        level = (obj.xp_points // 100) + 1
+        return f'Level {level}'
 
 
 # ── Email Broadcast Admin ─────────────────────────────────────────────────────

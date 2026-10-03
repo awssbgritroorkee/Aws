@@ -46,8 +46,8 @@ class ChallengeRegistrationInline(TabularInline):
     """
     model               = ChallengeRegistration
     extra               = 0          # no blank rows — registrations come from the API
-    readonly_fields     = ['student', 'view_proof_link', 'registered_at', 'submitted_at']
-    fields              = ['student', 'status', 'proof_link', 'view_proof_link', 'rejection_reason', 'registered_at', 'submitted_at']
+    readonly_fields     = ['student', 'view_proof_link', 'approved_by', 'registered_at', 'submitted_at']
+    fields              = ['student', 'status', 'proof_link', 'view_proof_link', 'rejection_reason', 'approved_by', 'registered_at', 'submitted_at']
     formfield_overrides = {
         models.TextField: {'widget': forms.Textarea(attrs={'rows': 1, 'style': 'width: 100%; min-width: 150px; resize: vertical;'})},
     }
@@ -283,13 +283,13 @@ class ChallengeRegistrationAdmin(ModelAdmin):
     warn_unsaved_form = True
 
     # ── List view ───────────────────────────────────────────────────────────────────
-    list_display       = ['student', 'challenge', 'reg_status_badge', 'proof_link_display', 'rejection_reason', 'registered_at']
+    list_display       = ['student', 'challenge', 'reg_status_badge', 'proof_link_display', 'rejection_reason', 'approved_by', 'registered_at']
     list_display_links = ['student']
-    list_filter        = ['status', 'challenge__event_type', 'challenge']
+    list_filter        = ['status', 'challenge__event_type', 'challenge', 'approved_by']
     search_fields      = ['student__email', 'student__first_name', 'student__last_name', 'challenge__title', 'rejection_reason']
     ordering           = ['-registered_at']
     date_hierarchy     = 'registered_at'
-    readonly_fields    = ['registered_at', 'submitted_at']
+    readonly_fields    = ['approved_by', 'registered_at', 'submitted_at']
     actions            = ['approve_proofs', 'reject_proofs']
 
     # ── Detail form ──────────────────────────────────────────────────────────────────
@@ -298,7 +298,7 @@ class ChallengeRegistrationAdmin(ModelAdmin):
             'fields': ('student', 'challenge'),
         }),
         ('📊 Status & Feedback', {
-            'fields': ('status', 'rejection_reason'),
+            'fields': ('status', 'rejection_reason', 'approved_by'),
             'description': (
                 'Move status forward: <strong>Registered</strong> → <strong>Under Review</strong> → <strong>Approved</strong> / <strong>Rejected</strong>.<br>'
                 'If marking as <strong>Rejected</strong>, specify a clear rejection reason for the student.'
@@ -320,6 +320,7 @@ class ChallengeRegistrationAdmin(ModelAdmin):
         approved_count = 0
         for reg in queryset.exclude(status='approved'):
             reg.status = 'approved'
+            reg.approved_by = request.user
             reg.save()
             approved_count += 1
 
@@ -327,6 +328,20 @@ class ChallengeRegistrationAdmin(ModelAdmin):
             request,
             f"Approved {approved_count} registration proof(s) and awarded XP where applicable."
         )
+
+    def save_model(self, request, obj, form, change):
+        if obj.status == 'approved' and not obj.approved_by:
+            obj.approved_by = request.user
+        super().save_model(request, obj, form, change)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, ChallengeRegistration):
+                if instance.status == 'approved' and not instance.approved_by:
+                    instance.approved_by = request.user
+                instance.save()
+        formset.save_m2m()
 
     @admin.action(description='❌ Reject selected registration proofs')
     def reject_proofs(self, request, queryset):
