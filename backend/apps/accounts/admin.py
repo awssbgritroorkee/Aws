@@ -437,6 +437,7 @@ class StudentProfile360Admin(ModelAdmin):
         EventRegistrationBridgeFormSet for details.
     """
     compressed_fields = True
+    actions = ['reset_all_xp']
 
     # ── Read-only inlines ─────────────────────────────────────────────────────
     inlines = [ChallengeRegistrationReadOnlyInline, EventRegistrationReadOnlyInline]
@@ -575,6 +576,22 @@ class StudentProfile360Admin(ModelAdmin):
         return format_html('<span style="white-space: nowrap;">Level {}</span>', level)
 
     get_level = current_level_display
+
+    @admin.action(description="Season Reset (Set XP to 0)")
+    def reset_all_xp(self, request, queryset):
+        """
+        Monthly Season Reset action reserved exclusively for superusers.
+        Resets all selected student XP points to 0.
+        """
+        if not request.user.is_superuser:
+            messages.error(request, "Only Superusers can perform a Season Reset.")
+            return
+
+        queryset.update(xp_points=0)
+        messages.success(
+            request,
+            "Season Reset successful. XP points for selected builders have been set to 0."
+        )
 
 
 # ── Email Broadcast Admin ─────────────────────────────────────────────────────
