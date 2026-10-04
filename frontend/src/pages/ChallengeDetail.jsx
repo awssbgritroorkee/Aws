@@ -223,7 +223,7 @@ const ChallengeDetail = () => {
   ].filter(Boolean) : [];
 
   return (
-    <div className="relative flex-grow flex flex-col min-h-[calc(100vh-5rem)] bg-[#050505] text-white pt-24 pb-16 overflow-hidden">
+    <div className="relative flex-grow flex flex-col min-h-[calc(100vh-5rem)] bg-transparent text-white pt-24 pb-16 overflow-hidden">
       {/* Background atmosphere */}
       <div
         aria-hidden="true"
