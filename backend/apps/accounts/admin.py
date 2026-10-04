@@ -498,6 +498,18 @@ class StudentProfile360Admin(ModelAdmin):
         'updated_at',
     ]
 
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Streak metrics (current_streak, longest_streak, last_checkin_date) are strictly
+        read-only for all users (including superusers). No manual edits or resets allowed.
+        """
+        readonly = list(super().get_readonly_fields(request, obj))
+        streak_fields = ['current_streak', 'longest_streak', 'last_checkin_date']
+        for field in streak_fields:
+            if field not in readonly:
+                readonly.append(field)
+        return readonly
+
     # ── Detail form ───────────────────────────────────────────────────────────
     fieldsets = (
         ('👤 Student Identity', {

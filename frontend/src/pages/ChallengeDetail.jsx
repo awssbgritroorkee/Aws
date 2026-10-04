@@ -223,7 +223,7 @@ const ChallengeDetail = () => {
   ].filter(Boolean) : [];
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white pt-24 pb-24 overflow-hidden">
+    <div className="relative flex-grow flex flex-col min-h-[calc(100vh-5rem)] bg-[#050505] text-white pt-24 pb-16 overflow-hidden">
       {/* Background atmosphere */}
       <div
         aria-hidden="true"
@@ -237,7 +237,7 @@ const ChallengeDetail = () => {
       />
 
       {/* Main Container Flow */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 pb-24">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 pb-16 flex-grow flex flex-col w-full">
 
         {/* Back navigation */}
         <Link

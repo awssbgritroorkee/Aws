@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getBuilderProfile, registerForChallenge, getMyRegistrations } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Zap, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react';
+import { Zap, CheckCircle2, ArrowRight, ExternalLink, Send } from 'lucide-react';
 import ExternalEventRegistrationModal from './ExternalEventRegistrationModal';
 
 const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalUrl, challenge, className = '' }) => {
@@ -150,38 +150,41 @@ const SmartRegisterButton = ({ challengeId, challengeSlug, isExternal, externalU
     );
   };
 
-  // ── Registered state — two branches based on event type ──────────────────
+  // ── Registered state — Official website + "Submit Project" CTA ────────────
   if (isRegistered) {
     return (
       <>
         {renderToast()}
 
-        {/* External event: show "Register on official website" button */}
-        {isExternal ? (
-          <button
-            id="ext-official-register-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (externalUrl) window.open(externalUrl, '_blank', 'noopener,noreferrer');
-            }}
-            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 transition-all duration-200 ${className}`}
-          >
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span>🌐 Now register on Official website</span>
-            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-          </button>
-        ) : (
-          /* Internal event: show dashboard link (unchanged) */
+        <div className="flex flex-wrap items-center gap-4">
+          {/* External event: keep existing "Now register on Official website" button visible */}
+          {isExternal ? (
+            <button
+              id="ext-official-register-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (externalUrl) window.open(externalUrl, '_blank', 'noopener,noreferrer');
+              }}
+              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 transition-all duration-200 ${className}`}
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>🌐 Now register on Official website</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+            </button>
+          ) : null}
+
+          {/* Conditional "Submit Project" button (redirects to /dashboard/registrations) */}
           <Link
             to="/dashboard/registrations"
             onClick={(e) => e.stopPropagation()}
-            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all ${className}`}
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-sbg-green hover:bg-white text-aws-navy shadow-[0_0_20px_rgba(0,208,132,0.3)] hover:scale-105 transition-all duration-200 ${className}`}
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>✅ Registered · View in Dashboard</span>
+            <Send className="w-4 h-4 text-aws-navy" />
+            <span>Submit Project</span>
+            <ArrowRight className="w-4 h-4 text-aws-navy" />
           </Link>
-        )}
+        </div>
       </>
     );
   }
