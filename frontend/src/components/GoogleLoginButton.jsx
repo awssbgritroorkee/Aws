@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlags } from '../context/FeatureFlagsContext';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -210,6 +211,9 @@ const GoogleLoginButton = () => {
     const hasAdminAccess = isStaff || isSuper;
     const isCoreTeam = isTeamMember || hasAdminAccess;
 
+    // ── Feature flags — read here so the dropdown reacts instantly ────────────
+    const { flags } = useFeatureFlags();
+
     return (
       <div className="relative" ref={dropdownRef}>
         {/* ── Avatar pill button ── */}
@@ -294,8 +298,8 @@ const GoogleLoginButton = () => {
             {/* ── Menu items ── */}
             <div className="p-2 flex flex-col gap-0.5">
 
-              {/* Dashboard — only for regular students (non-core team) */}
-              {!isCoreTeam && (
+              {/* Dashboard — only for regular students (non-core team) AND when flag is ON */}
+              {!isCoreTeam && flags.is_dashboard_active && (
                 <DropdownNavLink
                   to="/dashboard"
                   icon={<IconGrid />}
