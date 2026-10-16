@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import Navbar             from './components/Navbar';
-import Footer             from './components/Footer';
-import AwsGridBackground  from './components/AwsGridBackground';
-import FeatureGate        from './components/FeatureGate';
+import Navbar                from './components/Navbar';
+import Footer                from './components/Footer';
+import AwsGridBackground     from './components/AwsGridBackground';
+import FeatureGate           from './components/FeatureGate';
+import GlobalStreakToast, { useGlobalStreakToast } from './components/GlobalStreakToast';
+import useEngagementTracker  from './hooks/useEngagementTracker';
 import Home               from './pages/Home';
 import About              from './pages/About';
 import Events             from './pages/Events';
@@ -21,14 +23,22 @@ import DashboardLayout    from './components/DashboardLayout';
 import VolunteerApply     from './pages/VolunteerApply';
 
 const MainLayout = () => {
-  const location = useLocation();
+  const location    = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
+
+  // ── Global 5-second engagement tracker ─────────────────────────────────
+  // Runs on every page. After 5 s of presence, fires the daily-visit API.
+  // If the backend updates the streak, shows a global toast.
+  const { toastData, showToast, hideToast } = useGlobalStreakToast();
+  useEngagementTracker({ onStreakUpdated: showToast });
 
   if (isDashboard) {
     return (
       // Dashboard is wrapped at the layout level — if disabled, the whole
       // /dashboard/* subtree shows the "Feature Unavailable" screen.
       <FeatureGate flag="is_dashboard_active" name="Student Dashboard">
+        {/* Toast is available even inside the dashboard layout */}
+        {toastData && <GlobalStreakToast data={toastData} onClose={hideToast} />}
         <Routes>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<StudentDashboard />} />
@@ -44,6 +54,8 @@ const MainLayout = () => {
     <div className="flex flex-col min-h-screen font-sans text-white bg-transparent relative">
       <AwsGridBackground />
       <Navbar />
+      {/* ── Global streak toast — visible on every public page ── */}
+      {toastData && <GlobalStreakToast data={toastData} onClose={hideToast} />}
       <main id="main-content" tabIndex="-1" className="flex-grow flex flex-col">
         <Routes>
           {/* Always-on routes */}

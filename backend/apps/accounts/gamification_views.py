@@ -11,6 +11,13 @@ from .gamification_serializers import BuilderProfileSerializer
 
 logger = logging.getLogger(__name__)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# XP constants
+# ─────────────────────────────────────────────────────────────────────────────
+DAILY_VISIT_XP          = 5    # XP earned per unique-day visit (5-second rule)
+STREAK_MILESTONE_XP     = 20   # Bonus XP awarded at every 5-day streak multiple
+STREAK_MILESTONE_EVERY  = 5    # Check milestone at multiples of this number
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helper
@@ -185,3 +192,124 @@ class MyProfileView(APIView):
         serializer = BuilderProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# D. Global Daily-Visit Engagement Tracker — POST /api/gamification/daily-visit/
+# ─────────────────────────────────────────────────────────────────────────────
+
+class DailyVisitView(APIView):
+    """
+    POST /api/gamification/daily-visit/
+    ──────────────────────────────────────────────────────────────────────────
+    Called by the React frontend after an authenticated user has been active
+    on ANY page for 5 continuous seconds (the "5-second rule").
+
+    Logic
+    ─────
+    1. Fair-play gate: core-team members → acknowledge, no XP/streak change.
+    2. Already visited today → return streak_updated=False (idempotent).
+    3. New visit:
+         a. Streak continuity check (was last_checkin_date yesterday?).
+            YES  → increment current_streak.
+            NO   → reset current_streak to 1 (gap in streak or first visit).
+         b. Award DAILY_VISIT_XP (+5 XP).
+         c. If new_streak % STREAK_MILESTONE_EVERY == 0 → award +20 bonus XP.
+         d. Update last_checkin_date = today, save.
+
+    Response keys
+    ─────────────
+    streak_updated   — True only when a brand-new day streak was counted.
+    milestone_hit    — True when a 5-day multiple bonus was triggered.
+    bonus_xp         — Total XP awarded this call (5 base + 20 if milestone).
+    message          — Human-readable string for the frontend toast.
+    profile          — Full BuilderProfileSerializer snapshot.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        profile = _get_or_create_profile(request.user)
+        today   = datetime.date.today()
+
+        # ── Fair-play gate ──────────────────────────────────────────────────
+        if profile.is_core_team:
+            return Response(
+                {
+                    'streak_updated': False,
+                    'is_core_team':   True,
+                    'message': 'Fair Play mode — XP and streaks disabled for core team.',
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        last = profile.last_checkin_date
+
+        # ── Already visited today (idempotent) ──────────────────────────────
+        if last == today:
+            return Response(
+                {
+                    'streak_updated': False,
+                    'already_visited': True,
+                    'message': 'Already active today! Come back tomorrow to grow your streak. 🔥',
+                    'profile': BuilderProfileSerializer(profile).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        # ── New day — streak + XP logic ─────────────────────────────────────
+        yesterday = today - datetime.timedelta(days=1)
+
+        if last == yesterday:
+            profile.current_streak += 1        # consecutive day
+        else:
+            profile.current_streak  = 1        # gap or first ever visit
+
+        xp_earned     = DAILY_VISIT_XP        # base +5
+        milestone_hit = False
+
+        # 5-day milestone bonus
+        if profile.current_streak % STREAK_MILESTONE_EVERY == 0:
+            xp_earned    += STREAK_MILESTONE_XP
+            milestone_hit = True
+            logger.info(
+                '[Gamification] 🏆 Milestone: %s reached streak=%d → +%d bonus XP',
+                request.user.username, profile.current_streak, STREAK_MILESTONE_XP,
+            )
+
+        profile.xp_points        += xp_earned
+        profile.last_checkin_date = today
+
+        if profile.current_streak > profile.longest_streak:
+            profile.longest_streak = profile.current_streak
+
+        profile.save()
+
+        logger.info(
+            '[Gamification] Daily visit — %s: streak=%d xp=%d earned=%d milestone=%s',
+            request.user.username, profile.current_streak,
+            profile.xp_points, xp_earned, milestone_hit,
+        )
+
+        if milestone_hit:
+            message = (
+                f'🏆 {profile.current_streak}-Day Milestone! '
+                f'+{xp_earned} XP (includes +{STREAK_MILESTONE_XP} bonus reward)!'
+            )
+        else:
+            streak_word = 'day' if profile.current_streak == 1 else 'days'
+            message = (
+                f'🔥 Streak updated! +{xp_earned} XP — '
+                f'{profile.current_streak} {streak_word} in a row!'
+            )
+
+        return Response(
+            {
+                'streak_updated':   True,
+                'already_visited':  False,
+                'milestone_hit':    milestone_hit,
+                'milestone_streak': profile.current_streak if milestone_hit else None,
+                'bonus_xp':         xp_earned,
+                'message':          message,
+                'profile':          BuilderProfileSerializer(profile).data,
+            },
+            status=status.HTTP_200_OK,
+        )

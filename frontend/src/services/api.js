@@ -112,8 +112,10 @@ export const reduceSlots          = (postId)     => api.post(`/api/teamup/posts/
 export const getMyTeamWorkspace   = ()           => api.get('/api/teamup/my-workspace/');
 
 // ── Gamification — XP, Streaks & Leaderboard ─────────────────────────────────
-/** POST /api/gamification/checkin/ — daily check-in, awards XP and manages streak */
+/** POST /api/gamification/checkin/ — dashboard check-in, awards +10 XP and manages streak */
 export const dailyCheckin         = ()           => api.post('/api/gamification/checkin/');
+/** POST /api/gamification/daily-visit/ — global 5-second rule tracker (+5 XP/day, +20 at milestone) */
+export const dailyVisit           = ()           => api.post('/api/gamification/daily-visit/');
 /** GET  /api/gamification/my-profile/ — current user's BuilderProfile */
 export const getBuilderProfile    = ()           => api.get('/api/gamification/my-profile/');
 /** PATCH /api/gamification/my-profile/ — update academic details */

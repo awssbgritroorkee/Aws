@@ -478,6 +478,104 @@ const StudentDashboard = () => {
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
+              HOW IT WORKS — Gamification Education Panel (students only)
+          ════════════════════════════════════════════════════════════════ */}
+          {!isCoreteam && (
+            <div className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
+              {/* Section label */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xs font-black uppercase tracking-[0.18em] text-gray-500">
+                  ⚙️ How the Gamification System Works
+                </span>
+                <div className="h-px flex-1 bg-white/5" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                {/* Card 1 — Streak */}
+                <div className="group relative overflow-hidden rounded-xl border border-orange-500/20
+                                bg-orange-500/5 hover:bg-orange-500/10 p-4 transition-all duration-300">
+                  <div className="absolute -top-4 -right-4 text-6xl opacity-5 select-none pointer-events-none
+                                  group-hover:opacity-10 transition-opacity">🔥</div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">🔥</span>
+                      <span className="text-xs font-black text-orange-400 uppercase tracking-widest">
+                        Maintain Your Streak
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-[13px] leading-relaxed">
+                      Visit the website daily and explore for at least{' '}
+                      <span className="text-orange-300 font-bold">5 seconds</span> to keep your
+                      streak alive. Earns <span className="text-orange-300 font-bold">+5 XP</span> per
+                      day.
+                    </p>
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 font-semibold">
+                        ⚠️ Resets at 12:00 AM if missed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 2 — XP */}
+                <div className="group relative overflow-hidden rounded-xl border border-yellow-500/20
+                                bg-yellow-500/5 hover:bg-yellow-500/10 p-4 transition-all duration-300">
+                  <div className="absolute -top-4 -right-4 text-6xl opacity-5 select-none pointer-events-none
+                                  group-hover:opacity-10 transition-opacity">⭐</div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">⭐</span>
+                      <span className="text-xs font-black text-yellow-400 uppercase tracking-widest">
+                        Earn XP Points
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-[13px] leading-relaxed">
+                      Reach a <span className="text-yellow-300 font-bold">5-day streak</span> to earn a
+                      bonus <span className="text-yellow-300 font-bold">+20 XP</span> (every multiple of 5).
+                      Also complete <span className="text-yellow-300 font-bold">active Challenges</span> for
+                      extra XP rewards.
+                    </p>
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 font-semibold">
+                        🏆 5-day milestone = +20 bonus XP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3 — Levels */}
+                <div className="group relative overflow-hidden rounded-xl border border-purple-500/20
+                                bg-purple-500/5 hover:bg-purple-500/10 p-4 transition-all duration-300">
+                  <div className="absolute -top-4 -right-4 text-6xl opacity-5 select-none pointer-events-none
+                                  group-hover:opacity-10 transition-opacity">🚀</div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">🚀</span>
+                      <span className="text-xs font-black text-purple-400 uppercase tracking-widest">
+                        Level Up
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-[13px] leading-relaxed">
+                      Accumulate XP to automatically upgrade your{' '}
+                      <span className="text-purple-300 font-bold">Builder Level</span> — from
+                      Newcomer all the way to{' '}
+                      <span className="text-purple-300 font-bold">Cloud Expert (Lv. 7)</span> — and
+                      climb the Campus Leaderboard.
+                    </p>
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold">
+                        📈 Lv.1 → Lv.7 · 0 – 1200+ XP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════
               MAIN GRID — Command Center (2 cols) + Leaderboard (1 col)
           ════════════════════════════════════════════════════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
