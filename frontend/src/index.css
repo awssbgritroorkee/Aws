@@ -197,6 +197,22 @@
   }
 }
 
+/* ── Dark-mode autofill override ──────────────────────────────────────────────
+   Prevents Chromium browsers from painting a bright white/yellow background
+   on autofilled inputs. The inset box-shadow tricks the browser into using
+   our dark background colour (#0c1018) instead of its native autofill style.
+   ─────────────────────────────────────────────────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0c1018 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  /* Delay browser's own transition so our shadow wins */
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* ── Challenge Rich Text Content (TinyMCE HTML output) ────────────────────────
    Scoped to .challenge-rich-content so it doesn't bleed into other components.
    Typography is set to look beautiful on the dark challenge detail page.

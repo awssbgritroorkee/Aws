@@ -2,20 +2,79 @@ import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import OriginalLogoMark from './OriginalLogoMark';
 import GoogleLoginButton from './GoogleLoginButton';
+import { useFeatureFlags } from '../context/FeatureFlagsContext';
 
-const NAV_LINKS = [
-  { label: 'Home',        to: '/' },
-  { label: 'About',       to: '/about' },
-  { label: 'Events',      to: '/events' },
-  { label: 'Challenges',  to: '/challenges' },
-  { label: 'Team Up',     to: '/teamup' },
-  { label: 'Team',        to: '/team' },
-  { label: 'Gallery',     to: '/gallery' },
-  { label: 'Contact',     to: '/contact' },
+// ── Static links (always visible) ────────────────────────────────────────────
+const STATIC_LINKS = [
+  { label: 'Home',    to: '/' },
+  { label: 'About',   to: '/about' },
+  { label: 'Events',  to: '/events' },
+  { label: 'Team',    to: '/team' },
+  { label: 'Gallery', to: '/gallery' },
+  { label: 'Contact', to: '/contact' },
 ];
+
+// ── Feature-gated links ───────────────────────────────────────────────────────
+// Each entry has a `flag` key that maps to a FeatureFlagsContext boolean.
+const GATED_LINKS = [
+  { label: 'Challenges', to: '/challenges', flag: 'is_challenges_active', after: 'Events' },
+  { label: 'Team Up',    to: '/teamup',     flag: 'is_teamup_active',     after: 'Challenges' },
+  { label: 'Volunteer',  to: '/volunteer',  flag: 'is_volunteers_active', after: 'Team' },
+];
+
+const NavItem = ({ to, label, onClick }) => (
+  <NavLink
+    to={to}
+    end={to === '/'}
+    onClick={onClick}
+    id={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
+    className={({ isActive }) =>
+      `px-3.5 py-1.5 rounded-full text-[15px] font-medium whitespace-nowrap transition-all duration-200 ${
+        isActive
+          ? 'text-sbg-green bg-sbg-green/10 border border-sbg-green/30 font-semibold'
+          : 'text-gray-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+      }`
+    }
+  >
+    {label}
+  </NavLink>
+);
+
+const MobileNavItem = ({ to, label, onClick }) => (
+  <NavLink
+    to={to}
+    end={to === '/'}
+    onClick={onClick}
+    className={({ isActive }) =>
+      `block px-4 py-3 rounded-xl text-sm font-medium mb-0.5 transition-colors ${
+        isActive
+          ? 'text-sbg-green bg-sbg-green/10 border border-sbg-green/30'
+          : 'text-gray-400 hover:text-white hover:bg-white/5'
+      }`
+    }
+  >
+    {label}
+  </NavLink>
+);
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { flags } = useFeatureFlags();
+
+  // Build the ordered nav list: static links + gated links inserted at correct positions
+  const buildLinks = () => {
+    // Start with the full static list order then splice gated links in
+    const order = ['Home', 'About', 'Events', 'Challenges', 'Team Up', 'Team', 'Volunteer', 'Gallery', 'Contact'];
+    const all = [
+      ...STATIC_LINKS,
+      ...GATED_LINKS.filter(({ flag }) => flags[flag] !== false),
+    ];
+    return order
+      .map((label) => all.find((l) => l.label === label))
+      .filter(Boolean);
+  };
+
+  const visibleLinks = buildLinks();
 
   return (
     <header
@@ -48,22 +107,8 @@ const Navbar = () => {
           border: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        {NAV_LINKS.map(({ label, to }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            id={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
-            className={({ isActive }) =>
-              `px-3.5 py-1.5 rounded-full text-[15px] font-medium whitespace-nowrap transition-all duration-200 ${
-                isActive
-                  ? 'text-sbg-green bg-sbg-green/10 border border-sbg-green/30 font-semibold'
-                  : 'text-gray-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
-              }`
-            }
-          >
-            {label}
-          </NavLink>
+        {visibleLinks.map(({ label, to }) => (
+          <NavItem key={to} label={label} to={to} />
         ))}
       </nav>
 
@@ -105,22 +150,13 @@ const Navbar = () => {
             borderTop: 'none',
           }}
         >
-          {NAV_LINKS.map(({ label, to }) => (
-            <NavLink
+          {visibleLinks.map(({ label, to }) => (
+            <MobileNavItem
               key={to}
+              label={label}
               to={to}
-              end={to === '/'}
               onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded-xl text-sm font-medium mb-0.5 transition-colors ${
-                  isActive
-                    ? 'text-sbg-green bg-sbg-green/10 border border-sbg-green/30'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`
-              }
-            >
-              {label}
-            </NavLink>
+            />
           ))}
           <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-3">
             <GoogleLoginButton />

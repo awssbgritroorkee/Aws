@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
-from .models import EmailBroadcast, BuilderProfile
+from .models import EmailBroadcast, BuilderProfile, VolunteerApplication, SiteSettings
 from .signals import EmailThread
 
 # Cross-app model imports (loaded after all models, so no circular-import risk)
@@ -718,3 +718,191 @@ class EmailBroadcastAdmin(ModelAdmin):
                 "⚠️ No valid email addresses found. Broadcast saved but no emails sent.",
                 level=messages.WARNING,
             )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Volunteer Application Admin
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin.register(VolunteerApplication)
+class VolunteerApplicationAdmin(ModelAdmin):
+    """
+    Admin panel for reviewing and actioning student volunteer applications.
+
+    Workflow:
+      1. Student submits via the website form → status = 'Pending'.
+      2. Admin opens an application, reads skills / motivation, then sets
+         status to 'Accepted' or 'Rejected' and optionally adds admin_notes.
+      3. The frontend dashboard polls /api/auth/volunteer/status/ and displays
+         the updated status badge to the student.
+
+    Status can be bulk-changed via the admin action buttons at the top.
+    """
+    compressed_fields = True
+    warn_unsaved_form = True
+
+    # ── Actions ───────────────────────────────────────────────────────────────
+    actions = ['accept_applications', 'reject_applications']
+
+    # ── List view ─────────────────────────────────────────────────────────────
+    list_display       = [
+        'full_name',
+        'user_email',
+        'academic_year',
+        'course',
+        'accommodation',
+        'other_club_member',
+        'status_badge',
+        'applied_at',
+    ]
+    list_display_links = ['full_name']
+    list_filter        = ['status', 'academic_year', 'course', 'accommodation', 'gender']
+    search_fields      = [
+        'full_name',
+        'user__email',
+        'roll_number',
+        'mobile_number',
+        'skills',
+        'motivation',
+    ]
+    ordering    = ['-applied_at']
+    date_hierarchy = 'applied_at'
+    readonly_fields = ['user', 'applied_at', 'updated_at']
+
+    # ── Detail form ───────────────────────────────────────────────────────────
+    fieldsets = (
+        ('👤 Applicant Identity', {
+            'fields': ('user', 'full_name', 'gender', 'mobile_number', 'accommodation'),
+            'description': (
+                'The <strong>user</strong> field links to the Google SSO account. '
+                'It is read-only — set automatically when the student submits the form.'
+            ),
+        }),
+        ('🎓 Academic Details', {
+            'fields': ('course', 'branch', 'section', 'academic_year', 'roll_number'),
+        }),
+        ('💡 Skills & Motivation', {
+            'fields': ('skills', 'motivation', 'other_club_member'),
+            'description': (
+                'Review the student\'s self-described skills and motivation. '
+                '<strong>other_club_member</strong> is True if they belong to another society.'
+            ),
+        }),
+        ('📋 Application Status', {
+            'fields': ('status', 'admin_notes'),
+            'description': (
+                'Change <strong>Status</strong> to <em>Accepted</em> or <em>Rejected</em> and save. '
+                'The student will see the updated status on their dashboard immediately. '
+                '<strong>Admin Notes</strong> are internal only — never shown to the student.'
+            ),
+        }),
+        ('📅 Audit', {
+            'fields': ('applied_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    # ── Custom display helpers ─────────────────────────────────────────────────
+
+    @display(description='Email', ordering='user__email')
+    def user_email(self, obj):
+        """Shows the applicant's Google account email in the list view."""
+        return obj.user.email
+
+    @display(description='Status', label={
+        'Pending':  'warning',
+        'Accepted': 'success',
+        'Rejected': 'danger',
+    })
+    def status_badge(self, obj):
+        return obj.status
+
+    # ── Bulk Actions ──────────────────────────────────────────────────────────
+
+    @admin.action(description='✅ Accept selected applications')
+    def accept_applications(self, request, queryset):
+        updated = queryset.update(status='Accepted')
+        self.message_user(
+            request,
+            f'✅ {updated} application(s) marked as Accepted.',
+            level=messages.SUCCESS,
+        )
+
+    @admin.action(description='❌ Reject selected applications')
+    def reject_applications(self, request, queryset):
+        updated = queryset.update(status='Rejected')
+        self.message_user(
+            request,
+            f'❌ {updated} application(s) marked as Rejected.',
+            level=messages.WARNING,
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SiteSettings — Feature Flag Control Centre (Singleton)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(ModelAdmin):
+    """
+    Feature-flag control centre for the AWS SBG platform.
+
+    SINGLETON — only the single existing row can be edited.
+    Adding or deleting rows is blocked at both the view and queryset levels.
+
+    Workflow:
+        1. Open "Site Settings" from the admin sidebar.
+        2. Toggle the boolean switches for the modules you want to enable/disable.
+        3. Click "Save" — the React frontend reads /api/settings/feature-flags/
+           on every page load and updates the navbar and route guards within
+           seconds (no cache, no CDN invalidation needed).
+    """
+    compressed_fields = True
+    warn_unsaved_form = True
+
+    # ── Singleton guards ──────────────────────────────────────────────────────
+    def has_add_permission(self, request):
+        """Block creation once the singleton row exists."""
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion — the row must always exist."""
+        return False
+
+    def get_queryset(self, request):
+        """Ensure the singleton row exists before any view renders."""
+        SiteSettings.load()
+        return super().get_queryset(request)
+
+    # ── Auto-redirect list → change page ──────────────────────────────────────
+    def changelist_view(self, request, extra_context=None):
+        """Skip the list and jump directly to the settings edit form."""
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        obj = SiteSettings.load()
+        return HttpResponseRedirect(
+            reverse('admin:accounts_sitesettings_change', args=[obj.pk])
+        )
+
+    # ── Form layout ───────────────────────────────────────────────────────────
+    fieldsets = (
+        ('⚡ Feature Flags — Control Centre', {
+            'fields': (
+                'is_challenges_active',
+                'is_teamup_active',
+                'is_dashboard_active',
+                'is_volunteers_active',
+            ),
+            'description': (
+                'Toggle modules <strong>ON</strong> or <strong>OFF</strong>. '
+                'When disabled: (1) the nav link disappears, and '
+                '(2) direct URL access shows a "Feature Unavailable" screen. '
+                '<br>Changes propagate to the live site within seconds — no deploy needed.'
+            ),
+        }),
+        ('📅 Audit', {
+            'fields': ('updated_at',),
+            'classes': ('collapse',),
+        }),
+    )
+    readonly_fields = ('updated_at',)

@@ -140,4 +140,13 @@ export const submitChallengeProject = async (challengeId, proofLink) => {
   return response.data;
 };
 
+// ── Volunteer Hiring System ───────────────────────────────────────────────────
+/** POST /api/auth/volunteer/apply/ — submit new volunteer application */
+export const submitVolunteerApplication = (data) =>
+  api.post('/api/auth/volunteer/apply/', data);
+
+/** GET /api/auth/volunteer/status/ — check current application status */
+export const getVolunteerStatus = () =>
+  api.get('/api/auth/volunteer/status/');
+
 export default api;

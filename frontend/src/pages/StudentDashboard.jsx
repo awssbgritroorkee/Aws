@@ -540,6 +540,14 @@ const StudentDashboard = () => {
                   glowClass="bg-pink-500"
                   to="/team"
                 />
+                <CommandCard
+                  icon="🙋"
+                  title="Volunteer for Events"
+                  subtitle="Apply to join the AWS SBG operations crew — organise events, workshops, and hackathons."
+                  accentClass="text-teal-400"
+                  glowClass="bg-teal-500"
+                  to="/volunteer"
+                />
               </div>
 
               {/* ── Activity hint banner ──────────────────────────────── */}

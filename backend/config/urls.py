@@ -46,6 +46,11 @@ urlpatterns = [
 
     # ── Gamification — XP, Streaks & Leaderboard ──────────────────────────────
     path('api/gamification/', include('apps.accounts.gamification_urls')),
+
+    # ── Feature Flags — public, no auth required ──────────────────────────────
+    path('api/settings/feature-flags/',
+         __import__('apps.accounts.feature_flag_views', fromlist=['FeatureFlagsView']).FeatureFlagsView.as_view(),
+         name='feature_flags'),
 ]
 
 if settings.DEBUG:

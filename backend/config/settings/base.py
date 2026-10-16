@@ -208,6 +208,16 @@ def _badge_pending_challenge_verifications(request):
         return None
 
 
+def _badge_pending_volunteers(request):
+    """Count VolunteerApplications with Pending status."""
+    try:
+        from apps.accounts.models import VolunteerApplication
+        count = VolunteerApplication.objects.filter(status='Pending').count()
+        return str(count) if count > 0 else None
+    except Exception:
+        return None
+
+
 def _badge_unread_contact_messages(request):
     """Count ContactMessages that have not been marked as read yet."""
     try:
@@ -319,6 +329,26 @@ UNFOLD = {
                     },
                 ],
             },
+            # ── Platform Control Centre ─────────────────────────────────────────
+            {
+                "title": "⚡ Platform Control Centre",
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Feature Flags",
+                        "icon": "toggle_on",
+                        "link": "/admin/accounts/sitesettings/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": "Builder Profiles",
+                        "icon": "workspace_premium",
+                        "link": "/admin/accounts/builderprofile/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_builderprofile'),
+                    },
+                ],
+            },
             # User Management: Users, Groups, Email Broadcasts
             {
                 "title": "User Management",
@@ -344,9 +374,9 @@ UNFOLD = {
                     },
                 ],
             },
-            # Website Content: Events, Gallery Photos, Team Members
+            # ── Events & Ground Operations ──────────────────────────────────────
             {
-                "title": "Website Content",
+                "title": "Events & Ground Operations",
                 "separator": True,
                 "items": [
                     {
@@ -354,12 +384,6 @@ UNFOLD = {
                         "icon": "event",
                         "link": "/admin/events/event/",
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
-                    },
-                    {
-                        "title": "Challenges",
-                        "icon": "military_tech",
-                        "link": "/admin/challenges/challenge/",
-                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
                     },
                     {
                         "title": "Gallery Albums",
@@ -373,9 +397,35 @@ UNFOLD = {
                         "link": "/admin/members/member/",
                         "permission": lambda request: request.user.is_superuser or request.user.has_perm('members.view_member'),
                     },
+                    {
+                        "title": "🙋 Volunteer Applications",
+                        "icon": "volunteer_activism",
+                        "link": "/admin/accounts/volunteerapplication/",
+                        "badge": _badge_pending_volunteers,
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_volunteerapplication'),
+                    },
                 ],
             },
-            # Event Registrations
+            # ── Challenges & Hackathons ─────────────────────────────────────────
+            {
+                "title": "Challenges & Hackathons",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Challenges",
+                        "icon": "military_tech",
+                        "link": "/admin/challenges/challenge/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
+                    },
+                    {
+                        "title": "Hackathons",
+                        "icon": "emoji_events",
+                        "link": "/admin/challenges/hackathon/",
+                        "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_hackathon'),
+                    },
+                ],
+            },
+            # ── Event Registrations ─────────────────────────────────────────────
             {
                 "title": "Event Registrations",
                 "separator": True,
@@ -501,21 +551,33 @@ UNFOLD = {
                 },
             ],
         },
-        # Website Content tab group
+        # Platform Control Centre tab group
         {
-            "models": ["events.event", "challenges.challenge", "gallery.galleryalbum", "members.member"],
+            "models": ["accounts.sitesettings", "accounts.builderprofile"],
+            "items": [
+                {
+                    "title": "Feature Flags",
+                    "link": "/admin/accounts/sitesettings/",
+                    "icon": "toggle_on",
+                    "permission": lambda request: request.user.is_superuser,
+                },
+                {
+                    "title": "Builder Profiles",
+                    "link": "/admin/accounts/builderprofile/",
+                    "icon": "workspace_premium",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_builderprofile'),
+                },
+            ],
+        },
+        # Events & Ground Operations tab group
+        {
+            "models": ["events.event", "gallery.galleryalbum", "members.member", "accounts.volunteerapplication"],
             "items": [
                 {
                     "title": "Events",
                     "link": "/admin/events/event/",
                     "icon": "event",
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('events.view_event'),
-                },
-                {
-                    "title": "Challenges",
-                    "link": "/admin/challenges/challenge/",
-                    "icon": "military_tech",
-                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
                 },
                 {
                     "title": "Gallery Albums",
@@ -528,6 +590,30 @@ UNFOLD = {
                     "link": "/admin/members/member/",
                     "icon": "group",
                     "permission": lambda request: request.user.is_superuser or request.user.has_perm('members.view_member'),
+                },
+                {
+                    "title": "Volunteer Applications",
+                    "link": "/admin/accounts/volunteerapplication/",
+                    "icon": "volunteer_activism",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('accounts.view_volunteerapplication'),
+                },
+            ],
+        },
+        # Challenges & Hackathons tab group
+        {
+            "models": ["challenges.challenge", "challenges.hackathon"],
+            "items": [
+                {
+                    "title": "Challenges",
+                    "link": "/admin/challenges/challenge/",
+                    "icon": "military_tech",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_challenge'),
+                },
+                {
+                    "title": "Hackathons",
+                    "link": "/admin/challenges/hackathon/",
+                    "icon": "emoji_events",
+                    "permission": lambda request: request.user.is_superuser or request.user.has_perm('challenges.view_hackathon'),
                 },
             ],
         },
