@@ -250,7 +250,14 @@ const VolunteerApply = () => {
     course: '', branch: '', section: '', academic_year: '', roll_number: '',
     skills: '', motivation: '', other_club_member: '',
   });
+  const [terms, setTerms] = useState({
+    term1: false,
+    term2: false,
+    term3: false,
+  });
   const [errors, setErrors] = useState({});
+
+  const allTermsAgreed = terms.term1 && terms.term2 && terms.term3;
 
   // Check existing application
   useEffect(() => {
@@ -285,6 +292,7 @@ const VolunteerApply = () => {
     if (!form.skills.trim())      e.skills         = 'Please describe your skills.';
     if (!form.motivation.trim())  e.motivation     = 'Please share your motivation.';
     if (!form.other_club_member)  e.other_club_member = 'Please select an option.';
+    if (!allTermsAgreed)          e.terms          = 'You must agree to all terms and commitments before submitting.';
     return e;
   };
 
@@ -372,6 +380,17 @@ const VolunteerApply = () => {
           <p className="text-gray-400 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
             Help us execute upcoming bootcamps, hackathons, and community events smoothly.
             Be the driving force on the ground.
+          </p>
+        </div>
+
+        {/* ── Top Information Banner ────────────────────────────────────────── */}
+        <div className="mb-10 bg-gray-800/80 border-l-4 border-green-500 p-4 rounded-r-lg">
+          <h3 className="text-green-400 font-bold mb-2">🎯 HIRING ALERT: 10 Exclusive Spots Available</h3>
+          <p className="text-sm text-gray-300">
+            We are strictly recruiting 5 Boys and 5 Girls from the 2nd and 3rd Year only.
+          </p>
+          <p className="mt-2 text-sm text-gray-300">
+            <span className="text-yellow-400 font-semibold">🏆 Ultimate Perk:</span> Top-performing volunteers from this event will be directly shortlisted for the AWS SBG Core Team next year.
           </p>
         </div>
 
@@ -655,6 +674,72 @@ const VolunteerApply = () => {
               </div>
             </div>
 
+            {/* ════════════════════════════════════════════════════════════
+                SECTION 4 — Terms & Commitments
+            ════════════════════════════════════════════════════════════ */}
+            <div data-error={!!errors.terms || undefined}>
+              <SectionHeader
+                icon="📜" step="4"
+                title="Terms & Commitments *"
+                subtitle="Please read carefully and agree to all conditions below to submit your application"
+              />
+
+              <div className="space-y-3.5">
+                {/* Checkbox 1 */}
+                <label className="flex items-start gap-3.5 p-4 rounded-xl bg-[#0c1018] border border-white/[0.08] hover:border-emerald-500/30 cursor-pointer transition-all duration-150">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={terms.term1}
+                    onChange={(e) => {
+                      setTerms((t) => ({ ...t, term1: e.target.checked }));
+                      if (errors.terms) setErrors((prev) => ({ ...prev, terms: '' }));
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-[#0c1018] text-emerald-500 accent-emerald-500 focus:ring-emerald-500/20 cursor-pointer flex-shrink-0"
+                  />
+                  <span className="text-gray-300 text-sm leading-relaxed select-none">
+                    I commit to being fully available and attending all mandatory team meetings or calls scheduled up to November 28th, 2026.
+                  </span>
+                </label>
+
+                {/* Checkbox 2 */}
+                <label className="flex items-start gap-3.5 p-4 rounded-xl bg-[#0c1018] border border-white/[0.08] hover:border-emerald-500/30 cursor-pointer transition-all duration-150">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={terms.term2}
+                    onChange={(e) => {
+                      setTerms((t) => ({ ...t, term2: e.target.checked }));
+                      if (errors.terms) setErrors((prev) => ({ ...prev, terms: '' }));
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-[#0c1018] text-emerald-500 accent-emerald-500 focus:ring-emerald-500/20 cursor-pointer flex-shrink-0"
+                  />
+                  <span className="text-gray-300 text-sm leading-relaxed select-none">
+                    I understand that any breach of discipline, misbehavior, or failure to follow instructions during the event will result in immediate termination from the volunteer team.
+                  </span>
+                </label>
+
+                {/* Checkbox 3 */}
+                <label className="flex items-start gap-3.5 p-4 rounded-xl bg-[#0c1018] border border-white/[0.08] hover:border-emerald-500/30 cursor-pointer transition-all duration-150">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={terms.term3}
+                    onChange={(e) => {
+                      setTerms((t) => ({ ...t, term3: e.target.checked }));
+                      if (errors.terms) setErrors((prev) => ({ ...prev, terms: '' }));
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-[#0c1018] text-emerald-500 accent-emerald-500 focus:ring-emerald-500/20 cursor-pointer flex-shrink-0"
+                  />
+                  <span className="text-gray-300 text-sm leading-relaxed select-none">
+                    I agree to take full responsibility for the tasks assigned to me and will maintain the professional reputation of AWS SBG RIT.
+                  </span>
+                </label>
+              </div>
+
+              <FieldError msg={errors.terms} />
+            </div>
+
             {/* ── Divider ─────────────────────────────────────────────────── */}
             <div className="h-px bg-white/[0.05]" />
 
@@ -663,12 +748,12 @@ const VolunteerApply = () => {
               <button
                 type="submit"
                 id="volunteer-submit-btn"
-                disabled={submitting}
+                disabled={submitting || !allTermsAgreed}
                 className="flex-1 sm:flex-none sm:min-w-[220px] h-12 px-8 rounded-xl
                            bg-gradient-to-r from-emerald-500 to-teal-500
                            text-black font-extrabold text-sm tracking-wide
                            hover:from-emerald-400 hover:to-teal-400
-                           disabled:opacity-50 disabled:cursor-not-allowed
+                           disabled:opacity-40 disabled:cursor-not-allowed
                            transition-all duration-200 shadow-lg shadow-emerald-900/30
                            active:scale-[0.98] flex items-center justify-center gap-2.5"
               >
