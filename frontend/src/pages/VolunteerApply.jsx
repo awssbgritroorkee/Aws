@@ -390,7 +390,7 @@ const VolunteerApply = () => {
             We are strictly recruiting 5 Boys and 5 Girls from the 2nd and 3rd Year only.
           </p>
           <p className="mt-2 text-sm text-gray-300">
-            <span className="text-yellow-400 font-semibold">🏆 Ultimate Perk:</span> Top-performing volunteers from this event will be directly shortlisted for the AWS SBG Core Team next year.
+            <span className="text-yellow-400 font-semibold">🏆 Ultimate Perk:</span> Top-performing volunteers from this event will be directly shortlisted for the AWS SBG Core Team.
           </p>
         </div>
 
