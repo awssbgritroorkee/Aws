@@ -174,14 +174,8 @@ RIT Roorkee</p>"""
         ).start()
 
 
-@receiver(post_save, sender=User)
-def create_builder_profile(sender, instance, created, **kwargs):
-    """
-    Automatically create a BuilderProfile whenever a new User is created.
-    Handles Google OAuth sign-ups, admin-created users, and any other
-    registration path. Uses get_or_create to be idempotent — safe to call
-    multiple times without creating duplicate profiles.
-    """
-    if created:
-        from .models import BuilderProfile  # local import prevents circular deps
-        BuilderProfile.objects.get_or_create(user=instance)
+
+# NOTE: BuilderProfile is no longer auto-created on user registration.
+# Students must explicitly submit the "Create Builder Profile" form on the
+# dashboard to initiate their gamification tracking.
+# See: POST /api/gamification/create-builder/ (gamification_views.py)

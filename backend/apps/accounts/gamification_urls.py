@@ -1,26 +1,42 @@
 from django.urls import path
 
-from .gamification_views import DailyCheckinView, LeaderboardView, MyProfileView, DailyVisitView
+from .gamification_views import (
+    CreateBuilderProfileView,
+    ProfileStatusView,
+    DailyCheckinView,
+    DailyVisitView,
+    LeaderboardView,
+    MyProfileView,
+)
 
 urlpatterns = [
+    # ── Onboarding ──────────────────────────────────────────────────────────
+    # POST /api/gamification/create-builder/
+    # Student submits this once to create their BuilderProfile and begin
+    # XP/streak tracking. Blocked for admins and if profile already exists.
+    path('create-builder/', CreateBuilderProfileView.as_view(), name='gamification_create_builder'),
+
+    # ── Profile Status (dashboard mount check) ───────────────────────────────
+    # GET /api/gamification/profile-status/
+    # Returns { is_admin, has_builder_profile, profile? } — used by the
+    # dashboard to decide which view to render (onboarding form / dashboard / admin msg).
+    path('profile-status/', ProfileStatusView.as_view(), name='gamification_profile_status'),
+
     # ── Daily Check-in ──────────────────────────────────────────────────────
     # POST /api/gamification/checkin/
-    # Dashboard-only check-in — awards +10 XP (legacy, unchanged).
+    # Dashboard check-in, awards +10 XP. Silent no-op for admins / no-profile.
     path('checkin/', DailyCheckinView.as_view(), name='gamification_checkin'),
 
-    # ── Global Daily-Visit Engagement Tracker ───────────────────────────────
+    # ── Global 5-second Engagement Tracker ──────────────────────────────────
     # POST /api/gamification/daily-visit/
-    # Triggered by the 5-second rule on ANY page — awards +5 XP per unique day,
-    # +20 bonus at every 5-day milestone. Powers the streak display everywhere.
+    # +5 XP/day, +20 at every 5-day milestone. Silent no-op if no profile.
     path('daily-visit/', DailyVisitView.as_view(), name='gamification_daily_visit'),
 
     # ── Public Leaderboard ──────────────────────────────────────────────────
     # GET /api/gamification/leaderboard/
-    # Returns top 10 students by XP (core team strictly excluded — Fair Play).
     path('leaderboard/', LeaderboardView.as_view(), name='gamification_leaderboard'),
 
     # ── My Profile ──────────────────────────────────────────────────────────
-    # GET /api/gamification/my-profile/
-    # Returns the authenticated user's own BuilderProfile for dashboard display.
+    # GET/PATCH /api/gamification/my-profile/
     path('my-profile/', MyProfileView.as_view(), name='gamification_my_profile'),
 ]

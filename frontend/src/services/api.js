@@ -112,16 +112,20 @@ export const reduceSlots          = (postId)     => api.post(`/api/teamup/posts/
 export const getMyTeamWorkspace   = ()           => api.get('/api/teamup/my-workspace/');
 
 // ── Gamification — XP, Streaks & Leaderboard ─────────────────────────────────
+/** GET  /api/gamification/profile-status/ — dashboard mount check */
+export const getProfileStatus     = ()     => api.get('/api/gamification/profile-status/');
+/** POST /api/gamification/create-builder/ — explicit onboarding form submit */
+export const createBuilderProfile = (data) => api.post('/api/gamification/create-builder/', data);
 /** POST /api/gamification/checkin/ — dashboard check-in, awards +10 XP and manages streak */
-export const dailyCheckin         = ()           => api.post('/api/gamification/checkin/');
+export const dailyCheckin         = ()     => api.post('/api/gamification/checkin/');
 /** POST /api/gamification/daily-visit/ — global 5-second rule tracker (+5 XP/day, +20 at milestone) */
-export const dailyVisit           = ()           => api.post('/api/gamification/daily-visit/');
+export const dailyVisit           = ()     => api.post('/api/gamification/daily-visit/');
 /** GET  /api/gamification/my-profile/ — current user's BuilderProfile */
-export const getBuilderProfile    = ()           => api.get('/api/gamification/my-profile/');
+export const getBuilderProfile    = ()     => api.get('/api/gamification/my-profile/');
 /** PATCH /api/gamification/my-profile/ — update academic details */
-export const updateBuilderProfile = (data)       => api.patch('/api/gamification/my-profile/', data);
+export const updateBuilderProfile = (data) => api.patch('/api/gamification/my-profile/', data);
 /** GET  /api/gamification/leaderboard/ — top-10 students (core team excluded) */
-export const getLeaderboard       = ()           => api.get('/api/gamification/leaderboard/');
+export const getLeaderboard       = ()     => api.get('/api/gamification/leaderboard/');
 
 // ── Challenge RSVPs & Project Submissions ────────────────────────────────────
 /** GET /api/challenges/my-registrations/ — fetch all registrations for current user */

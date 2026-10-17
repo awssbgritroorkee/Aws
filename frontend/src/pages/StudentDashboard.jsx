@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dailyCheckin, getBuilderProfile, getLeaderboard } from '../services/api';
+import { getProfileStatus, dailyCheckin, getLeaderboard } from '../services/api';
+import BuilderProfileForm from '../components/BuilderProfileForm';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // XP → Level calculator
@@ -197,83 +198,117 @@ const StudentDashboard = () => {
   const { user, context, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // ── Dashboard state machine ─────────────────────────────────────────────────
+  // 'loading'    → checking profile status on mount
+  // 'admin'      → is_staff / is_superuser — show admin message
+  // 'onboarding' → authenticated but no BuilderProfile yet — show form
+  // 'dashboard'  → profile exists — show full gamification dashboard
+  // 'error'      → network/server failure
+  const [viewState,   setViewState]   = useState('loading');
   const [profile,     setProfile]     = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
   const [error,       setError]       = useState(null);
 
   // Check-in toast state
-  const [toast, setToast] = useState(null); // { message, streak, xp }
+  const [toast, setToast] = useState(null);
 
   // Guard — redirect to home if not authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/', { replace: true });
-    }
+    if (!authLoading && !user) navigate('/', { replace: true });
   }, [authLoading, user, navigate]);
 
-  // ── Fetch profile + leaderboard + trigger check-in ─────────────────────────
-  const fetchData = useCallback(async () => {
-    setLoadingData(true);
-    setError(null);
+  // ── Leaderboard fetch (only when profile exists) ────────────────────────────
+  const fetchLeaderboard = useCallback(async () => {
     try {
-      const [profileRes, leaderboardRes] = await Promise.all([
-        getBuilderProfile(),
-        getLeaderboard(),
-      ]);
+      const res = await getLeaderboard();
+      setLeaderboard(res.data.leaderboard || []);
+    } catch { /* silent */ }
+  }, []);
 
-      if (profileRes.data?.is_core_team) {
-        alert("Access Denied: Core team members cannot participate in student challenges.");
-        navigate('/', { replace: true });
-        return;
-      }
-
-      setProfile(profileRes.data);
-      setLeaderboard(leaderboardRes.data.leaderboard || []);
-    } catch (err) {
-      console.error('[Dashboard] Fetch error:', err);
-      setError('Could not load your dashboard. Please try again.');
-    } finally {
-      setLoadingData(false);
-    }
-  }, [navigate]);
-
-  // ── Daily Check-in (fires once on mount, after auth is confirmed) ──────────
-  const checkinFiredRef = useRef(false);
+  // ── Primary mount: profile-status check ────────────────────────────────────
   useEffect(() => {
     if (authLoading || !user) return;
-    if (checkinFiredRef.current) return;
+
+    const init = async () => {
+      try {
+        const { data } = await getProfileStatus();
+
+        if (data.is_admin) {
+          setViewState('admin');
+          return;
+        }
+
+        if (!data.has_builder_profile) {
+          setViewState('onboarding');
+          return;
+        }
+
+        // Profile exists — load dashboard
+        setProfile(data.profile || null);
+        setViewState('dashboard');
+        fetchLeaderboard();
+      } catch (err) {
+        console.error('[Dashboard] profile-status error:', err);
+        setError('Could not load your dashboard. Please try again.');
+        setViewState('error');
+      }
+    };
+
+    init();
+  }, [authLoading, user, fetchLeaderboard]);
+
+  // ── Called by BuilderProfileForm on successful profile creation ─────────────
+  const handleProfileCreated = useCallback((profileData) => {
+    setProfile(profileData);
+    setViewState('dashboard');
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+  // ── Daily Check-in (fires once when dashboard view becomes active) ──────────
+  const checkinFiredRef = useRef(false);
+  useEffect(() => {
+    if (viewState !== 'dashboard' || checkinFiredRef.current) return;
     checkinFiredRef.current = true;
 
     const fireCheckin = async () => {
       try {
         const { data } = await dailyCheckin();
-        // Show toast only for new check-ins (not already-checked-in responses)
-        if (!data.already_checked_in && !data.is_core_team) {
-          const p = data.profile || {};
-          setToast({
-            message: data.message,
-            streak:  p.current_streak || 1,
-            xp:      p.xp_points     || 10,
-          });
-          // Refresh profile to reflect updated XP
+        if (!data.already_checked_in && !data.is_core_team && data.profile) {
+          const p = data.profile;
+          setToast({ message: data.message, streak: p.current_streak || 1, xp: p.xp_points || 10 });
           setProfile(p);
         }
-      } catch {
-        // Silent fail — check-in is a background action, never block UX
-      }
+      } catch { /* silent */ }
     };
-
-    fetchData();
     fireCheckin();
-  }, [authLoading, user, fetchData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewState]);
 
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (authLoading || loadingData) {
+  // Stub fetchData for error-retry compatibility
+  const fetchData = useCallback(async () => {
+    setViewState('loading');
+    setError(null);
+    checkinFiredRef.current = false;
+    try {
+      const { data } = await getProfileStatus();
+      if (data.is_admin)              { setViewState('admin');      return; }
+      if (!data.has_builder_profile)  { setViewState('onboarding'); return; }
+      setProfile(data.profile || null);
+      setViewState('dashboard');
+      fetchLeaderboard();
+    } catch (err) {
+      setError('Could not load your dashboard. Please try again.');
+      setViewState('error');
+    }
+  }, [fetchLeaderboard]);
+
+  // ── Short-circuit renders ────────────────────────────────────────────────────
+
+  // Loading skeleton
+  if (authLoading || viewState === 'loading') {
     return (
       <div className="min-h-screen bg-[#050505] text-white pt-20 px-4 md:px-8 pb-20">
         <div className="max-w-6xl mx-auto space-y-6 mt-6">
-          {/* Hero skeleton */}
           <Skeleton className="h-44" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
@@ -289,13 +324,47 @@ const StudentDashboard = () => {
     );
   }
 
-  // ── Error state ────────────────────────────────────────────────────────────
-  if (error) {
+  // Admin / superuser — no gamification
+  if (viewState === 'admin') {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-4">
+        <div className="text-center max-w-md space-y-4 p-8 rounded-2xl border border-white/10 bg-white/[0.03]">
+          <span className="text-5xl">🛡️</span>
+          <h2 className="text-xl font-black text-cyan-300">Admin Account</h2>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            Gamification Dashboard (XP, Streaks, Leaderboard) is{' '}
+            <strong className="text-white">disabled</strong> for admin and superuser accounts
+            to maintain Fair Play for students.
+          </p>
+          <a
+            href="/admin/"
+            className="inline-block mt-2 px-6 py-2.5 rounded-full bg-cyan-500/20 border border-cyan-500/40
+                       text-cyan-300 font-bold text-sm hover:bg-cyan-500/30 transition"
+          >
+            Open Admin Panel →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Onboarding — no BuilderProfile yet
+  if (viewState === 'onboarding') {
+    return (
+      <BuilderProfileForm
+        userEmail={user?.email || ''}
+        onSuccess={handleProfileCreated}
+      />
+    );
+  }
+
+  // Error state
+  if (viewState === 'error' || error) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-4">
         <div className="text-center max-w-sm space-y-4">
           <span className="text-5xl">⚠️</span>
-          <p className="text-gray-300">{error}</p>
+          <p className="text-gray-300">{error || 'Something went wrong.'}</p>
           <button
             onClick={fetchData}
             className="px-6 py-2.5 rounded-full bg-sbg-green text-black font-bold text-sm hover:brightness-110 transition"
@@ -306,6 +375,7 @@ const StudentDashboard = () => {
       </div>
     );
   }
+
 
   // ── Computed display values ────────────────────────────────────────────────
   const displayName = profile?.full_name
