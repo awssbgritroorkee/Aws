@@ -212,7 +212,7 @@ const GoogleLoginButton = () => {
     const isCoreTeam = isTeamMember || hasAdminAccess;
 
     // ── Feature flags — read here so the dropdown reacts instantly ────────────
-    const { flags } = useFeatureFlags();
+    const { flags, isLoadingFlags } = useFeatureFlags();
 
     return (
       <div className="relative" ref={dropdownRef}>
@@ -299,7 +299,7 @@ const GoogleLoginButton = () => {
             <div className="p-2 flex flex-col gap-0.5">
 
               {/* Dashboard — only for regular students (non-core team) AND when flag is ON */}
-              {!isCoreTeam && flags.is_dashboard_active && (
+              {!isCoreTeam && !isLoadingFlags && flags.is_dashboard_active && (
                 <DropdownNavLink
                   to="/dashboard"
                   icon={<IconGrid />}

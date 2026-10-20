@@ -19,40 +19,73 @@ import api from '../services/api';
  *   if (!flags.is_challenges_active) return <FeatureDisabled />;
  */
 
-// ── Defaults (all ON) — used before the API responds ─────────────────────────
+// ── Defaults (all OFF) — prevents restricted links from flickering before API responds ───
 const DEFAULT_FLAGS = {
-  is_challenges_active: true,
-  is_teamup_active:     true,
-  is_dashboard_active:  true,
-  is_volunteers_active: true,
+  is_challenges_active: false,
+  is_teamup_active:     false,
+  is_dashboard_active:  false,
+  is_volunteers_active: false,
 };
 
-const FeatureFlagsContext = createContext({ flags: DEFAULT_FLAGS, loading: true });
+const STORAGE_KEY = 'feature_flags';
+
+const getInitialFlags = () => {
+  try {
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+      return { ...DEFAULT_FLAGS, ...JSON.parse(cached) };
+    }
+  } catch (err) {
+    console.warn('[FeatureFlags] Error reading localStorage:', err);
+  }
+  return DEFAULT_FLAGS;
+};
+
+const FeatureFlagsContext = createContext({
+  flags: DEFAULT_FLAGS,
+  isLoadingFlags: true,
+  loading: true,
+});
 
 export const FeatureFlagsProvider = ({ children }) => {
-  const [flags,   setFlags]   = useState(DEFAULT_FLAGS);
-  const [loading, setLoading] = useState(true);
+  const [flags, setFlags] = useState(getInitialFlags);
+  const [isLoadingFlags, setIsLoadingFlags] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === null;
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     let cancelled = false;
 
     api.get('/api/settings/feature-flags/')
       .then(({ data }) => {
-        if (!cancelled) setFlags({ ...DEFAULT_FLAGS, ...data });
+        if (!cancelled) {
+          const merged = { ...DEFAULT_FLAGS, ...data };
+          setFlags(merged);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } catch (err) {
+            console.warn('[FeatureFlags] Failed to cache flags to localStorage:', err);
+          }
+        }
       })
       .catch(() => {
-        // On network error keep defaults (all ON) so the site stays usable
-        console.warn('[FeatureFlags] Could not fetch flags — keeping defaults (all ON).');
+        console.warn('[FeatureFlags] Could not fetch flags — using cached/defaults (all OFF).');
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setIsLoadingFlags(false);
+        }
       });
 
     return () => { cancelled = true; };
   }, []);
 
   return (
-    <FeatureFlagsContext.Provider value={{ flags, loading }}>
+    <FeatureFlagsContext.Provider value={{ flags, isLoadingFlags, loading: isLoadingFlags }}>
       {children}
     </FeatureFlagsContext.Provider>
   );

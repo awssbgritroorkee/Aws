@@ -59,15 +59,19 @@ const MobileNavItem = ({ to, label, onClick }) => (
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { flags } = useFeatureFlags();
+  const { flags, isLoadingFlags } = useFeatureFlags();
 
   // Build the ordered nav list: static links + gated links inserted at correct positions
   const buildLinks = () => {
     // Start with the full static list order then splice gated links in
     const order = ['Home', 'About', 'Events', 'Challenges', 'Team Up', 'Team', 'Volunteer', 'Gallery', 'Contact'];
+    const activeGatedLinks = isLoadingFlags
+      ? []
+      : GATED_LINKS.filter(({ flag }) => !isLoadingFlags && Boolean(flags && flags[flag]));
+
     const all = [
       ...STATIC_LINKS,
-      ...GATED_LINKS.filter(({ flag }) => flags[flag] !== false),
+      ...activeGatedLinks,
     ];
     return order
       .map((label) => all.find((l) => l.label === label))
@@ -107,9 +111,10 @@ const Navbar = () => {
           border: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        {visibleLinks.map(({ label, to }) => (
-          <NavItem key={to} label={label} to={to} />
-        ))}
+        {visibleLinks.map(({ label, to, flag }) => {
+          if (flag && (isLoadingFlags || !flags?.[flag])) return null;
+          return <NavItem key={to} label={label} to={to} />;
+        })}
       </nav>
 
       {/* ── Right — Auth & CTA (desktop only) ── */}
@@ -150,14 +155,17 @@ const Navbar = () => {
             borderTop: 'none',
           }}
         >
-          {visibleLinks.map(({ label, to }) => (
-            <MobileNavItem
-              key={to}
-              label={label}
-              to={to}
-              onClick={() => setMenuOpen(false)}
-            />
-          ))}
+          {visibleLinks.map(({ label, to, flag }) => {
+            if (flag && (isLoadingFlags || !flags?.[flag])) return null;
+            return (
+              <MobileNavItem
+                key={to}
+                label={label}
+                to={to}
+                onClick={() => setMenuOpen(false)}
+              />
+            );
+          })}
           <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-3">
             <GoogleLoginButton />
             <a

@@ -151,22 +151,14 @@ const SuccessState = () => (
         Status: Under Review
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+      <div className="flex justify-center pt-1">
         <Link
-          to="/dashboard"
-          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+          to="/"
+          className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl
                      bg-emerald-500 text-black font-bold text-sm hover:bg-emerald-400
                      transition-all duration-200"
         >
-          Go to Dashboard <ArrowRight />
-        </Link>
-        <Link
-          to="/"
-          className="flex items-center justify-center px-6 py-3 rounded-xl
-                     bg-white/5 border border-white/10 text-white font-semibold text-sm
-                     hover:bg-white/10 transition-all duration-200"
-        >
-          Back to Home
+          Back to Home <ArrowRight />
         </Link>
       </div>
     </div>
@@ -221,11 +213,11 @@ const AlreadyAppliedState = ({ status }) => {
           {cfg.label}
         </div>
         <Link
-          to="/dashboard"
+          to="/"
           className="block px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white
                      font-semibold text-sm hover:bg-white/10 transition-all"
         >
-          Back to Dashboard
+          Back to Home
         </Link>
       </div>
     </div>
