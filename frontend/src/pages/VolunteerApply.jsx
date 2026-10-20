@@ -287,7 +287,7 @@ const VolunteerApply = () => {
     if (!form.course)             e.course         = 'Please select a course.';
     if (!form.section)            e.section        = 'Please select a section.';
     if (!form.academic_year)      e.academic_year  = 'Please select your year.';
-    if (!form.roll_number || isNaN(form.roll_number) || Number(form.roll_number) <= 0)
+    if (!form.roll_number || !/^\d+$/.test(form.roll_number.toString().trim()))
                                   e.roll_number    = 'Enter a valid roll number.';
     if (!form.skills.trim())      e.skills         = 'Please describe your skills.';
     if (!form.motivation.trim())  e.motivation     = 'Please share your motivation.';
@@ -310,7 +310,7 @@ const VolunteerApply = () => {
     try {
       await api.post('/api/auth/volunteer/apply/', {
         ...form,
-        roll_number:       Number(form.roll_number),
+        roll_number:       form.roll_number.toString().trim(),
         other_club_member: form.other_club_member === 'yes',
       });
       setSubmitted(true);
@@ -368,19 +368,9 @@ const VolunteerApply = () => {
             <span>EVENT VOLUNTEERS</span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight
-                         text-white leading-[1.1] mb-6">
-            The Support &amp;{' '}
-            <span className="text-transparent bg-clip-text
-                             bg-gradient-to-r from-green-400 to-teal-400">
-              Volunteers
-            </span>
-          </h1>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mt-6">Become a <span className="text-green-400">Volunteer</span></h1>
 
-          <p className="text-gray-400 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-            Help us execute upcoming bootcamps, hackathons, and community events smoothly.
-            Be the driving force on the ground.
-          </p>
+          <p className="text-gray-400 text-lg md:text-xl mt-4 max-w-2xl mx-auto">Don't just witness the movement—be the reason it moves forward. Step beyond the sidelines and become the force that brings innovation to life.</p>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════
@@ -586,11 +576,12 @@ const VolunteerApply = () => {
                 <div data-error={!!errors.roll_number || undefined}>
                   <FieldLabel required>Roll Number</FieldLabel>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={form.roll_number}
                     onChange={set('roll_number')}
                     placeholder="e.g. 2201234"
-                    min={1}
                     id="volunteer-roll"
                     className={`${inputBase} ${errors.roll_number ? 'border-red-500/40' : ''}`}
                   />

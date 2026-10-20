@@ -59,10 +59,11 @@ class VolunteerApplicationSerializer(serializers.ModelSerializer):
         return value
 
     def validate_roll_number(self, value):
-        """Roll number must be a positive integer."""
-        if value <= 0:
-            raise serializers.ValidationError('Roll number must be a positive integer.')
-        return value
+        """Roll number must be a valid non-empty string of digits."""
+        val = str(value).strip()
+        if not val or not val.isdigit() or int(val) <= 0:
+            raise serializers.ValidationError('Enter a valid roll number.')
+        return val
 
     # ── Object-level validation ───────────────────────────────────────────────
 

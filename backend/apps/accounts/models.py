@@ -198,7 +198,8 @@ class VolunteerApplication(models.Model):
         choices=YEAR_CHOICES,
         help_text='Current academic year.',
     )
-    roll_number = models.IntegerField(
+    roll_number = models.CharField(
+        max_length=30,
         help_text="Applicant's college roll number.",
     )
 
