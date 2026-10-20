@@ -383,17 +383,6 @@ const VolunteerApply = () => {
           </p>
         </div>
 
-        {/* ── Top Information Banner ────────────────────────────────────────── */}
-        <div className="mb-10 bg-gray-800/80 border-l-4 border-green-500 p-4 rounded-r-lg">
-          <h3 className="text-green-400 font-bold mb-2">🎯 HIRING ALERT: 10 Exclusive Spots Available</h3>
-          <p className="text-sm text-gray-300">
-            We are strictly recruiting 5 Boys and 5 Girls from the 2nd and 3rd Year only.
-          </p>
-          <p className="mt-2 text-sm text-gray-300">
-            <span className="text-yellow-400 font-semibold">🏆 Ultimate Perk:</span> Top-performing volunteers from this event will be directly shortlisted for the AWS SBG Core Team.
-          </p>
-        </div>
-
         {/* ══════════════════════════════════════════════════════════════════
             FORM CARD
         ══════════════════════════════════════════════════════════════════ */}
