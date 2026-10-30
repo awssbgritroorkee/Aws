@@ -14,9 +14,11 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import OriginalLogoMark from './OriginalLogoMark';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardSidebar = ({ onCloseMobile }) => {
   const location = useLocation();
+  const { context } = useAuth();
 
   const mainNavItems = [
     {
@@ -31,12 +33,24 @@ const DashboardSidebar = ({ onCloseMobile }) => {
       exact: false,
       icon: CalendarCheck,
     },
-    {
-      name: 'Explore Challenges',
-      path: '/challenges',
-      exact: false,
-      icon: Compass,
-    },
+    // 'Explore Challenges' is only shown to students who have participated in a challenge
+    ...(context?.has_participated_in_challenge
+      ? [{
+          name: 'Explore Challenges',
+          path: '/challenges',
+          exact: false,
+          icon: Compass,
+        }]
+      : []),
+    // 'Volunteer' is only shown to accepted volunteers
+    ...(context?.is_volunteer
+      ? [{
+          name: 'Volunteer',
+          path: '/dashboard/volunteer',
+          exact: false,
+          icon: Users,
+        }]
+      : []),
   ];
 
   const growthNavItems = [

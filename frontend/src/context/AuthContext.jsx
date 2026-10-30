@@ -6,7 +6,10 @@ import { getUserContext } from '../services/api';
  *
  * Shape:
  *   user    : { name, email, picture } | null   (raw Google profile data)
- *   context : { id, email, is_staff, is_superuser, is_team_member, groups, picture } | null
+ *   context : {
+ *               id, email, is_staff, is_superuser, is_team_member, groups, picture,
+ *               is_volunteer, has_participated_in_challenge
+ *             } | null
  *   loading : bool  (true during the initial session restore)
  *
  * Methods:

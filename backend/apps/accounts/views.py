@@ -59,6 +59,16 @@ class UserContextView(APIView):
             hasattr(user, 'team_profile') and user.team_profile is not None
         )
 
+        # ── Role-based access flags from BuilderProfile ───────────────────────
+        is_volunteer = False
+        has_participated_in_challenge = False
+        try:
+            builder_profile = user.builder_profile
+            is_volunteer = builder_profile.is_volunteer
+            has_participated_in_challenge = builder_profile.has_participated_in_challenge
+        except Exception:
+            pass
+
         # ── Group names ───────────────────────────────────────────────────────
         groups = list(user.groups.values_list('name', flat=True))
 
@@ -82,6 +92,9 @@ class UserContextView(APIView):
             'is_team_member': is_team_member,
             'groups': groups,
             'picture': picture,
+            # Role-based sidebar access flags
+            'is_volunteer': is_volunteer,
+            'has_participated_in_challenge': has_participated_in_challenge,
         })
 
 

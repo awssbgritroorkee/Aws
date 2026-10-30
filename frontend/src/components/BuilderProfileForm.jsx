@@ -187,7 +187,7 @@ const BuilderProfileForm = ({ userEmail = '', onSuccess }) => {
           <Field label="Full Name" required error={errors.full_name}>
             <Input
               type="text"
-              placeholder="e.g. Rahul Sharma"
+              placeholder="Enter your full name"
               value={form.full_name}
               onChange={set('full_name')}
               error={errors.full_name}

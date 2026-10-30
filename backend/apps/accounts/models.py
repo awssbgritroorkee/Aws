@@ -47,6 +47,20 @@ class BuilderProfile(models.Model):
                                 'staff cannot dominate the student leaderboard.'
                             )
                         )
+    is_volunteer      = models.BooleanField(
+                            default=False,
+                            help_text=(
+                                'Set True when the student has been accepted as a volunteer. '
+                                'Unlocks the Volunteer sidebar link in the student dashboard.'
+                            )
+                        )
+    has_participated_in_challenge = models.BooleanField(
+                            default=False,
+                            help_text=(
+                                'Set True when the student has registered for at least one challenge. '
+                                'Unlocks the Explore Challenges sidebar link in the student dashboard.'
+                            )
+                        )
     created_at        = models.DateTimeField(auto_now_add=True)
     updated_at        = models.DateTimeField(auto_now=True)
 

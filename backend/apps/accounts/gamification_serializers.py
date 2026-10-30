@@ -36,6 +36,8 @@ class BuilderProfileSerializer(serializers.ModelSerializer):
             'xp_points', 'current_streak', 'longest_streak', 'last_checkin_date',
             # Fair Play flag
             'is_core_team',
+            # Role-based access flags
+            'is_volunteer', 'has_participated_in_challenge',
             # Academic profile fields
             'course', 'branch', 'section', 'roll_number', 'academic_year', 'current_year', 'mobile_number',
             # Audit
@@ -44,7 +46,8 @@ class BuilderProfileSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'username', 'first_name', 'last_name', 'email', 'full_name',
             'xp_points', 'current_streak', 'longest_streak', 'last_checkin_date',
-            'is_core_team', 'created_at', 'updated_at',
+            'is_core_team', 'is_volunteer', 'has_participated_in_challenge',
+            'created_at', 'updated_at',
         ]
 
     def get_full_name(self, obj):
