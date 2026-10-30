@@ -11,7 +11,7 @@ class EventAdmin(ModelAdmin):
     warn_unsaved_form   = True
 
     # ── List view ───────────────────────────────────────────────────────────
-    list_display        = ['title', 'date', 'status_badge', 'is_registration_open', 'registration_link']
+    list_display        = ['title', 'date', 'status_badge', 'is_registration_open', 'registration_link', 'meetup_registration_link']
     list_filter         = ['status']
     list_editable       = []          # status editing moved to change form
     list_display_links  = ['title']
@@ -27,7 +27,8 @@ class EventAdmin(ModelAdmin):
             'fields': ('title', 'date', 'status', 'description', 'poster', 'created_by'),
         }),
         ('🔗 Registration', {
-            'fields': ('registration_link', 'meeting_link', 'is_registration_open'),
+            'fields': ('registration_link', 'meetup_registration_link', 'meeting_link', 'is_registration_open'),
+            'description': 'registration_link is the primary registration URL. meetup_registration_link is the optional secondary Meetup.com link.',
         }),
         ('📎 Post-Event Materials', {
             'fields': ('ppt_link', 'youtube_link', 'other_material_link'),
@@ -47,3 +48,4 @@ class EventAdmin(ModelAdmin):
     })
     def status_badge(self, obj):
         return obj.status
+

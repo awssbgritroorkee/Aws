@@ -10,8 +10,8 @@ class EventSerializer(serializers.ModelSerializer):
         model  = Event
         fields = [
             'id', 'title', 'slug', 'date', 'description',
-            'poster', 'status', 'registration_link', 'meeting_link',
-            'ppt_link', 'youtube_link', 'other_material_link',
+            'poster', 'status', 'registration_link', 'meetup_registration_link',
+            'meeting_link', 'ppt_link', 'youtube_link', 'other_material_link',
             'is_registration_open', 'is_registered', 'created_at',
         ]
 
@@ -35,4 +35,5 @@ class EventSerializer(serializers.ModelSerializer):
             return f"https://aws-swae.onrender.com{url}"
         except Exception:
             return str(obj.poster)
+
 

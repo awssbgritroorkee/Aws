@@ -27,6 +27,10 @@ class Event(models.Model):
                             default='upcoming',
                             db_index=True)
     registration_link      = models.URLField(blank=True)
+    meetup_registration_link = models.URLField(
+                                blank=True,
+                                null=True,
+                                help_text='Secondary Meetup.com event link. Displays as a "View Meetup Event" button on the Event Card.')
     meeting_link           = models.URLField(
                                 max_length=500,
                                 null=True,
@@ -85,3 +89,4 @@ class Event(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.get_status_display()} — {self.date})'
+

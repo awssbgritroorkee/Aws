@@ -419,6 +419,19 @@ const Events = () => {
                           </a>
                         )}
 
+                        {/* 5. Secondary Meetup Registration link — only renders when field is set */}
+                        {event.meetup_registration_link && (
+                          <a
+                            id={`meetup-secondary-btn-${event.id}`}
+                            href={event.meetup_registration_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 rounded-lg text-xs font-mono font-bold hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all hover:scale-105"
+                          >
+                            View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+
                       </div>
                     ) : event.is_registered ? (
                       /* ── ALREADY REGISTERED ── */
@@ -452,13 +465,29 @@ const Events = () => {
                     ) : isUpcoming ? (
                       regOpen ? (
                         /* ── Registration OPEN ── */
-                        <button
-                          id={`register-btn-${event.id}`}
-                          onClick={() => handleRegisterClick(event)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
-                        >
-                          {user ? 'Register Now' : 'Sign In & Register'} <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Primary Register button — logic untouched */}
+                          <button
+                            id={`register-btn-${event.id}`}
+                            onClick={() => handleRegisterClick(event)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
+                          >
+                            {user ? 'Register Now' : 'Sign In & Register'} <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Secondary Meetup link — only renders if meetup_registration_link exists */}
+                          {event.meetup_registration_link && (
+                            <a
+                              id={`meetup-secondary-btn-${event.id}`}
+                              href={event.meetup_registration_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
+                            >
+                              View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
                       ) : (
                         /* ── Registration CLOSED ── */
                         <span
