@@ -8,7 +8,8 @@ import { getUserContext } from '../services/api';
  *   user    : { name, email, picture } | null   (raw Google profile data)
  *   context : {
  *               id, email, is_staff, is_superuser, is_team_member, groups, picture,
- *               is_volunteer, has_participated_in_challenge
+ *               is_volunteer, has_participated_in_challenge,
+ *               volunteer_status: 'Pending' | 'Accepted' | 'Rejected' | null
  *             } | null
  *   loading : bool  (true during the initial session restore)
  *
@@ -35,14 +36,18 @@ export const AuthProvider = ({ children }) => {
       setContext(data);
       localStorage.setItem('user_context', JSON.stringify(data));
 
-      // Back-fill picture if the user object is missing it
+      // Back-fill picture and access/role flags onto the user object
       setUser((prev) => {
-        if (prev && !prev.picture && data.picture) {
-          const updated = { ...prev, picture: data.picture };
-          localStorage.setItem('user_data', JSON.stringify(updated));
-          return updated;
-        }
-        return prev;
+        if (!prev) return prev;
+        const updated = {
+          ...prev,
+          picture: prev.picture || data.picture,
+          volunteer_status: data.volunteer_status,
+          is_volunteer: data.is_volunteer,
+          has_participated_in_challenge: data.has_participated_in_challenge,
+        };
+        localStorage.setItem('user_data', JSON.stringify(updated));
+        return updated;
       });
     } catch (err) {
       // 401 is handled by the Axios interceptor in api.js (auto-logout)

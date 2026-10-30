@@ -21,6 +21,7 @@ import MyRegistrations    from './pages/MyRegistrations';
 import BuilderProfile     from './pages/BuilderProfile';
 import DashboardLayout    from './components/DashboardLayout';
 import VolunteerApply     from './pages/VolunteerApply';
+import VolunteerStatus    from './pages/VolunteerStatus';
 
 const MainLayout = () => {
   const location    = useLocation();
@@ -44,6 +45,7 @@ const MainLayout = () => {
             <Route index element={<StudentDashboard />} />
             <Route path="registrations" element={<MyRegistrations />} />
             <Route path="profile" element={<BuilderProfile />} />
+            <Route path="volunteer-status" element={<VolunteerStatus />} />
           </Route>
         </Routes>
       </FeatureGate>

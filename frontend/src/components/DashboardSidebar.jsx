@@ -11,14 +11,19 @@ import {
   X,
   Sparkles,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  ClipboardList
 } from 'lucide-react';
 import OriginalLogoMark from './OriginalLogoMark';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardSidebar = ({ onCloseMobile }) => {
   const location = useLocation();
-  const { context } = useAuth();
+  const { user, context } = useAuth();
+
+  const isVolunteer = Boolean(user?.is_volunteer ?? context?.is_volunteer);
+  const hasParticipated = Boolean(user?.has_participated_in_challenge ?? context?.has_participated_in_challenge);
+  const volunteerStatus = user?.volunteer_status ?? context?.volunteer_status;
 
   const mainNavItems = [
     {
@@ -34,7 +39,7 @@ const DashboardSidebar = ({ onCloseMobile }) => {
       icon: CalendarCheck,
     },
     // 'Explore Challenges' is only shown to students who have participated in a challenge
-    ...(context?.has_participated_in_challenge
+    ...(hasParticipated
       ? [{
           name: 'Explore Challenges',
           path: '/challenges',
@@ -43,12 +48,21 @@ const DashboardSidebar = ({ onCloseMobile }) => {
         }]
       : []),
     // 'Volunteer' is only shown to accepted volunteers
-    ...(context?.is_volunteer
+    ...(isVolunteer
       ? [{
           name: 'Volunteer',
           path: '/dashboard/volunteer',
           exact: false,
           icon: Users,
+        }]
+      : []),
+    // 'Volunteer Status' tab — ONLY renders if user.volunteer_status is not null
+    ...(volunteerStatus != null
+      ? [{
+          name: 'Volunteer Status',
+          path: '/dashboard/volunteer-status',
+          exact: false,
+          icon: ClipboardList,
         }]
       : []),
   ];

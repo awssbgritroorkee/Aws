@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
+from .models import VolunteerApplication
 
 
 # ── Backend URL — used in SSO redirect links ───────────────────────────────────
@@ -41,7 +42,10 @@ class UserContextView(APIView):
             "is_staff": false,
             "is_team_member": true,
             "groups": ["Event Managers"],
-            "picture": "https://..."   // from social account if available
+            "picture": "https://...",   // from social account if available
+            "is_volunteer": false,
+            "has_participated_in_challenge": false,
+            "volunteer_status": "Pending" | "Accepted" | "Rejected" | null
         }
 
     Requires a valid DRF Token in the Authorization header or an active session.
@@ -66,6 +70,22 @@ class UserContextView(APIView):
             builder_profile = user.builder_profile
             is_volunteer = builder_profile.is_volunteer
             has_participated_in_challenge = builder_profile.has_participated_in_challenge
+        except Exception:
+            pass
+
+        # ── Volunteer application status ──────────────────────────────────────
+        # Returns the current status string ('Pending', 'Accepted', 'Rejected')
+        # by querying the VolunteerApplication model for the logged-in user's email.
+        volunteer_status = None
+        try:
+            email = user.email
+            vol_app = None
+            if email:
+                vol_app = VolunteerApplication.objects.filter(user__email__iexact=email).first()
+            if not vol_app and hasattr(user, 'volunteer_application'):
+                vol_app = user.volunteer_application
+            if vol_app:
+                volunteer_status = vol_app.status
         except Exception:
             pass
 
@@ -95,6 +115,8 @@ class UserContextView(APIView):
             # Role-based sidebar access flags
             'is_volunteer': is_volunteer,
             'has_participated_in_challenge': has_participated_in_challenge,
+            # Volunteer application status — null if no application submitted
+            'volunteer_status': volunteer_status,
         })
 
 

@@ -415,7 +415,7 @@ const Events = () => {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 border border-gray-600 rounded-lg text-xs font-mono font-bold hover:bg-gray-700 transition-all hover:scale-105"
                           >
-                            View Meetup Event ↗
+                            Registration on Meetup ↗
                           </a>
                         )}
 
@@ -428,26 +428,18 @@ const Events = () => {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2 bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 rounded-lg text-xs font-mono font-bold hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all hover:scale-105"
                           >
-                            View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
+                            Registration on Meetup <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         )}
 
                       </div>
                     ) : event.is_registered ? (
-                      /* ── ALREADY REGISTERED INTERNALLY ── */
+                      /* ── ALREADY REGISTERED — show action links only, no badge ── */
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Live countdown — only for upcoming events, sits left of the buttons */}
                         {isUpcoming && event.date && (
                           <CountdownTimer targetDate={event.date} meetingLink={event.meeting_link} />
                         )}
-
-                        {/* Registered confirmation badge */}
-                        <span
-                          id={`registered-badge-${event.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Registered
-                        </span>
 
                         {/* Primary Registration Link */}
                         {event.registration_link && (
@@ -462,7 +454,7 @@ const Events = () => {
                           </a>
                         )}
 
-                        {/* Meetup Link */}
+                        {/* Meetup Registration Link */}
                         {event.meetup_registration_link && (
                           <a
                             id={`meetup-secondary-btn-${event.id}`}
@@ -471,7 +463,7 @@ const Events = () => {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
                           >
-                            View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
+                            Registration on Meetup <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         )}
                       </div>
