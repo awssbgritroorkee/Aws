@@ -144,7 +144,7 @@ To ensure you never miss out on upcoming events, resources, or those exclusive g
 <ul>
     <li>💬 <strong>WhatsApp Group:</strong> <a href="https://chat.whatsapp.com/CDOK76szIgzLFTOGcSPCY2">Join here for daily updates & discussions</a> <em>(Highly Recommended)</em></li>
     <li>🌐 <strong>Meetup Community:</strong> <a href="https://www.meetup.com/aws-sbg-at-roorkee-institute-of-technology/">RSVP for our upcoming events</a></li>
-    <li>💼 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/aws-sbg-on-campus-rit-roorkee?utm_source=share_via&utm_content=profile&utm_medium=member_android">Grow your professional network</a></li>
+    <li>💼 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/company/aws-sbg-rit-roorkee/posts/?viewAsMember=true">Grow your professional network</a></li>
     <li>📸 <strong>Instagram:</strong> <a href="https://www.instagram.com/aws.sbg.ritroorkee?igsi=MTAxM2dsazZrMjI0NA==">Follow behind-the-scenes & quick updates</a></li>
 </ul>
 

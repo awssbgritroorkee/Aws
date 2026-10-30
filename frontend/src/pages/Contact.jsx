@@ -266,7 +266,7 @@ const Contact = () => {
 
             {/* Card 2: LinkedIn */}
             <a
-              href="https://www.linkedin.com/in/aws-sbg-on-campus-rit-roorkee?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+              href="https://www.linkedin.com/company/aws-sbg-rit-roorkee/posts/?viewAsMember=true"
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col p-6 rounded-2xl bg-[#10151c]/80 backdrop-blur-md border border-white/10 hover:border-sbg-green/50 transition-all duration-300 group cursor-pointer"
