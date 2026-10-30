@@ -441,31 +441,34 @@ const Events = () => {
                           <CountdownTimer targetDate={event.date} meetingLink={event.meeting_link} />
                         )}
 
-                        {/* Primary Registration Link */}
-                        {event.registration_link && (
-                          <a
-                            id={`primary-reg-btn-${event.id}`}
-                            href={event.registration_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
-                          >
-                            Registration Link <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
+                        {/* Action buttons wrapper — aligned on the same row */}
+                        <div className="flex flex-row items-center gap-3">
+                          {/* Primary Registration Link */}
+                          {event.registration_link && (
+                            <a
+                              id={`primary-reg-btn-${event.id}`}
+                              href={event.registration_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
+                            >
+                              Registration Link <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
 
-                        {/* Meetup Registration Link */}
-                        {event.meetup_registration_link && (
-                          <a
-                            id={`meetup-secondary-btn-${event.id}`}
-                            href={event.meetup_registration_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
-                          >
-                            Registration on Meetup <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
+                          {/* Meetup Registration Link */}
+                          {event.meetup_registration_link && (
+                            <a
+                              id={`meetup-secondary-btn-${event.id}`}
+                              href={event.meetup_registration_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
+                            >
+                              Registration on Meetup <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     ) : isUpcoming ? (
                       regOpen ? (

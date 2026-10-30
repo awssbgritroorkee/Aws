@@ -268,7 +268,7 @@ const MyRegistrations = () => {
           </p>
         </div>
         <Link
-          to="/challenges"
+          to="/events"
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:scale-105 shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
@@ -297,7 +297,7 @@ const MyRegistrations = () => {
             </p>
           </div>
           <Link
-            to="/challenges"
+            to="/events"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
           >
             <Compass className="w-4 h-4" />
