@@ -434,60 +434,57 @@ const Events = () => {
 
                       </div>
                     ) : event.is_registered ? (
-                      /* ── ALREADY REGISTERED ── */
-                      <div className="flex items-center gap-3">
-                        {/* Live countdown — only for upcoming events, sits left of the button */}
+                      /* ── ALREADY REGISTERED INTERNALLY ── */
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* Live countdown — only for upcoming events, sits left of the buttons */}
                         {isUpcoming && event.date && (
                           <CountdownTimer targetDate={event.date} meetingLink={event.meeting_link} />
                         )}
-                        {event.registration_link ? (
-                          /* Has Meetup link → show live "Join Session" link */
+
+                        {/* Registered confirmation badge */}
+                        <span
+                          id={`registered-badge-${event.id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Registered
+                        </span>
+
+                        {/* Primary Registration Link */}
+                        {event.registration_link && (
                           <a
-                            id={`join-session-btn-${event.id}`}
+                            id={`primary-reg-btn-${event.id}`}
                             href={event.registration_link}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-sbg-green/10 text-sbg-green border border-sbg-green/40 hover:bg-sbg-green hover:text-aws-navy transition-all duration-200"
                           >
-                            Join Session <ExternalLink className="w-3.5 h-3.5" />
+                            Registration Link <ExternalLink className="w-3.5 h-3.5" />
                           </a>
-                        ) : (
-                          /* No link → fallback disabled badge */
-                          <button
-                            id={`registered-btn-${event.id}`}
-                            disabled
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
+                        )}
+
+                        {/* Meetup Link */}
+                        {event.meetup_registration_link && (
+                          <a
+                            id={`meetup-secondary-btn-${event.id}`}
+                            href={event.meetup_registration_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold whitespace-nowrap bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
                           >
-                            Registered ✅
-                          </button>
+                            View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
                         )}
                       </div>
                     ) : isUpcoming ? (
                       regOpen ? (
-                        /* ── Registration OPEN ── */
-                        <div className="flex flex-wrap items-center gap-3">
-                          {/* Primary Register button — logic untouched */}
-                          <button
-                            id={`register-btn-${event.id}`}
-                            onClick={() => handleRegisterClick(event)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
-                          >
-                            {user ? 'Register Now' : 'Sign In & Register'} <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-
-                          {/* Secondary Meetup link — only renders if meetup_registration_link exists */}
-                          {event.meetup_registration_link && (
-                            <a
-                              id={`meetup-secondary-btn-${event.id}`}
-                              href={event.meetup_registration_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-[#f64060]/10 text-[#ff6b81] border border-[#f64060]/30 hover:bg-[#f64060]/20 hover:border-[#f64060]/50 transition-all duration-200"
-                            >
-                              View Meetup Event <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                        </div>
+                        /* ── Registration OPEN (NOT REGISTERED) — Show ONLY modal trigger ── */
+                        <button
+                          id={`register-btn-${event.id}`}
+                          onClick={() => handleRegisterClick(event)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold bg-sbg-green text-aws-navy hover:bg-white transition-colors"
+                        >
+                          {user ? 'Register Now' : 'Sign In & Register'} <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
                       ) : (
                         /* ── Registration CLOSED ── */
                         <span

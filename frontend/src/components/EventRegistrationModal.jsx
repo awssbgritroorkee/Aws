@@ -115,8 +115,20 @@ const EventRegistrationModal = ({ event, onClose, onSuccess, onError }) => {
       await registerForEvent(event.id, form);
       // Notify parent to mark the event as registered in the list
       onSuccess('Registration Successful! 🎉');
-      // Switch modal to success screen — do NOT close yet
-      setIsSuccess(true);
+
+      // Auto-open external links upon successful registration
+      if (event?.registration_link) {
+        window.open(event.registration_link, '_blank');
+      }
+
+      if (event?.meetup_registration_link) {
+        setTimeout(() => {
+          window.open(event.meetup_registration_link, '_blank');
+        }, 300);
+      }
+
+      // Close the internal registration modal
+      onClose();
     } catch (err) {
       let msg = 'Something went wrong. Please try again.';
       if (err?.response?.data) {
