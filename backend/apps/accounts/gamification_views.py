@@ -23,17 +23,36 @@ STREAK_MILESTONE_EVERY  = 5    # Check milestone at multiples of this number
 # Guards
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _is_team_member(user) -> bool:
+    """
+    True for is_staff, is_superuser, core team member, or linked TeamMember profile.
+    Team members are completely excluded from creating Builder Profiles and accumulating XP.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    if hasattr(user, 'team_profile') and user.team_profile is not None:
+        return True
+    try:
+        if hasattr(user, 'builder_profile') and user.builder_profile.is_core_team:
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def _is_admin(user) -> bool:
-    """True for is_staff or is_superuser — excluded from all gamification."""
-    return user.is_staff or user.is_superuser
+    """True for is_staff or is_superuser or team member — excluded from all gamification."""
+    return _is_team_member(user)
 
 
 def _get_profile_or_none(user) -> 'BuilderProfile | None':
     """
     Returns the user's BuilderProfile if it exists, else None.
-    Admin/superuser accounts always return None (they cannot have profiles).
+    Team members and admin accounts always return None (cannot accumulate XP or participate).
     """
-    if _is_admin(user):
+    if _is_team_member(user):
         return None
     try:
         return BuilderProfile.objects.get(user=user)
@@ -70,10 +89,10 @@ class CreateBuilderProfileView(APIView):
     def post(self, request):
         user = request.user
 
-        # ── Admin gate ──────────────────────────────────────────────────────
-        if _is_admin(user):
+        # ── Team member gate ────────────────────────────────────────────────
+        if _is_team_member(user):
             return Response(
-                {'detail': 'Admin and superuser accounts cannot participate in student gamification.'},
+                {'detail': 'Team members cannot create Builder Profiles.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 

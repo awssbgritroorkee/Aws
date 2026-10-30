@@ -659,14 +659,6 @@ const StudentDashboard = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <CommandCard
-                  icon="⚡"
-                  title="Active Challenges"
-                  subtitle="Join internal sprints, global hackathons, and community events."
-                  accentClass="text-emerald-400"
-                  glowClass="bg-emerald-500"
-                  to="/challenges"
-                />
-                <CommandCard
                   icon="📅"
                   title="Upcoming Events"
                   subtitle="RSVP for workshops, cloud sessions, and speaker events."
@@ -683,21 +675,12 @@ const StudentDashboard = () => {
                   to="/teamup"
                 />
                 <CommandCard
-                  icon="🏅"
-                  title="My Certificates"
-                  subtitle="View and download your AWS SBG participation certificates."
-                  accentClass="text-yellow-400"
-                  glowClass="bg-yellow-500"
-                  to="https://aws.amazon.com/developer/community/students/"
-                  external
-                />
-                <CommandCard
                   icon="☁️"
                   title="AWS Builder Center"
                   subtitle="Free hands-on labs, workshops, and certifications from AWS."
                   accentClass="text-orange-400"
                   glowClass="bg-orange-500"
-                  to="https://aws.amazon.com/developer/community/students/"
+                  to="https://bit.ly/4wkLTHX"
                   external
                 />
                 <CommandCard
@@ -707,14 +690,6 @@ const StudentDashboard = () => {
                   accentClass="text-pink-400"
                   glowClass="bg-pink-500"
                   to="/team"
-                />
-                <CommandCard
-                  icon="🙋"
-                  title="Volunteer for Events"
-                  subtitle="Apply to join the AWS SBG operations crew — organise events, workshops, and hackathons."
-                  accentClass="text-teal-400"
-                  glowClass="bg-teal-500"
-                  to="/volunteer"
                 />
               </div>
 

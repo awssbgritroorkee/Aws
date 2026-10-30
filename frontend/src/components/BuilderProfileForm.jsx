@@ -47,9 +47,9 @@ const Input = ({ error, ...props }) => (
   />
 );
 
-const Select = ({ error, children, ...props }) => (
+const Select = ({ error, children, className = '', ...props }) => (
   <select
-    className={`${inputCls} ${error ? 'border-red-500/60' : ''} cursor-pointer`}
+    className={`${inputCls} ${error ? 'border-red-500/60' : ''} cursor-pointer bg-gray-800 text-white [&>option]:bg-gray-800 [&>option]:text-white ${className}`}
     {...props}
   >
     {children}
@@ -221,14 +221,14 @@ const BuilderProfileForm = ({ userEmail = '', onSuccess }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Course" required error={errors.course}>
               <Select value={form.course} onChange={set('course')} error={errors.course}>
-                <option value="">Select course…</option>
-                {COURSES.map((c) => <option key={c} value={c}>{c}</option>)}
+                <option value="" className="bg-gray-800 text-white">Select course…</option>
+                {COURSES.map((c) => <option key={c} value={c} className="bg-gray-800 text-white">{c}</option>)}
               </Select>
             </Field>
             <Field label="Academic Year" required error={errors.academic_year}>
               <Select value={form.academic_year} onChange={set('academic_year')} error={errors.academic_year}>
-                <option value="">Select year…</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                <option value="" className="bg-gray-800 text-white">Select year…</option>
+                {YEARS.map((y) => <option key={y} value={y} className="bg-gray-800 text-white">{y}</option>)}
               </Select>
             </Field>
           </div>
@@ -237,14 +237,14 @@ const BuilderProfileForm = ({ userEmail = '', onSuccess }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Branch / Specialisation" error={errors.branch}>
               <Select value={form.branch} onChange={set('branch')}>
-                <option value="">Select branch… (optional)</option>
-                {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
+                <option value="" className="bg-gray-800 text-white">Select branch… (optional)</option>
+                {BRANCHES.map((b) => <option key={b} value={b} className="bg-gray-800 text-white">{b}</option>)}
               </Select>
             </Field>
             <Field label="Section" required error={errors.section}>
               <Select value={form.section} onChange={set('section')} error={errors.section}>
-                <option value="">Select section…</option>
-                {SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                <option value="" className="bg-gray-800 text-white">Select section…</option>
+                {SECTIONS.map((s) => <option key={s} value={s} className="bg-gray-800 text-white">{s}</option>)}
               </Select>
             </Field>
           </div>

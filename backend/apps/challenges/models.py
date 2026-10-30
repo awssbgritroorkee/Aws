@@ -465,21 +465,35 @@ class ChallengeRegistration(models.Model):
                 # Transition: Non-Approved -> Approved (+50 XP)
                 if old_instance.status != 'approved' and self.status == 'approved':
                     try:
-                        from apps.accounts.models import BuilderProfile
-                        profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
-                        if not profile.is_core_team:
-                            profile.xp_points += 50
-                            profile.save(update_fields=['xp_points'])
+                        user = self.student
+                        is_team = (
+                            user.is_staff
+                            or user.is_superuser
+                            or (hasattr(user, 'team_profile') and user.team_profile is not None)
+                        )
+                        if not is_team:
+                            from apps.accounts.models import BuilderProfile
+                            profile = BuilderProfile.objects.filter(user=user).first()
+                            if profile and not profile.is_core_team:
+                                profile.xp_points += 50
+                                profile.save(update_fields=['xp_points'])
                     except Exception:
                         pass
                 # Transition: Approved -> Non-Approved (-50 XP Rollback)
                 elif old_instance.status == 'approved' and self.status != 'approved':
                     try:
-                        from apps.accounts.models import BuilderProfile
-                        profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
-                        if not profile.is_core_team:
-                            profile.xp_points = max(0, profile.xp_points - 50)
-                            profile.save(update_fields=['xp_points'])
+                        user = self.student
+                        is_team = (
+                            user.is_staff
+                            or user.is_superuser
+                            or (hasattr(user, 'team_profile') and user.team_profile is not None)
+                        )
+                        if not is_team:
+                            from apps.accounts.models import BuilderProfile
+                            profile = BuilderProfile.objects.filter(user=user).first()
+                            if profile and not profile.is_core_team:
+                                profile.xp_points = max(0, profile.xp_points - 50)
+                                profile.save(update_fields=['xp_points'])
                     except Exception:
                         pass
         super().save(*args, **kwargs)
@@ -487,15 +501,23 @@ class ChallengeRegistration(models.Model):
     def delete(self, *args, **kwargs):
         """
         XP Rollback on deletion:
-        If an approved registration is deleted, deduct 50 XP from non-core team members.
+        If an approved registration is deleted, deduct 50 XP from regular students.
+        Team members are completely ignored.
         """
         if self.status == 'approved':
             try:
-                from apps.accounts.models import BuilderProfile
-                profile, _ = BuilderProfile.objects.get_or_create(user=self.student)
-                if not profile.is_core_team:
-                    profile.xp_points = max(0, profile.xp_points - 50)
-                    profile.save(update_fields=['xp_points'])
+                user = self.student
+                is_team = (
+                    user.is_staff
+                    or user.is_superuser
+                    or (hasattr(user, 'team_profile') and user.team_profile is not None)
+                )
+                if not is_team:
+                    from apps.accounts.models import BuilderProfile
+                    profile = BuilderProfile.objects.filter(user=user).first()
+                    if profile and not profile.is_core_team:
+                        profile.xp_points = max(0, profile.xp_points - 50)
+                        profile.save(update_fields=['xp_points'])
             except Exception:
                 pass
         super().delete(*args, **kwargs)

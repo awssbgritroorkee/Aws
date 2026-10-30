@@ -73,31 +73,47 @@ class EventRegistration(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Awards +30 XP to non-core team members upon new event registration creation.
+        Awards +30 XP to regular students upon new event registration creation.
+        Team members (staff, superuser, team profile, core team) are completely ignored.
         """
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new:
             try:
-                from apps.accounts.models import BuilderProfile
-                profile, _ = BuilderProfile.objects.get_or_create(user=self.student.user)
-                if not profile.is_core_team:
-                    profile.xp_points += 30
-                    profile.save(update_fields=['xp_points'])
+                user = self.student.user
+                is_team = (
+                    user.is_staff
+                    or user.is_superuser
+                    or (hasattr(user, 'team_profile') and user.team_profile is not None)
+                )
+                if not is_team:
+                    from apps.accounts.models import BuilderProfile
+                    profile = BuilderProfile.objects.filter(user=user).first()
+                    if profile and not profile.is_core_team:
+                        profile.xp_points += 30
+                        profile.save(update_fields=['xp_points'])
             except Exception:
                 pass
 
     def delete(self, *args, **kwargs):
         """
         XP Rollback on deletion:
-        If an event registration is deleted or cancelled, deduct 30 XP from non-core team members.
+        If an event registration is deleted or cancelled, deduct 30 XP from regular students.
+        Team members are completely ignored.
         """
         try:
-            from apps.accounts.models import BuilderProfile
-            profile, _ = BuilderProfile.objects.get_or_create(user=self.student.user)
-            if not profile.is_core_team:
-                profile.xp_points = max(0, profile.xp_points - 30)
-                profile.save(update_fields=['xp_points'])
+            user = self.student.user
+            is_team = (
+                user.is_staff
+                or user.is_superuser
+                or (hasattr(user, 'team_profile') and user.team_profile is not None)
+            )
+            if not is_team:
+                from apps.accounts.models import BuilderProfile
+                profile = BuilderProfile.objects.filter(user=user).first()
+                if profile and not profile.is_core_team:
+                    profile.xp_points = max(0, profile.xp_points - 30)
+                    profile.save(update_fields=['xp_points'])
         except Exception:
             pass
         super().delete(*args, **kwargs)
