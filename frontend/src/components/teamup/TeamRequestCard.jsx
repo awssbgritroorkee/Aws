@@ -156,12 +156,21 @@ const TeamRequestCard = ({
   return (
     <div
       id={`post-${post.id}`}
-      className={`bg-[#11161d] border rounded-xl p-5 transition-all duration-500 shadow-lg flex flex-col justify-between h-full group ${
+      className={`relative bg-[#11161d] border rounded-xl p-5 transition-all duration-500 shadow-lg flex flex-col justify-between h-full group ${
         isHighlighted
           ? 'border-[#00d084] ring-2 ring-[#00d084] shadow-[0_0_24px_rgba(0,208,132,0.35)] animate-pulse'
           : 'border-gray-800 hover:border-gray-600'
       }`}
     >
+      {/* Share / Copy Link — absolute top-right corner */}
+      <button
+        onClick={handleShareClick}
+        title="Copy invite link"
+        aria-label="Copy invite link"
+        className="absolute top-3 right-3 p-1.5 rounded-full text-gray-500 hover:text-[#00d084] hover:bg-[#00d084]/10 transition-all duration-200 z-10"
+      >
+        <Share2 className="w-3.5 h-3.5" />
+      </button>
       <div className="space-y-4">
         {/* Header Badges */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -181,22 +190,13 @@ const TeamRequestCard = ({
             </span>
           </div>
 
-          {/* Right side: Slots badge + Share button */}
+          {/* Right side: Slots badge */}
           <div className="flex items-center gap-2">
             {post.mode === 'need_members' && (
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300">
                 {localMembersNeeded} {localMembersNeeded === 1 ? 'Slot' : 'Slots'} Open
               </span>
             )}
-            {/* Share / Copy Link button */}
-            <button
-              onClick={handleShareClick}
-              title="Copy invite link"
-              aria-label="Copy invite link"
-              className="p-1.5 rounded-full text-gray-500 hover:text-[#00d084] hover:bg-[#00d084]/10 transition-all duration-200"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-            </button>
           </div>
         </div>
 
