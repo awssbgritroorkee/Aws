@@ -12,7 +12,7 @@ class EventSerializer(serializers.ModelSerializer):
             'id', 'title', 'slug', 'date', 'description',
             'poster', 'status', 'registration_link', 'meetup_registration_link',
             'meeting_link', 'ppt_link', 'youtube_link', 'other_material_link',
-            'is_registration_open', 'is_registered', 'created_at',
+            'is_registration_open', 'require_internal_registration', 'is_registered', 'created_at',
         ]
 
     def get_is_registered(self, obj):

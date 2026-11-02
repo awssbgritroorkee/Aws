@@ -27,8 +27,8 @@ class EventAdmin(ModelAdmin):
             'fields': ('title', 'date', 'status', 'description', 'poster', 'created_by'),
         }),
         ('🔗 Registration', {
-            'fields': ('registration_link', 'meetup_registration_link', 'meeting_link', 'is_registration_open'),
-            'description': 'registration_link is the primary registration URL. meetup_registration_link is the optional secondary Meetup.com link.',
+            'fields': ('registration_link', 'meetup_registration_link', 'meeting_link', 'is_registration_open', 'require_internal_registration'),
+            'description': 'registration_link is the primary registration URL. meetup_registration_link is the optional secondary Meetup.com link. Uncheck require_internal_registration to bypass the website form and show external links directly on the card.',
         }),
         ('📎 Post-Event Materials', {
             'fields': ('ppt_link', 'youtube_link', 'other_material_link'),

@@ -433,8 +433,9 @@ const Events = () => {
                         )}
 
                       </div>
-                    ) : event.is_registered ? (
-                      /* ── ALREADY REGISTERED — show action links only, no badge ── */
+                    ) : (event.require_internal_registration === false || event.is_registered) ? (
+                      /* ── CONDITION B: External-only registration OR already registered ──
+                           Hide the modal trigger; show external links side-by-side.        */
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Live countdown — only for upcoming events, sits left of the buttons */}
                         {isUpcoming && event.date && (
@@ -472,7 +473,8 @@ const Events = () => {
                       </div>
                     ) : isUpcoming ? (
                       regOpen ? (
-                        /* ── Registration OPEN (NOT REGISTERED) — Show ONLY modal trigger ── */
+                        /* ── CONDITION A: Internal registration required AND not yet registered ──
+                             Show the modal trigger button.                                        */
                         <button
                           id={`register-btn-${event.id}`}
                           onClick={() => handleRegisterClick(event)}

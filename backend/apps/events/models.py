@@ -54,6 +54,9 @@ class Event(models.Model):
     is_registration_open   = models.BooleanField(
                                 default=True,
                                 help_text='Uncheck to close registrations. The Register button will become disabled on the frontend.')
+    require_internal_registration = models.BooleanField(
+                                default=True,
+                                help_text='If unchecked, bypasses the website registration form and directly shows external links on the card.')
     slug              = models.SlugField(
                             max_length=255,
                             unique=True,
