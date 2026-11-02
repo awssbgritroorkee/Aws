@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import usePageTitle from '../hooks/usePageTitle';
 import { useToast } from '../components/ui/Toast';
@@ -17,6 +18,9 @@ const TeamUp = () => {
 
   const { user, login: authLogin, refreshContext } = useAuth();
   const { showToast, ToastContainer } = useToast();
+
+  const [searchParams] = useSearchParams();
+  const highlightedPostId = searchParams.get('post_id');
 
   const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'workspace'
   const [modeFilter, setModeFilter] = useState('need_members'); // 'need_members' | 'need_team'
@@ -104,6 +108,23 @@ const TeamUp = () => {
       fetchPosts();
     }
   }, [fetchPosts, activeTab, user]);
+
+  // ── Deep-link: auto-scroll to highlighted card after posts load ───────────
+  useEffect(() => {
+    if (!highlightedPostId || loading || posts.length === 0) return;
+    // Ensure we are on the explore tab so the card is mounted
+    if (activeTab !== 'explore') {
+      setActiveTab('explore');
+      return;
+    }
+    const timer = setTimeout(() => {
+      const cardEl = document.getElementById(`post-${highlightedPostId}`);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150); // small delay lets React finish rendering
+    return () => clearTimeout(timer);
+  }, [highlightedPostId, loading, posts, activeTab]);
 
   // ── Action Handlers ────────────────────────────────────────────────────────
   const handleCreateClick = () => {
@@ -304,6 +325,8 @@ const TeamUp = () => {
                     onRemovePost={(postId) => setPosts((prev) => prev.filter((p) => p.id !== postId))}
                     isAuthenticated={!!user}
                     currentUserId={user}
+                    isHighlighted={String(post.id) === String(highlightedPostId)}
+                    onShareToast={showToast}
                   />
                 ))}
               </div>

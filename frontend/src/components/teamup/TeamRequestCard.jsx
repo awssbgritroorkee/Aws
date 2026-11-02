@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, Users, User, Calendar, Sparkles, CheckCircle2, ShieldAlert, Lock } from 'lucide-react';
+import { Phone, Users, User, Calendar, Sparkles, CheckCircle2, ShieldAlert, Lock, Share2 } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import PinVerifyBox from './PinVerifyBox';
 import { getStudentProfile, updateStudentProfile } from '../../services/api';
@@ -11,6 +11,8 @@ const TeamRequestCard = ({
   onRemovePost,
   isAuthenticated,
   currentUserId,
+  isHighlighted = false,
+  onShareToast,
 }) => {
   const [loading, setLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(post.my_interest_status);
@@ -25,6 +27,17 @@ const TeamRequestCard = ({
   const [phoneError, setPhoneError] = useState('');
 
   const isCreator = currentUserId && post.creator_email === currentUserId.email;
+
+  // ── Share / copy deep link ────────────────────────────────────────────────
+  const handleShareClick = (e) => {
+    e.stopPropagation();
+    const shareLink = `${window.location.origin}/teamup?post_id=${post.id}`;
+    navigator.clipboard.writeText(shareLink).then(() => {
+      if (onShareToast) onShareToast('Invite Link Copied! 📋', 'success');
+    }).catch(() => {
+      if (onShareToast) onShareToast('Copy this link: ' + shareLink, 'success');
+    });
+  };
 
   // Auto-remove card from Explore Board 30s after officially joining
   useEffect(() => {
@@ -141,7 +154,14 @@ const TeamRequestCard = ({
     : '';
 
   return (
-    <div className="bg-[#11161d] border border-gray-800 rounded-xl p-5 hover:border-gray-600 transition-all duration-300 shadow-lg flex flex-col justify-between h-full group">
+    <div
+      id={`post-${post.id}`}
+      className={`bg-[#11161d] border rounded-xl p-5 transition-all duration-500 shadow-lg flex flex-col justify-between h-full group ${
+        isHighlighted
+          ? 'border-[#00d084] ring-2 ring-[#00d084] shadow-[0_0_24px_rgba(0,208,132,0.35)] animate-pulse'
+          : 'border-gray-800 hover:border-gray-600'
+      }`}
+    >
       <div className="space-y-4">
         {/* Header Badges */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -161,11 +181,23 @@ const TeamRequestCard = ({
             </span>
           </div>
 
-          {post.mode === 'need_members' && (
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300">
-              {localMembersNeeded} {localMembersNeeded === 1 ? 'Slot' : 'Slots'} Open
-            </span>
-          )}
+          {/* Right side: Slots badge + Share button */}
+          <div className="flex items-center gap-2">
+            {post.mode === 'need_members' && (
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300">
+                {localMembersNeeded} {localMembersNeeded === 1 ? 'Slot' : 'Slots'} Open
+              </span>
+            )}
+            {/* Share / Copy Link button */}
+            <button
+              onClick={handleShareClick}
+              title="Copy invite link"
+              aria-label="Copy invite link"
+              className="p-1.5 rounded-full text-gray-500 hover:text-[#00d084] hover:bg-[#00d084]/10 transition-all duration-200"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Creator Info Header */}
